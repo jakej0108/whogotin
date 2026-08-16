@@ -1987,10 +1987,9 @@ function renderEcRows(){
     <div class="ec-row-block">
       <div class="ec-row">
         <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateEc(${i},'name',this.value)">
-        <input type="text" placeholder="Role, e.g. Team Captain" value="${e.role}" oninput="updateEc(${i},'role',this.value)">
         <button class="small" onclick="removeEcRow(${i})">Remove</button>
       </div>
-      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional)" value="${e.description||''}" oninput="updateEc(${i},'description',this.value)">
+      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" value="${e.description||''}" oninput="updateEc(${i},'description',this.value)">
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
@@ -2727,10 +2726,9 @@ function renderProgressEcRowsFor(pid){
     <div class="ec-row-block">
       <div class="ec-row">
         <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateProgressEc('${pid}',${i},'name',this.value)">
-        <input type="text" placeholder="Role, e.g. Team Captain" value="${e.role}" oninput="updateProgressEc('${pid}',${i},'role',this.value)">
         <button class="small" onclick="removeProgressEcRow('${pid}',${i})">Remove</button>
       </div>
-      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional)" value="${e.description||''}" oninput="updateProgressEc('${pid}',${i},'description',this.value)">
+      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" value="${e.description||''}" oninput="updateProgressEc('${pid}',${i},'description',this.value)">
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
