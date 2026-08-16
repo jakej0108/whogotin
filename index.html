@@ -580,9 +580,16 @@
 
       <div class="row">
         <div class="field">
-          <label>GPA</label>
-          <input type="number" id="gpa-input" step="0.01" min="0" max="4.3" placeholder="e.g. 3.85" required style="width:100%;">
+          <label>GPA <span style="text-transform:none;color:var(--ink-faint);">(unweighted — whatever scale your school uses, 4.0, 5.0, 100, etc.)</span></label>
+          <input type="number" id="gpa-input" step="0.01" min="0" placeholder="e.g. 3.85" required style="width:100%;">
         </div>
+        <div class="field">
+          <label>Weighted GPA <span style="text-transform:none;color:var(--ink-faint);">(optional — leave blank if N/A, e.g. transfer applicants usually don't have one)</span></label>
+          <input type="number" id="weighted-gpa-input" step="0.01" min="0" placeholder="e.g. 4.3" style="width:100%;">
+        </div>
+      </div>
+
+      <div class="row">
         <div class="field">
           <label>Major <span style="text-transform:none;color:var(--ink-faint);">(default — override per school below if it's different there)</span></label>
           <input type="text" id="major-input" placeholder="e.g. Computer Science" required style="width:100%;">
@@ -886,6 +893,14 @@ function resolveSchoolPath(slug, short){
 
 let PROFILES = [];
 
+// GPA scales vary by school (4.0, 5.0, 100-point, etc.) so we don't restrict
+// the main GPA value itself. It's treated as unweighted; weighted is a
+// separate, optional number (transfer applicants usually don't have a
+// weighted GPA from college coursework, so it's fine to leave blank).
+function gpaTypeLabel(p){
+  if(!p || (p.weightedGpa === '' || p.weightedGpa === null || p.weightedGpa === undefined)) return '';
+  return ' &middot; Weighted ' + p.weightedGpa;
+}
 function rowToProfile(row){
   return {
     id: row.id,
@@ -898,6 +913,7 @@ function rowToProfile(row){
     major: row.major,
     classYear: row.class_year || null,
     gpa: (row.gpa===null||row.gpa===undefined) ? '' : String(row.gpa),
+    weightedGpa: (row.weighted_gpa===null||row.weighted_gpa===undefined) ? '' : String(row.weighted_gpa),
     sat: row.sat,
     act: row.act,
     highSchool: row.high_school,
@@ -1395,7 +1411,7 @@ function renderGroupExpanded(group){
     ${waitlisted.length ? `<div class="hc-section"><div class="hc-section-title" style="color:var(--waitlisted);">Waitlisted</div>${schoolListHtml(waitlisted)}</div>` : ''}
     <hr class="divider" style="margin:12px 0;">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.gpa}</div></div>
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.gpa}${gpaTypeLabel(rep)}</div></div>
       ${rep.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.sat}</div></div>` : ''}
       ${rep.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.act}</div></div>` : ''}
     </div>
@@ -1432,7 +1448,7 @@ function groupCardHtml(group){
         ${statusSummaryLine('Rejected', rejectedNames)}
         ${statusSummaryLine('Waitlisted', waitlistedNames)}
       </div>
-      <div class="meta" style="font-size:15px;">${topMajor} &middot; GPA <b>${rep.gpa}</b>${rep.classYear ? ' &middot; Enrolling <b>'+rep.classYear+'</b>' : ''}</div>
+      <div class="meta" style="font-size:15px;">${topMajor} &middot; GPA <b>${rep.gpa}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+rep.classYear+'</b>' : ''}</div>
       <div style="margin:6px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         ${typeBadgeHtml(rep)}
@@ -1590,7 +1606,7 @@ function renderUniResults(){
   document.getElementById('uni-results').innerHTML = results.map(p=>`
     <div class="idx-card" onclick="openSubmissionGroup('${p.submissionId || p.id}')">
       <h3>${p.major}</h3>
-      <div class="meta">GPA <b>${p.gpa}</b>${p.classYear ? ' &middot; Enrolling <b>'+p.classYear+'</b>' : ''}${p.highSchool?' &middot; '+p.highSchool:''}${p.transferFrom?' &middot; from '+p.transferFrom:''}</div>
+      <div class="meta">GPA <b>${p.gpa}${gpaTypeLabel(p)}</b>${p.classYear ? ' &middot; Enrolling <b>'+p.classYear+'</b>' : ''}${p.highSchool?' &middot; '+p.highSchool:''}${p.transferFrom?' &middot; from '+p.transferFrom:''}</div>
       <div class="meta">&#128065; ${p.viewCount||0} &middot; &#9829; ${p.likeCount||0}</div>
       <div style="margin-bottom:8px;">${p.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}</div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${typeBadgeHtml(p)}${stampHtml(p.status,p.decisionType,false)}</div>
@@ -1742,7 +1758,7 @@ function renderProfilePage(id){
     </div>
     <hr class="divider">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}</div></div>
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}${gpaTypeLabel(p)}</div></div>
       ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.sat}</div></div>` : ''}
       ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.act}</div></div>` : ''}
       ${p.highSchool ? `<div class="field"><label>High school</label><div>${p.highSchool}</div></div>` : ''}
@@ -1802,7 +1818,7 @@ function renderSubmissionPage(groupKey){
     <div class="profile-head">
       <div>
         <h2 class="section-title" style="margin-bottom:2px;">${rep.major || 'Undeclared'}</h2>
-        <p class="section-sub" style="margin-bottom:6px;">${rep.transfer ? 'Transfer applicant'+(rep.transferFrom?' from '+rep.transferFrom:'') : 'Freshman applicant'}${rep.classYear ? ' &middot; Enrolling '+rep.classYear : ''} &middot; GPA ${rep.gpa}</p>
+        <p class="section-sub" style="margin-bottom:6px;">${rep.transfer ? 'Transfer applicant'+(rep.transferFrom?' from '+rep.transferFrom:'') : 'Freshman applicant'}${rep.classYear ? ' &middot; Enrolling '+rep.classYear : ''} &middot; GPA ${rep.gpa}${gpaTypeLabel(rep)}</p>
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:10.5px;padding:4px 10px;">&#10003; Verified with admission email</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         <div class="meta" style="margin-top:6px;">&#128065; ${rep.viewCount} views &middot; ${rep.likeCount||0} likes</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
@@ -2112,6 +2128,7 @@ function loadDraftFromExisting(rows){
     rejected: rows.filter(r=>r.status==='rejected').map(r=>({name:r.university, major:r.major||''})),
     highSchool: rep.highSchool || '',
     gpa: rep.gpa || '',
+    weightedGpa: rep.weightedGpa || '',
     sat: (rep.sat!==null && rep.sat!==undefined) ? String(rep.sat) : '',
     act: (rep.act!==null && rep.act!==undefined) ? String(rep.act) : '',
     major: rep.major || '',
@@ -2125,6 +2142,7 @@ function loadDraftFromExisting(rows){
 
   const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
   setVal('gpa-input', draft.gpa);
+  setVal('weighted-gpa-input', draft.weightedGpa);
   setVal('major-input', draft.major);
   setVal('class-year-input', draft.classYear);
   setVal('hs-input', draft.highSchool);
@@ -2144,7 +2162,7 @@ function loadDraftFromExisting(rows){
 }
 
 function resetSubmitForm(){
-  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[{name:'',role:'',description:''}], apExams:[], awards:[]};
+  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[{name:'',role:'',description:''}], apExams:[], awards:[]};
 
   const gpaInput = document.getElementById('gpa-input'); if(gpaInput) gpaInput.value = '';
   const majorInput = document.getElementById('major-input'); if(majorInput) majorInput.value = '';
@@ -2174,6 +2192,7 @@ async function submitResult(){
   const willBeEditing = !!(currentUser && !isAnonymousUser && userRecord && userRecord.profiles.length);
   const gpaVal = document.getElementById('gpa-input').value.trim();
   if(!gpaVal){ alert('GPA is required.'); document.getElementById('gpa-input').focus(); return; }
+  const weightedGpaVal = document.getElementById('weighted-gpa-input').value.trim();
   const majorVal = document.getElementById('major-input').value.trim();
   if(!majorVal){ alert('Major is required.'); document.getElementById('major-input').focus(); return; }
   if(containsBlockedWord(majorVal)){ alert('Please enter a real major — that one was flagged as inappropriate.'); document.getElementById('major-input').focus(); return; }
@@ -2194,6 +2213,7 @@ async function submitResult(){
   if(allSchools.length===0){ alert('Add at least one school (accepted, waitlisted, or rejected) before submitting.'); return; }
 
   draft.gpa = gpaVal;
+  draft.weightedGpa = weightedGpaVal;
   draft.highSchool = document.getElementById('hs-input').value.trim();
   draft.sat = document.getElementById('sat-input').value.trim();
   draft.act = document.getElementById('act-input').value.trim();
@@ -2346,6 +2366,7 @@ async function submitResult(){
     major: (s.major && s.major.trim()) || draft.major,
     class_year: Number(draft.classYear),
     gpa: draft.gpa,
+    weighted_gpa: draft.weightedGpa || null,
     sat: draft.sat || null,
     act: draft.act || null,
     high_school: draft.transfer ? null : (draft.highSchool || null),
@@ -2741,7 +2762,7 @@ function renderProgressCardEditor(){
       <div class="row">
         <div class="field">
           <label>GPA <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" step="0.01" min="0" max="4.3" placeholder="e.g. 3.8" value="${p.gpa}" oninput="updateProgressField('${p.id}','gpa',this.value)">
+          <input type="number" step="0.01" min="0" placeholder="e.g. 3.8" value="${p.gpa}" oninput="updateProgressField('${p.id}','gpa',this.value)">
         </div>
         <div class="field">
           <label>SAT <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
@@ -3120,7 +3141,7 @@ function openProfileObj(id){
     </div>
     <hr class="divider">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}</div></div>
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}${gpaTypeLabel(p)}</div></div>
       ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.sat}</div></div>` : ''}
       ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.act}</div></div>` : ''}
       ${p.highSchool ? `<div class="field"><label>High school</label><div>${p.highSchool}</div></div>` : ''}
