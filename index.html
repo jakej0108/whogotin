@@ -20,7 +20,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 <style>
   :root{
     --paper:#FFFFFF;
@@ -322,6 +321,7 @@
   .ec-row{display:flex;gap:10px;margin-bottom:8px;align-items:center;}
   .ec-row input{flex:1;}
   .ec-desc-input{width:100%;}
+  textarea.ec-desc-input{min-height:70px;resize:vertical;font-family:inherit;line-height:1.4;}
 
   .ec-display-box{border:1.5px solid var(--rule);border-radius:8px;padding:8px 18px;background:var(--paper-2);}
   .ec-display-row{padding:12px 0;border-bottom:1px dashed var(--rule);}
@@ -656,7 +656,6 @@
         <button class="small" style="margin-top:10px;" onclick="addAwardRow()">+ Add award</button>
       </div>
 
-      <div id="hcaptcha-submit-widget" style="margin-top:20px;"></div>
       <div class="cta-row" style="justify-content:flex-end;margin-top:16px;">
         <button class="primary" id="submit-result-btn" onclick="submitResult()">Submit to the ledger</button>
       </div>
@@ -716,7 +715,7 @@
 
       <div class="field">
         <label>Cookies &amp; local storage</label>
-        <p>We don&rsquo;t use advertising or tracking cookies, and we don&rsquo;t sell data to anyone. Two things do get stored in your browser: your login session (so you stay signed in between visits), and a cookie set by hCaptcha, which we use to help block spam/bot submissions.</p>
+        <p>We don&rsquo;t use advertising or tracking cookies, and we don&rsquo;t sell data to anyone. The only thing stored in your browser is your login session, so you stay signed in between visits.</p>
       </div>
 
       <div class="field">
@@ -756,7 +755,6 @@
       <label>Password</label>
       <input type="password" id="modal-password-input" placeholder="At least 6 characters" style="width:100%;" onkeydown="if(event.key==='Enter') submitModalLogin()">
     </div>
-    <div id="hcaptcha-modal-widget" style="margin-bottom:10px;"></div>
     <p id="login-modal-error" style="color:#b3312c;font-size:12.5px;display:none;margin-bottom:6px;"></p>
     <div class="cta-row" style="justify-content:space-between;align-items:center;margin-top:10px;">
       <button class="ghost small" id="login-mode-toggle" onclick="toggleLoginMode()">New here? Create an account</button>
@@ -794,23 +792,6 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 // alone couldn't be spoofed to gain access.
 const ADMIN_EMAILS = ['jakej0108@gmail.com', 'whogotincontact@gmail.com', 'jiminchan5@gmail.com'];
 let isAdmin = false;
-
-// hCaptcha sitekey — safe to be public in client-side code (the secret key
-// lives only in the Supabase dashboard's Auth -> Attack Protection settings).
-const HCAPTCHA_SITEKEY = 'b870932a-c584-40e0-8be6-f1363932b0b8';
-let hcaptchaModalWidgetId = null;
-let hcaptchaSubmitWidgetId = null;
-function renderHcaptchaWidgets(){
-  if(typeof hcaptcha === 'undefined') { setTimeout(renderHcaptchaWidgets, 200); return; }
-  const modalEl = document.getElementById('hcaptcha-modal-widget');
-  if(modalEl && hcaptchaModalWidgetId === null){
-    hcaptchaModalWidgetId = hcaptcha.render(modalEl, { sitekey: HCAPTCHA_SITEKEY, size: 'normal' });
-  }
-  const submitEl = document.getElementById('hcaptcha-submit-widget');
-  if(submitEl && hcaptchaSubmitWidgetId === null){
-    hcaptchaSubmitWidgetId = hcaptcha.render(submitEl, { sitekey: HCAPTCHA_SITEKEY, size: 'normal' });
-  }
-}
 
 // Feature flag: chance prediction needs more shared data to be useful.
 // Flip to true once there's enough of a ledger for it to mean something.
@@ -1207,21 +1188,16 @@ async function submitModalLogin(){
   errEl.style.display = 'none';
   if(!email || !password){ errEl.textContent = 'Enter an email and password.'; errEl.style.display = 'block'; return; }
 
-  const captchaToken = hcaptchaModalWidgetId !== null ? hcaptcha.getResponse(hcaptchaModalWidgetId) : null;
-  if(!captchaToken){ errEl.textContent = 'Please complete the captcha.'; errEl.style.display = 'block'; return; }
-
   const submitBtn = document.getElementById('login-submit-btn');
   submitBtn.disabled = true;
   submitBtn.textContent = loginMode === 'signup' ? 'Creating account…' : 'Logging in…';
 
   const result = loginMode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { data: { username: email.split('@')[0] }, captchaToken } })
-    : await supabaseClient.auth.signInWithPassword({ email, password, options: { captchaToken } });
+    ? await supabaseClient.auth.signUp({ email, password, options: { data: { username: email.split('@')[0] } } })
+    : await supabaseClient.auth.signInWithPassword({ email, password });
 
   submitBtn.disabled = false;
   submitBtn.textContent = loginMode === 'signup' ? 'Create account' : 'Log in';
-
-  if(hcaptchaModalWidgetId !== null) hcaptcha.reset(hcaptchaModalWidgetId);
 
   if(result.error){
     errEl.textContent = result.error.message;
@@ -1989,7 +1965,7 @@ function renderEcRows(){
         <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateEc(${i},'name',this.value)">
         <button class="small" onclick="removeEcRow(${i})">Remove</button>
       </div>
-      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" value="${e.description||''}" oninput="updateEc(${i},'description',this.value)">
+      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateEc(${i},'description',this.value)">${e.description||''}</textarea>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
@@ -2164,6 +2140,7 @@ function resetSubmitForm(){
   draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[{name:'',role:'',description:''}], apExams:[], awards:[]};
 
   const gpaInput = document.getElementById('gpa-input'); if(gpaInput) gpaInput.value = '';
+  const weightedGpaInput = document.getElementById('weighted-gpa-input'); if(weightedGpaInput) weightedGpaInput.value = '';
   const majorInput = document.getElementById('major-input'); if(majorInput) majorInput.value = '';
   const classYearInput = document.getElementById('class-year-input'); if(classYearInput) classYearInput.value = '';
   const hsInput = document.getElementById('hs-input'); if(hsInput) hsInput.value = '';
@@ -2186,7 +2163,7 @@ function resetSubmitForm(){
 }
 
 async function submitResult(){
-  // Known before we even touch auth/captcha — used just to keep the submit
+  // Known before we even touch auth — used just to keep the submit
   // button's label correct if validation bails out early below.
   const willBeEditing = !!(currentUser && !isAnonymousUser && userRecord && userRecord.profiles.length);
   const gpaVal = document.getElementById('gpa-input').value.trim();
@@ -2276,59 +2253,20 @@ async function submitResult(){
   const submitBtn = document.getElementById('submit-result-btn');
   if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Submitting…'; }
 
-  // Every submission requires a freshly solved captcha, whether the
-  // person is logged in, already has a guest session, or has neither.
-  // Tokens are single-use, so we always grab a new one right here.
-  const captchaToken = hcaptchaSubmitWidgetId !== null ? hcaptcha.getResponse(hcaptchaSubmitWidgetId) : null;
-  if(!captchaToken){
-    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = willBeEditing ? 'Save changes' : 'Submit to the ledger'; }
-    alert('Please complete the captcha before submitting.');
-    return;
-  }
-
   // Submitting doesn't require making an account. If nobody's logged in,
   // silently start an anonymous Supabase session so the row still has a
   // real owner_id (needed for RLS + so a "your own result" delete/edit
   // path exists later) without ever showing a login screen. This needs
   // Anonymous Sign-ins turned on in Supabase: Authentication -> Providers.
-  // Signing in verifies the captcha token itself (it's a Supabase Auth
-  // endpoint), so no separate check is needed in this branch.
   let { data: { user } } = await supabaseClient.auth.getUser();
   if(!user){
-    const { data: anonData, error: anonError } = await supabaseClient.auth.signInAnonymously({ options: { captchaToken } });
-    if(hcaptchaSubmitWidgetId !== null) hcaptcha.reset(hcaptchaSubmitWidgetId);
+    const { data: anonData, error: anonError } = await supabaseClient.auth.signInAnonymously();
     if(anonError){
       if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = willBeEditing ? 'Save changes' : 'Submit to the ledger'; }
       alert('Could not submit your result: ' + anonError.message);
       return;
     }
     user = anonData.user;
-  } else {
-    // Already signed in (real account or an earlier guest session) — there's
-    // no Supabase Auth call happening here to verify the token against, so
-    // we check it ourselves via a small server-side function that holds the
-    // hCaptcha secret key (never exposed in this file) and asks hCaptcha
-    // directly whether the token is real.
-    const { data: verifyData, error: verifyError } = await supabaseClient.functions.invoke('verify-captcha', { body: { captchaToken } });
-    if(hcaptchaSubmitWidgetId !== null) hcaptcha.reset(hcaptchaSubmitWidgetId);
-    if(verifyError || !verifyData || !verifyData.success){
-      // When the function itself returns a non-2xx status, supabase-js
-      // only gives us a generic "non-2xx status code" error object by
-      // default — the actual JSON body (our real error message) is on
-      // error.context, a Response we have to read ourselves.
-      let detail = '';
-      if(verifyError && verifyError.context && typeof verifyError.context.json === 'function'){
-        try {
-          const body = await verifyError.context.json();
-          detail = body && body.error ? body.error : '';
-        } catch(e){ /* body wasn't JSON — ignore */ }
-      }
-      console.error('verify-captcha failed', verifyError, verifyData, detail);
-      if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = willBeEditing ? 'Save changes' : 'Submit to the ledger'; }
-      const codes = verifyData && verifyData.errorCodes && verifyData.errorCodes.length ? ' (' + verifyData.errorCodes.join(', ') + ')' : '';
-      alert('Captcha verification failed' + codes + (detail ? ': ' + detail : '') + '. Please try again.');
-      return;
-    }
   }
 
   // Real (non-anonymous) accounts get exactly one editable submission —
@@ -2728,7 +2666,7 @@ function renderProgressEcRowsFor(pid){
         <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateProgressEc('${pid}',${i},'name',this.value)">
         <button class="small" onclick="removeProgressEcRow('${pid}',${i})">Remove</button>
       </div>
-      <input type="text" class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" value="${e.description||''}" oninput="updateProgressEc('${pid}',${i},'description',this.value)">
+      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateProgressEc('${pid}',${i},'description',this.value)">${e.description||''}</textarea>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
@@ -3308,7 +3246,6 @@ function renderPredictBattery(){
     if(predictBtn) predictBtn.style.display = 'none';
   }
   await Promise.all([loadUniversities(), loadProfiles()]);
-  renderHcaptchaWidgets();
   await onAuthReady();
   renderHome();
   renderSchoolSearch();
