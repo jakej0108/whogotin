@@ -879,10 +879,11 @@ function resolveSchoolPath(slug, short){
 
 
 let PROFILES = [];
-const HOME_PROFILE_LIMIT = 150;
+const HOME_SUBMISSION_LIMIT = 30;
 const UNIVERSITY_PAGE_SIZE = 50;
 let universityPage = 0;
 let universityHasMore = false;
+let UNIVERSITY_PROFILE_COUNTS = {};
 
 // GPA scales vary by school (4.0, 5.0, 100-point, etc.) so we don't restrict
 // the main GPA value itself. It's treated as unweighted; weighted is a
@@ -927,10 +928,19 @@ function mergeProfiles(rows){
   PROFILES = Array.from(byId.values());
 }
 async function loadRecentProfiles(){
+  const { data: recent, error: recentError } = await supabaseClient.rpc('get_recent_submission_ids', { p_limit: HOME_SUBMISSION_LIMIT });
+  if(recentError){ console.error('Failed to load recent submission ids', recentError); return; }
+  const ids = (recent || []).map(row => row.share_short_id);
+  if(!ids.length){ PROFILES = []; return; }
   const { data, error } = await supabaseClient.from('profiles').select('*')
-    .order('created_at', { ascending: false }).limit(HOME_PROFILE_LIMIT);
-  if(error){ console.error('Failed to load profiles', error); return; }
+    .in('share_short_id', ids).order('created_at', { ascending: false });
+  if(error){ console.error('Failed to load recent submissions', error); return; }
   PROFILES = data.map(rowToProfile);
+}
+async function loadUniversityProfileCounts(){
+  const { data, error } = await supabaseClient.rpc('get_university_profile_counts');
+  if(error){ console.error('Failed to load university result counts', error); return; }
+  UNIVERSITY_PROFILE_COUNTS = Object.fromEntries((data || []).map(row => [row.university, Number(row.result_count)]));
 }
 async function loadSubmissionByShortId(short){
   const { data, error } = await supabaseClient.from('profiles').select('*')
@@ -1528,7 +1538,7 @@ function renderSchoolSearch(){
   }
 
   if(sortBy==='shared'){
-    matches = matches.slice().sort((a,b)=> PROFILES.filter(p=>p.university===b).length - PROFILES.filter(p=>p.university===a).length);
+    matches = matches.slice().sort((a,b)=> (UNIVERSITY_PROFILE_COUNTS[b]||0) - (UNIVERSITY_PROFILE_COUNTS[a]||0));
   } else if(sortBy==='acceptance'){
     matches = matches.slice().sort((a,b)=>{
       const aRate = (UNI_INFO[a] && typeof UNI_INFO[a].accept==='number') ? UNI_INFO[a].accept : 999;
@@ -1548,7 +1558,7 @@ function renderSchoolSearch(){
   }
 
   document.getElementById('school-results').innerHTML = matches.map(u=>{
-    const c = PROFILES.filter(p=>p.university===u).length;
+    const c = UNIVERSITY_PROFILE_COUNTS[u] || 0;
     return `
     <div class="idx-card" onclick="openUniversity('${u.replace(/'/g,"\\'")}')">
       <h3>${uniLogo(u)}${u}</h3>
@@ -3298,7 +3308,7 @@ function renderPredictBattery(){
     const predictBtn = document.getElementById('get-prediction-btn');
     if(predictBtn) predictBtn.style.display = 'none';
   }
-  await loadUniversities();
+  await Promise.all([loadUniversities(), loadUniversityProfileCounts()]);
   const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname);
   if(!isTargetedRoute && window.location.pathname === '/') await loadRecentProfiles();
   await onAuthReady();
