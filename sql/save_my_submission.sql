@@ -77,11 +77,11 @@ begin
 
     if v_id is null then
       insert into profiles (
-        owner_id, submission_id, share_short_id, university, status, decision_type, major,
+        owner_id, submission_id, university, status, decision_type, major,
         transfer, transfer_from, class_year, gpa, weighted_gpa, sat, act, high_school, essay,
         verified, verification_path, ecs, ap_exams, awards
       ) values (
-        v_uid, v_sub, v_short, v_row.university, v_row.status,
+        v_uid, v_sub, v_row.university, v_row.status,
         coalesce(nullif(v_row.decision_type, ''), 'Regular'), v_row.major,
         coalesce(v_row.transfer, false), v_row.transfer_from, v_row.class_year, v_row.gpa,
         v_row.weighted_gpa, v_row.sat, v_row.act, v_row.high_school, v_row.essay,
@@ -93,7 +93,6 @@ begin
     else
       update profiles set
         submission_id     = v_sub,
-        share_short_id    = v_short,
         status            = v_row.status,
         decision_type     = coalesce(nullif(v_row.decision_type, ''), 'Regular'),
         major             = v_row.major,
@@ -116,6 +115,18 @@ begin
 
     v_keep := v_keep || v_id;
   end loop;
+
+  -- share_short_id is normally a generated column (computed from
+  -- submission_id), which must not be written to. Only set it by hand if
+  -- this database has it as a plain column.
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'profiles'
+       and column_name = 'share_short_id' and is_generated = 'NEVER'
+  ) then
+    update profiles set share_short_id = v_short
+     where id = any (v_keep) and share_short_id is distinct from v_short;
+  end if;
 
   -- Remove only the schools that are no longer part of this submission.
   delete from profiles where owner_id = v_uid and id <> all (v_keep);

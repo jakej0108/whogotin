@@ -2448,8 +2448,16 @@ async function submitResult(){
       console.error('file upload failed', upErr);
     } else {
       const ids = inserted.map(row => row.id);
-      const { error: updErr } = await supabaseClient.from('profiles').update({ verification_path: path }).in('id', ids);
+      // The database sets `verified` itself once verification_path points at
+      // a real uploaded file (sql/profile_guards.sql), so read it back here
+      // instead of assuming it.
+      const { data: updRows, error: updErr } = await supabaseClient.from('profiles')
+        .update({ verification_path: path }).in('id', ids).select('id, verified, verification_path');
       if(updErr) console.error('verification_path update failed', updErr);
+      (updRows || []).forEach(row => {
+        const p = newProfiles.find(x => String(x.id) === String(row.id));
+        if(p){ p.verified = !!row.verified; p.verificationPath = row.verification_path; }
+      });
     }
   }
 
