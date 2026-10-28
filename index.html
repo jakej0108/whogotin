@@ -429,6 +429,40 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .freetext-box p{margin:6px 0;}
   .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
   .freetext-box li{margin:3px 0;}
+  /* University results: matches are written under each box like ledger
+     lines; anything that needs a decision gets a red proofreader's mark. */
+  #page-upload textarea.school-text{min-height:84px;}
+  #page-upload .school-matches:empty{display:none;}
+  #page-upload .sm-list{margin-top:6px;border-top:1px solid var(--rule);}
+  #page-upload .sm-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:38px;padding:4px 0 4px 22px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35;}
+  #page-upload .sm-mark{position:absolute;left:2px;top:7px;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--accent);}
+  #page-upload .sm-main{flex:1 1 240px;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
+  #page-upload .sm-main .uni-logo{width:24px;height:24px;font-size:8px;margin:0;}
+  #page-upload .sm-name{font-weight:500;}
+  #page-upload .sm-aside{color:var(--ink-soft);}
+  #page-upload .sm-muted .sm-main{color:var(--ink-soft);}
+  #page-upload .sm-typed{color:var(--ink-faint);text-decoration-color:var(--accent);text-decoration-thickness:1.5px;}
+  #page-upload .sm-row input.sm-major{flex:0 1 190px;width:auto;height:28px;font-size:14px;padding:0 2px;border:none;border-bottom:1px dashed var(--ink-faint);border-radius:0;background:transparent;}
+  #page-upload .sm-row input.sm-major:focus{border-bottom:1.5px solid var(--accent);}
+  #page-upload .field .sm-ed{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+  #page-upload .sm-ed input{width:15px;height:15px;margin:0;accent-color:var(--accent);}
+  #page-upload .sm-actions{display:inline-flex;align-items:center;gap:14px;}
+  #page-upload .sm-choices{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;}
+  #page-upload .sm-or{color:var(--ink-faint);font-size:14px;}
+  #page-upload .sm-row button.sm-link{min-height:0;height:auto;padding:2px 0;border:none;border-radius:0;background:none;font-family:'IBM Plex Sans',sans-serif;font-size:14px;letter-spacing:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
+  #page-upload .sm-row button.sm-link:hover{background:none;text-decoration-thickness:2px;}
+  #page-upload .sm-row button.sm-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  #page-upload .sm-row button.sm-confirm{font-weight:600;}
+  #page-upload .sm-row button.sm-remove{color:var(--ink-soft);text-decoration-color:var(--ink-faint);}
+  #page-upload .sm-note{margin:6px 0 0;font-size:13.5px;color:var(--accent);}
+  #page-upload .sm-search{flex:1 1 100%;margin:2px 0 4px;}
+  #page-upload .sm-search input{height:38px;font-size:15px;}
+  #page-upload .sm-break{display:none;}
+  @media (max-width:600px){
+    #page-upload .sm-break{display:block;flex-basis:100%;height:0;}
+    #page-upload .sm-row input.sm-major{flex:1 1 0;min-width:0;}
+    #page-upload .sm-main{flex-basis:100%;}
+  }
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
     #page-upload .form-title{font-size:24px;}
@@ -663,42 +697,24 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <!-- 3. University results -->
       <div class="form-section">
         <h3 class="form-section-title">University results</h3>
-        <p class="section-hint">Search for each school and click Add. Add at least one school in any of the three lists.</p>
+        <p class="section-hint">Type or paste your schools, separated by commas or new lines. Abbreviations like UCLA, UMich or MIT work. Add at least one school. Fill in a school's major only if it differs from your admitted major.</p>
 
         <div class="field">
-          <label for="accepted-input">Accepted</label>
-          <div class="adder-row">
-            <div class="autocomplete-wrap">
-              <input type="text" id="accepted-input" placeholder="Search a university&hellip;" autocomplete="off">
-              <div class="autocomplete-list" id="accepted-input-list"></div>
-            </div>
-            <button onclick="addSchool('accepted')">Add</button>
-          </div>
-          <div class="chip-row" id="accepted-chips"></div>
+          <label for="accepted-text">Accepted</label>
+          <textarea id="accepted-text" class="school-text" rows="3" placeholder="e.g. UCLA, Berkeley, UMich"></textarea>
+          <div class="school-matches" id="accepted-matches" aria-live="polite"></div>
         </div>
 
         <div class="field">
-          <label for="waitlisted-input">Waitlisted <span class="opt">(optional)</span></label>
-          <div class="adder-row">
-            <div class="autocomplete-wrap">
-              <input type="text" id="waitlisted-input" placeholder="Search a university&hellip;" autocomplete="off">
-              <div class="autocomplete-list" id="waitlisted-input-list"></div>
-            </div>
-            <button onclick="addSchool('waitlisted')">Add</button>
-          </div>
-          <div class="chip-row" id="waitlisted-chips"></div>
+          <label for="waitlisted-text">Waitlisted <span class="opt">(optional)</span></label>
+          <textarea id="waitlisted-text" class="school-text" rows="2" placeholder="e.g. NYU, Columbia"></textarea>
+          <div class="school-matches" id="waitlisted-matches" aria-live="polite"></div>
         </div>
 
         <div class="field">
-          <label for="rejected-input">Rejected <span class="opt">(optional)</span></label>
-          <div class="adder-row">
-            <div class="autocomplete-wrap">
-              <input type="text" id="rejected-input" placeholder="Search a university&hellip;" autocomplete="off">
-              <div class="autocomplete-list" id="rejected-input-list"></div>
-            </div>
-            <button onclick="addSchool('rejected')">Add</button>
-          </div>
-          <div class="chip-row" id="rejected-chips"></div>
+          <label for="rejected-text">Rejected <span class="opt">(optional)</span></label>
+          <textarea id="rejected-text" class="school-text" rows="2" placeholder="e.g. Harvard, Stanford"></textarea>
+          <div class="school-matches" id="rejected-matches" aria-live="polite"></div>
         </div>
       </div>
 
@@ -1136,7 +1152,7 @@ function setupAutocomplete(inputId, getSource, emptyLabel){
     input.dispatchEvent(new Event('change', { bubbles:true }));
   });
 }
-['accepted-input','waitlisted-input','rejected-input','target-school-input'].forEach(id=>setupAutocomplete(id));
+['target-school-input'].forEach(id=>setupAutocomplete(id));
 setupAutocomplete('school-state-input', ()=>Array.from(new Set(UNIS.map(schoolStateFullName).filter(Boolean))).sort(), 'No matching states');
 
 // Predictive search on the homepage bar — same type-ahead as everywhere
@@ -2102,7 +2118,7 @@ window.addEventListener('popstate', async ()=>{
 });
 
 /* ---------------- Upload wizard ---------------- */
-let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
+let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
 function setTransfer(val){
   draft.transfer = val;
@@ -2111,52 +2127,564 @@ function setTransfer(val){
   document.getElementById('transfer-from-field').style.display = val ? 'block' : 'none';
 }
 
-function addSchool(kind){
-  const input = document.getElementById(kind+'-input');
-  const name = input.value.trim();
-  if(!name || !UNIS.includes(name)){
-    if(name) alert('Pick a university from the suggestions list.');
-    return;
+/* ---------------- University name matching ----------------
+   Turns pasted text ("UCLA, Berkeley\n- UMich\nConell") into a list of
+   entries, each matched against the universities table without any AI:
+     1. exact official name          -> status 'exact'      (auto-accepted)
+     2. curated alias (UMich, MIT)   -> status 'alias'      (auto-accepted)
+     3. generated short name         -> status 'alias'      ("Cornell" for "Cornell University")
+     4. all words found in one name  -> status 'token'      (auto-accepted if 2+ words; 1 word needs confirm)
+     5. close spelling (Conell)      -> status 'fuzzy'      (must be confirmed)
+   Names that fit several schools ("USC", "Miami") -> status 'ambiguous'
+   (user picks), and anything else -> status 'none' (user searches).
+   Every entry keeps the character range it came from, so the form can
+   replace the typed text with the chosen official name. */
+
+// Curated aliases. Targets that aren't in the universities table are
+// ignored, so this list can be broader than the table.
+const UNI_ALIASES = {
+  'UCLA': ['ucla', 'uc los angeles', 'university of california los angeles', 'u c l a'],
+  'UC Berkeley': ['berkeley', 'cal', 'ucb', 'uc berkeley', 'university of california berkeley', 'cal berkeley'],
+  'UC San Diego': ['ucsd', 'uc san diego', 'university of california san diego'],
+  'UC Davis': ['ucd', 'uc davis', 'university of california davis'],
+  'UC Irvine': ['uci', 'uc irvine', 'university of california irvine'],
+  'UC Santa Barbara': ['ucsb', 'uc santa barbara', 'university of california santa barbara'],
+  'UC Santa Cruz': ['ucsc', 'uc santa cruz', 'university of california santa cruz'],
+  'UC Riverside': ['ucr', 'uc riverside', 'university of california riverside'],
+  'UC Merced': ['ucm', 'uc merced', 'university of california merced'],
+  'Massachusetts Institute of Technology': ['mit'],
+  'California Institute of Technology': ['caltech', 'cal tech'],
+  'Carnegie Mellon University': ['cmu', 'carnegie mellon'],
+  'Johns Hopkins University': ['jhu', 'hopkins', 'johns hopkins', 'john hopkins'],
+  'University of Pennsylvania': ['upenn', 'u penn'],
+  'Penn State University': ['psu', 'penn state', 'pennsylvania state university', 'penn state university park'],
+  'University of Chicago': ['uchicago', 'u chicago', 'chicago university'],
+  'University of Michigan': ['umich', 'u mich', 'michigan', 'university of michigan ann arbor', 'michigan ann arbor', 'um ann arbor'],
+  'University of Illinois Urbana-Champaign': ['uiuc', 'illinois', 'u of i', 'university of illinois', 'urbana champaign'],
+  'University of Texas at Austin': ['ut austin', 'utaustin', 'texas austin', 'university of texas'],
+  'Texas A&M University': ['tamu', 'texas a and m', 'a and m', 'texas am'],
+  'University of Virginia': ['uva'],
+  'University of North Carolina at Chapel Hill': ['unc chapel hill', 'chapel hill', 'unc ch'],
+  'University of North Carolina at Charlotte': ['unc charlotte', 'uncc'],
+  'University of North Carolina at Wilmington': ['unc wilmington', 'uncw'],
+  'Georgia Institute of Technology': ['georgia tech', 'gatech', 'gt', 'georgia institute of technology'],
+  'New York University': ['nyu'],
+  'Boston University': ['bu'],
+  'Boston College': ['bc'],
+  'Northeastern University': ['neu'],
+  'University of Washington': ['uw seattle', 'udub', 'u dub'],
+  'Washington University in St. Louis': ['washu', 'wustl', 'wash u', 'washington university', 'washington university st louis'],
+  'Washington State University': ['wsu', 'wazzu'],
+  'University of Maryland College Park': ['umd', 'maryland', 'university of maryland', 'umcp'],
+  'University of Maryland Baltimore County': ['umbc'],
+  'University of Connecticut': ['uconn'],
+  'University of Massachusetts Amherst': ['umass amherst', 'umass a'],
+  'University of Massachusetts Boston': ['umass boston', 'umb'],
+  'University of Massachusetts Lowell': ['umass lowell', 'uml'],
+  'University of Florida': ['uf'],
+  'Florida State University': ['fsu'],
+  'University of Central Florida': ['ucf'],
+  'University of South Florida': ['usf'],
+  'Florida International University': ['fiu'],
+  'Florida A&M University': ['famu'],
+  'Ohio State University': ['ohio state', 'the ohio state university', 'tosu'],
+  'Oklahoma State University': ['okstate', 'oklahoma state'],
+  'Oregon State University': ['oregon state'],
+  'Arizona State University': ['asu'],
+  'Brigham Young University': ['byu'],
+  'Southern Methodist University': ['smu'],
+  'Texas Christian University': ['tcu'],
+  'Louisiana State University': ['lsu'],
+  'Virginia Tech': ['vt', 'virginia polytechnic institute', 'virginia polytechnic institute and state university'],
+  'Rensselaer Polytechnic Institute': ['rpi'],
+  'Rochester Institute of Technology': ['rit'],
+  'Worcester Polytechnic Institute': ['wpi'],
+  'New Jersey Institute of Technology': ['njit'],
+  'Illinois Institute of Technology': ['iit', 'illinois tech'],
+  'Stevens Institute of Technology': ['stevens'],
+  'Rose-Hulman Institute of Technology': ['rose hulman', 'rhit'],
+  'California Polytechnic State University San Luis Obispo': ['cal poly slo', 'slo', 'cal poly san luis obispo', 'cpslo'],
+  'Cal Poly Pomona': ['cpp', 'cal poly pomona', 'california state polytechnic university pomona'],
+  'San Jose State University': ['sjsu', 'san jose state'],
+  'San Diego State University': ['sdsu'],
+  'California State University Long Beach': ['csulb', 'cal state long beach', 'long beach state'],
+  'California State University Fullerton': ['csuf', 'cal state fullerton'],
+  'California State University Northridge': ['csun', 'cal state northridge'],
+  'Sacramento State University': ['sac state', 'csus', 'cal state sacramento', 'sacramento state'],
+  'University of Wisconsin-Madison': ['uw madison', 'wisconsin', 'uwm madison', 'university of wisconsin'],
+  'University of Wisconsin-Milwaukee': ['uw milwaukee'],
+  'University of Minnesota Twin Cities': ['umn', 'minnesota', 'university of minnesota', 'u of m twin cities'],
+  'University of Pittsburgh': ['pitt'],
+  'Case Western Reserve University': ['cwru', 'case western', 'case'],
+  'University of Notre Dame': ['notre dame', 'nd'],
+  'United States Air Force Academy': ['usafa', 'air force academy', 'air force'],
+  'United States Military Academy': ['usma', 'west point', 'army'],
+  'United States Naval Academy': ['usna', 'naval academy', 'navy'],
+  'United States Coast Guard Academy': ['uscga', 'coast guard academy', 'coast guard'],
+  'University at Buffalo': ['ub', 'buffalo', 'suny buffalo', 'university of buffalo'],
+  'William & Mary': ['w and m', 'wm', 'william and mary', 'college of william and mary', 'college of william mary'],
+  'Wake Forest University': ['wfu'],
+  'Vanderbilt University': ['vandy'],
+  'James Madison University': ['jmu'],
+  'George Mason University': ['gmu'],
+  'University of Colorado Boulder': ['cu boulder', 'colorado boulder', 'university of colorado'],
+  'Colorado School of Mines': ['mines'],
+  'University of Southern California': ['usc', 'southern cal', 'southern california'],
+  'University of South Carolina': ['south carolina', 'u of sc', 'uofsc', 'usc columbia', 'sc gamecocks'],
+  'University of Miami': ['miami fl', 'u miami', 'um miami'],
+  'Miami University (Ohio)': ['miami ohio', 'miami oh', 'miami university', 'miami of ohio'],
+  'University of Alabama at Birmingham': ['uab'],
+  'University of Tennessee Knoxville': ['ut knoxville', 'tennessee', 'university of tennessee'],
+  'University of Hawaii at Manoa': ['uh manoa', 'hawaii', 'university of hawaii'],
+  'University of Nebraska-Lincoln': ['unl', 'nebraska'],
+  'University of Nevada Reno': ['unr'],
+  'University of Rhode Island': ['uri'],
+  'University of New Hampshire': ['unh'],
+  'University of Rochester': ['u of r', 'urochester'],
+  'University of San Diego': ['usd'],
+  'University of San Francisco': ['usfca'],
+  'Loyola Marymount University': ['lmu'],
+  'Loyola University Chicago': ['luc', 'loyola chicago'],
+  'Saint Louis University': ['slu', 'st louis university'],
+  "St. John's University": ['st johns', 'saint johns university', 'sju'],
+  'Claremont McKenna College': ['cmc', 'claremont mckenna'],
+  'Harvey Mudd College': ['hmc', 'mudd'],
+  'Dartmouth College': ['dartmouth'],
+  'Duke University': ['duke'],
+  'Brown University': ['brown'],
+  'Georgetown University': ['georgetown'],
+  'Emory University': ['emory'],
+  'Rice University': ['rice'],
+  'Tufts University': ['tufts'],
+  'Tulane University': ['tulane'],
+  'Howard University': ['howard'],
+  'University of Georgia': ['uga'],
+  'Kansas State University': ['k state', 'kstate'],
+  'Virginia Commonwealth University': ['vcu'],
+  'North Carolina State University': ['nc state', 'ncsu'],
+  'University of Utah': ['utah', 'u of u'],
+  'University of Oregon': ['uo', 'oregon'],
+  'University of Arizona': ['arizona', 'uofa'],
+};
+
+// Inputs that fit several schools: never auto-assigned, the user picks.
+const UNI_AMBIGUOUS = {
+  'miami': ['University of Miami', 'Miami University (Ohio)'],
+  'washington': ['University of Washington', 'Washington University in St. Louis', 'Washington State University'],
+  'penn': ['University of Pennsylvania', 'Penn State University'],
+  'cal poly': ['California Polytechnic State University San Luis Obispo', 'Cal Poly Pomona'],
+  'umass': ['University of Massachusetts Amherst', 'University of Massachusetts Boston', 'University of Massachusetts Lowell'],
+  'osu': ['Ohio State University', 'Oklahoma State University', 'Oregon State University'],
+  'texas': ['University of Texas at Austin', 'Texas A&M University', 'Texas Christian University', 'Texas Tech University'],
+  'ut': ['University of Texas at Austin', 'University of Tennessee Knoxville', 'University of Utah'],
+  'unc': ['University of North Carolina at Chapel Hill', 'University of North Carolina'],
+  'university of north carolina': ['University of North Carolina at Chapel Hill', 'University of North Carolina'],
+  'north carolina': ['University of North Carolina at Chapel Hill', 'University of North Carolina', 'North Carolina State University'],
+  'carolina': ['University of North Carolina at Chapel Hill', 'University of South Carolina'],
+  'indiana': ['Indiana University Bloomington', 'Indiana University', 'Indiana State University'],
+  'iu': ['Indiana University Bloomington', 'Indiana University'],
+  'columbia': ['Columbia University'],
+  'csu': ['Colorado State University', 'California State University Long Beach', 'California State University Fullerton', 'California State University Northridge'],
+  'cal state': ['California State University Long Beach', 'California State University Fullerton', 'California State University Northridge', 'Sacramento State University'],
+  'um': ['University of Michigan', 'University of Miami', 'University of Maryland College Park', 'University of Minnesota Twin Cities'],
+  'trinity': ['Trinity College'],
+  'union': ['Union College'],
+  'smith': ['Smith College'],
+  'chicago': ['University of Chicago', 'Loyola University Chicago'],
+  'georgia': ['University of Georgia', 'Georgia Institute of Technology', 'Georgia State University'],
+  'uw': ['University of Washington', 'University of Wisconsin-Madison'],
+};
+
+const UNI_GENERIC_WORDS = new Set(['university', 'college', 'of', 'the', 'at', 'in', 'and', 'campus', 'main']);
+
+function uniNormalize(s){
+  return String(s || '')
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/['’‘.]/g, '')
+    .replace(/\bst\b/g, 'st')
+    .replace(/\bsaint\b/g, 'st')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(u|univ|uni)\b/g, 'university')
+    .trim();
+}
+function uniStrip(norm){
+  return norm.split(' ').filter(w => w && !UNI_GENERIC_WORDS.has(w)).join(' ');
+}
+
+// Optimal string alignment distance (Levenshtein + adjacent swaps).
+function uniEditDistance(a, b, max){
+  if(a === b) return 0;
+  if(Math.abs(a.length - b.length) > max) return max + 1;
+  const d = [];
+  for(let i = 0; i <= a.length; i++){ d[i] = [i]; }
+  for(let j = 1; j <= b.length; j++){ d[0][j] = j; }
+  for(let i = 1; i <= a.length; i++){
+    let rowMin = Infinity;
+    for(let j = 1; j <= b.length; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      let v = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + cost);
+      if(i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) v = Math.min(v, d[i-2][j-2] + 1);
+      d[i][j] = v;
+      if(v < rowMin) rowMin = v;
+    }
+    if(rowMin > max) return max + 1;
   }
-  if(draft[kind].some(s=>s.name===name)) { input.value=''; return; }
-  // New schools start out with whatever's in the main Major field as a
-  // convenience default — most people apply with the same major
-  // everywhere, so this saves re-typing it for every school. Editable
-  // per school right after, for the schools where it's actually different.
-  const defaultMajor = (document.getElementById('major-input').value || '').trim();
-  draft[kind].push({name, decisionType:'Regular', major: defaultMajor});
-  input.value='';
-  renderChips(kind);
+  return d[a.length][b.length];
 }
 
-function removeSchool(kind, name){
-  draft[kind] = draft[kind].filter(s=>s.name!==name);
-  renderChips(kind);
+function createUniMatcher(names){
+  const nameSet = new Set(names);
+  const exact = new Map();     // normalized official name -> name
+  const keyMap = new Map();    // alias / generated key -> Set(names)
+  const addKey = (key, name) => {
+    if(!key) return;
+    if(!keyMap.has(key)) keyMap.set(key, new Set());
+    keyMap.get(key).add(name);
+  };
+  const tokensOf = new Map();  // name -> Set(words) for token matching
+  for(const name of names){
+    const n = uniNormalize(name);
+    exact.set(n, name);
+    const stripped = uniStrip(n);
+    addKey(stripped, name);
+    // "Miami University (Ohio)" -> also without the parenthetical
+    const noParen = uniNormalize(name.replace(/\([^)]*\)/g, ' '));
+    if(noParen !== n) addKey(uniStrip(noParen), name);
+    tokensOf.set(name, new Set(n.split(' ').filter(w => !UNI_GENERIC_WORDS.has(w))));
+  }
+  const curated = new Map();   // curated alias -> name
+  for(const [name, list] of Object.entries(UNI_ALIASES)){
+    if(!nameSet.has(name)) continue;
+    for(const a of list) curated.set(uniNormalize(a), name);
+  }
+  const ambiguous = new Map();
+  for(const [k, list] of Object.entries(UNI_AMBIGUOUS)){
+    const present = list.filter(n => nameSet.has(n));
+    if(present.length > 1) ambiguous.set(uniNormalize(k), present);
+  }
+  // Every searchable key for fuzzy matching: official names, stripped names, aliases.
+  const fuzzyKeys = [];
+  for(const [k, name] of exact) fuzzyKeys.push([k, name]);
+  for(const [k, set] of keyMap) if(set.size === 1) fuzzyKeys.push([k, [...set][0]]);
+  for(const [k, name] of curated) if(k.length >= 4) fuzzyKeys.push([k, name]);
+
+  function matchOne(text){
+    const norm = uniNormalize(text);
+    if(!norm) return null;
+    if(exact.has(norm)) return { status: 'exact', name: exact.get(norm) };
+    if(ambiguous.has(norm)) return { status: 'ambiguous', candidates: ambiguous.get(norm) };
+    if(curated.has(norm)) return { status: 'alias', name: curated.get(norm) };
+    const stripped = uniStrip(norm);
+    if(ambiguous.has(stripped)) return { status: 'ambiguous', candidates: ambiguous.get(stripped) };
+    if(curated.has(stripped)) return { status: 'alias', name: curated.get(stripped) };
+    for(const k of [norm, stripped]){
+      const set = keyMap.get(k);
+      if(set && set.size === 1) return { status: 'alias', name: [...set][0] };
+      if(set && set.size > 1) return { status: 'ambiguous', candidates: [...set] };
+    }
+
+    // Token match: every meaningful word appears in exactly one school's name.
+    const words = stripped.split(' ').filter(Boolean);
+    if(words.length){
+      const hits = names.filter(n => words.every(w => tokensOf.get(n).has(w)));
+      if(hits.length === 1) return { status: words.length >= 2 ? 'token' : 'fuzzy', name: hits[0] };
+      if(hits.length > 1 && hits.length <= 6){
+        hits.sort((a, b) => tokensOf.get(a).size - tokensOf.get(b).size);
+        return { status: 'ambiguous', candidates: hits.slice(0, 4) };
+      }
+    }
+
+    // Fuzzy: close spelling. Short inputs (< 5 letters) never fuzzy-match,
+    // since "UCI" and "UCD" are one letter apart.
+    const compact = norm.replace(/ /g, '');
+    if(compact.length < 5) return { status: 'none' };
+    const scored = new Map();
+    for(const q of new Set([norm, stripped])){
+      if(!q || q.replace(/ /g, '').length < 5) continue;
+      for(const [k, name] of fuzzyKeys){
+        const maxLen = Math.max(q.length, k.length);
+        const maxDist = maxLen < 8 ? 1 : maxLen < 12 ? 3 : maxLen < 20 ? 3 : 4;
+        const dist = uniEditDistance(q, k, maxDist);
+        if(dist > maxDist) continue;
+        const sim = 1 - dist / maxLen;
+        if(!scored.has(name) || scored.get(name) < sim) scored.set(name, sim);
+      }
+    }
+    const ranked = [...scored].sort((a, b) => b[1] - a[1]);
+    if(!ranked.length) return { status: 'none' };
+    if(ranked.length === 1 || ranked[0][1] - ranked[1][1] >= 0.08) return { status: 'fuzzy', name: ranked[0][0] };
+    return { status: 'ambiguous', candidates: ranked.slice(0, 3).map(r => r[0]) };
+  }
+
+  // Splits pasted text into entries, keeping each entry's character range.
+  function parse(text){
+    const src = String(text || '');
+    const out = [];
+    const lineRe = /[^\n]+/g;
+    let lm;
+    while((lm = lineRe.exec(src))){
+      const segRe = /[^;|\t]+/g;
+      let sm;
+      while((sm = segRe.exec(lm[0]))){
+        const segStart = lm.index + sm.index;
+        // pieces between commas, with offsets
+        const pieces = [];
+        const pr = /[^,]+/g; let pm;
+        while((pm = pr.exec(sm[0]))) pieces.push({ start: segStart + pm.index, end: segStart + pm.index + pm[0].length });
+        let i = 0;
+        while(i < pieces.length){
+          // Prefer the longest run of comma pieces that is an exact official name or alias
+          // ("University of California, Los Angeles").
+          let used = 1, best = null;
+          for(let j = Math.min(pieces.length, i + 3); j > i + 1; j--){
+            const r = clean(src, pieces[i].start, pieces[j - 1].end);
+            const m = r && matchOne(r.text);
+            if(m && (m.status === 'exact' || m.status === 'alias')){ used = j - i; best = { r, m }; break; }
+          }
+          if(!best){
+            const r = clean(src, pieces[i].start, pieces[i].end);
+            if(r){
+              let m = matchOne(r.text);
+              // "Stanford (REA)" -> also try without the parenthetical note
+              if(m.status === 'none' || m.status === 'fuzzy'){
+                const bare = r.text.replace(/\([^)]*\)/g, ' ').trim();
+                if(bare && bare !== r.text){
+                  const m2 = matchOne(bare);
+                  if(m2 && m2.status !== 'none' && (m.status === 'none' || m2.status === 'exact' || m2.status === 'alias')) m = m2;
+                }
+              }
+              best = { r, m };
+            }
+          }
+          if(best) out.push(Object.assign({ raw: best.r.text, start: best.r.start, end: best.r.end }, best.m));
+          i += used;
+        }
+      }
+    }
+    return out;
+  }
+  // Trim whitespace, bullets and numbering ("- ", "• ", "1. ") from a range.
+  function clean(src, start, end){
+    let s = start, e = end;
+    while(s < e && /\s/.test(src[s])) s++;
+    while(e > s && /\s/.test(src[e - 1])) e--;
+    const lead = src.slice(s, e).match(/^(?:[-*•‣▪●◦·]+|\d{1,2}[.)])\s*/);
+    if(lead) s += lead[0].length;
+    while(e > s && /[.\s]/.test(src[e - 1])) e--;
+    if(s >= e) return null;
+    return { text: src.slice(s, e), start: s, end: e };
+  }
+  return { parse, matchOne };
 }
 
-function setDecisionType(name, val){
-  const s = draft.accepted.find(x=>x.name===name);
-  if(s) s.decisionType = val;
+/* ---------------- University results: paste boxes ----------------
+   Accepted / Waitlisted / Rejected are three textareas. The text is the
+   source of truth: it is parsed on paste, on blur and shortly after typing
+   stops, and the matches are listed under each box. Confirming a
+   suggestion or picking a school rewrites that entry in the textarea to
+   the official name, so it matches exactly from then on. Per-school major
+   and Early Decision live in draft.schoolSettings, keyed by official name,
+   so they survive edits and moves between lists. */
+const SCHOOL_KINDS = ['accepted', 'waitlisted', 'rejected'];
+const SCHOOL_KIND_LABEL = { accepted: 'Accepted', waitlisted: 'Waitlisted', rejected: 'Rejected' };
+let _uniMatcher = null, _uniMatcherSize = -1;
+function uniMatcher(){
+  if(!_uniMatcher || _uniMatcherSize !== UNIS.length){
+    _uniMatcher = createUniMatcher(UNIS);
+    _uniMatcherSize = UNIS.length;
+  }
+  return _uniMatcher;
+}
+let SCHOOL_ANALYSIS = { accepted: [], waitlisted: [], rejected: [] };
+// Text of each box as of the last parse (used to skip needless re-renders).
+const SCHOOL_LAST_TEXT = { accepted: null, waitlisted: null, rejected: null };
+const SCHOOL_FIX_OPEN = new Set();
+
+function schoolTextEl(kind){ return document.getElementById(kind + '-text'); }
+function schoolSetting(name){
+  draft.schoolSettings = draft.schoolSettings || {};
+  if(!draft.schoolSettings[name]) draft.schoolSettings[name] = { major: '', decisionType: 'Regular' };
+  return draft.schoolSettings[name];
+}
+function setSchoolSetting(name, field, val){ schoolSetting(name)[field] = val; }
+
+// Parses all three boxes and works out duplicates / conflicts.
+function analyzeSchools(){
+  const result = {};
+  const seenIn = {};
+  for(const kind of SCHOOL_KINDS){
+    const el = schoolTextEl(kind);
+    const text = el ? el.value : '';
+    SCHOOL_LAST_TEXT[kind] = text;
+    const entries = UNIS.length ? uniMatcher().parse(text) : [];
+    const seenHere = new Set();
+    entries.forEach(e => {
+      e.resolved = (e.status === 'exact' || e.status === 'alias' || e.status === 'token');
+      if(e.resolved){
+        if(seenHere.has(e.name)) e.duplicate = true;
+        seenHere.add(e.name);
+        if(!e.duplicate){ (seenIn[e.name] = seenIn[e.name] || []).push(kind); }
+      }
+    });
+    result[kind] = entries;
+  }
+  for(const kind of SCHOOL_KINDS){
+    result[kind].forEach(e => {
+      if(e.resolved && !e.duplicate && seenIn[e.name].length > 1) e.conflictWith = seenIn[e.name].filter(k => k !== kind);
+    });
+  }
+  return result;
 }
 
-function updateSchoolMajor(kind, name, val){
-  const s = draft[kind].find(x=>x.name===name);
-  if(s) s.major = val;
+function renderSchoolMatches(){
+  SCHOOL_ANALYSIS = analyzeSchools();
+  for(const kind of SCHOOL_KINDS){
+    const box = document.getElementById(kind + '-matches');
+    if(!box) continue;
+    const entries = SCHOOL_ANALYSIS[kind];
+    if(!entries.length){ box.innerHTML = ''; continue; }
+    const needs = entries.filter(e => !e.resolved || e.conflictWith).length;
+    const rows = entries.map((e, i) => schoolRowHtml(kind, e, i)).join('');
+    box.innerHTML = `<div class="sm-list">${rows}</div>${needs ? `<p class="sm-note">${needs === 1 ? '1 school needs' : needs + ' schools need'} a decision before you submit.</p>` : ''}`;
+    // Search boxes for entries being fixed.
+    entries.forEach((e, i) => {
+      const id = `fix-${kind}-${i}`;
+      const input = document.getElementById(id);
+      if(!input) return;
+      setupAutocomplete(id);
+      input.addEventListener('change', () => {
+        if(UNIS.includes(input.value)) resolveSchoolEntry(kind, i, input.value);
+      });
+    });
+  }
 }
 
+function schoolRowHtml(kind, e, i){
+  const fixKey = kind + ':' + e.raw;
+  const link = (label, onclick, cls) => `<button type="button" class="sm-link${cls ? ' ' + cls : ''}" onclick="${onclick}">${label}</button>`;
+  const remove = (label) => link(label || 'Remove', `removeSchoolEntry('${kind}', ${i})`, 'sm-remove');
+  const searchBox = `<div class="autocomplete-wrap sm-search"><input type="text" id="fix-${kind}-${i}" placeholder="Search for the school&hellip;" autocomplete="off" aria-label="Search for the school you meant"><div class="autocomplete-list" id="fix-${kind}-${i}-list"></div></div>`;
+
+  if(e.resolved && e.duplicate){
+    return `<div class="sm-row sm-muted"><span class="sm-main">${esc(e.name)} <span class="sm-aside">is listed twice and counted once</span></span>${remove()}</div>`;
+  }
+  if(e.resolved && e.conflictWith){
+    const other = e.conflictWith.map(k => SCHOOL_KIND_LABEL[k]).join(' and ');
+    return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">!</span>
+      <span class="sm-main">${esc(e.name)} is also under ${other}. Keep it under your final decision.</span>
+      ${remove('Remove from ' + SCHOOL_KIND_LABEL[kind])}</div>`;
+  }
+  if(e.resolved){
+    const s = schoolSetting(e.name);
+    return `<div class="sm-row sm-ok">
+      <span class="sm-main">${uniLogo(e.name)}<span class="sm-name">${esc(e.name)}</span></span>
+      <span class="sm-break"></span>
+      <input type="text" class="sm-major" placeholder="Major, if different" value="${esc(s.major)}" oninput="setSchoolSetting('${jsArg(e.name)}','major',this.value)" aria-label="Major at ${esc(e.name)}, only if it differs from your admitted major">
+      ${kind === 'accepted' ? `<label class="sm-ed"><input type="checkbox" ${s.decisionType === 'Early Decision' ? 'checked' : ''} onchange="setSchoolSetting('${jsArg(e.name)}','decisionType',this.checked ? 'Early Decision' : 'Regular')"> Early decision</label>` : ''}
+      ${remove()}
+    </div>`;
+  }
+  if(e.status === 'fuzzy'){
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main"><s class="sm-typed" aria-label="You typed ${esc(e.raw)}">${esc(e.raw)}</s> ${esc(e.name)}?</span>
+      <span class="sm-actions">${link('Yes', `resolveSchoolEntry('${kind}', ${i}, '${jsArg(e.name)}')`, 'sm-confirm')}${link('Pick another', `toggleSchoolFix('${jsArg(fixKey)}')`)}${remove()}</span>
+      ${SCHOOL_FIX_OPEN.has(fixKey) ? searchBox : ''}
+    </div>`;
+  }
+  if(e.status === 'ambiguous'){
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main">Which ${esc(e.raw)}?
+        <span class="sm-choices">${e.candidates.map(c => link(esc(c), `resolveSchoolEntry('${kind}', ${i}, '${jsArg(c)}')`, 'sm-choice')).join('<span class="sm-or">or</span>')}<span class="sm-or">or</span>${link('another school', `toggleSchoolFix('${jsArg(fixKey)}')`)}</span>
+      </span>
+      ${remove()}
+      ${SCHOOL_FIX_OPEN.has(fixKey) ? searchBox : ''}
+    </div>`;
+  }
+  return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">?</span>
+    <span class="sm-main">${esc(e.raw)} <span class="sm-aside">isn&rsquo;t in our list. Search for it, or remove it.</span></span>
+    ${remove()}
+    ${searchBox}
+  </div>`;
+}
+
+function toggleSchoolFix(key){
+  if(SCHOOL_FIX_OPEN.has(key)) SCHOOL_FIX_OPEN.delete(key); else SCHOOL_FIX_OPEN.add(key);
+  renderSchoolMatches();
+}
+
+// Replace an entry's typed text with the official name.
+function resolveSchoolEntry(kind, i, name){
+  const el = schoolTextEl(kind);
+  const e = SCHOOL_ANALYSIS[kind] && SCHOOL_ANALYSIS[kind][i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderSchoolMatches(); return; }
+  SCHOOL_FIX_OPEN.delete(kind + ':' + e.raw);
+  el.value = el.value.slice(0, e.start) + name + el.value.slice(e.end);
+  renderSchoolMatches();
+}
+
+// Remove an entry and the separator next to it; drop the line if it ends up empty.
+function removeSchoolEntry(kind, i){
+  const el = schoolTextEl(kind);
+  const e = SCHOOL_ANALYSIS[kind] && SCHOOL_ANALYSIS[kind][i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderSchoolMatches(); return; }
+  const v = el.value;
+  let start = e.start, end = e.end;
+  const after = v.slice(end).match(/^[ \t]*[,;|][ \t]*/);
+  if(after) end += after[0].length;
+  else {
+    const before = v.slice(0, start).match(/[ \t]*[,;|][ \t]*$/);
+    if(before) start -= before[0].length;
+  }
+  let next = v.slice(0, start) + v.slice(end);
+  // Remove lines left with nothing but a bullet / number / whitespace.
+  next = next.split('\n').filter(line => !/^\s*(?:[-*•‣▪●◦·]+|\d{1,2}[.)])?\s*$/.test(line) || line === '').join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
+  el.value = next;
+  SCHOOL_FIX_OPEN.delete(kind + ':' + e.raw);
+  renderSchoolMatches();
+}
+
+// Called on submit: returns the schools per decision, or what still needs fixing.
+function collectSchools(){
+  const a = analyzeSchools();
+  const out = { ok: true, problems: 0, conflicts: 0, accepted: [], waitlisted: [], rejected: [] };
+  for(const kind of SCHOOL_KINDS){
+    for(const e of a[kind]){
+      if(!e.resolved){ out.problems++; continue; }
+      if(e.duplicate) continue;
+      if(e.conflictWith){ out.conflicts++; continue; }
+      const s = schoolSetting(e.name);
+      out[kind].push({ name: e.name, major: s.major || '', decisionType: kind === 'accepted' ? (s.decisionType || 'Regular') : 'Regular' });
+    }
+  }
+  out.ok = !out.problems && !out.conflicts;
+  return out;
+}
+
+// Keeps the old function name used by the edit/reset code: fills the box
+// from draft.schoolText and refreshes the match lists.
 function renderChips(kind){
-  const el = document.getElementById(kind+'-chips');
-  el.innerHTML = draft[kind].map(s=>`
-    <div class="chip">
-      <span>${uniLogo(s.name)}${esc(s.name)}</span>
-      <input type="text" class="chip-major-input" placeholder="Major" value="${esc(s.major)}" oninput="updateSchoolMajor('${kind}','${jsArg(s.name)}', this.value)">
-      ${kind==='accepted' ? `<select onchange="setDecisionType('${jsArg(s.name)}', this.value)">
-        <option ${s.decisionType==='Regular'?'selected':''}>Regular</option>
-        <option ${s.decisionType==='Early Decision'?'selected':''}>Early Decision</option>
-      </select>` : ''}
-      <button onclick="removeSchool('${kind}','${jsArg(s.name)}')" aria-label="Remove">&times;</button>
-    </div>
-  `).join('');
+  const el = schoolTextEl(kind);
+  if(el) el.value = (draft.schoolText && draft.schoolText[kind]) || '';
+  // Only parse once every box has been filled from the draft.
+  if(kind === 'rejected') renderSchoolMatches();
+}
+
+function wireSchoolBoxes(){
+  for(const kind of SCHOOL_KINDS){
+    const el = schoolTextEl(kind);
+    if(!el) continue;
+    let timer = null;
+    el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderSchoolMatches, 450); });
+    el.addEventListener('paste', () => { clearTimeout(timer); setTimeout(renderSchoolMatches, 0); });
+    // Only re-render on blur if the text changed since the last parse, so a
+    // click on a button in the list isn't lost to a re-render.
+    el.addEventListener('blur', () => {
+      clearTimeout(timer);
+      if(SCHOOL_LAST_TEXT[kind] !== el.value) renderSchoolMatches();
+    });
+  }
 }
 
 // Extracurriculars are one free-text box (draft.ecsText). draft.ecs keeps any
@@ -2286,6 +2814,17 @@ function loadDraftFromExisting(rows){
     awardsText: usesFreeText(rep.awardsText) ? rep.awardsText : legacyItemsToText(rep.awards)
   };
 
+  // Fill the three school boxes (one official name per line) and keep each
+  // school's own major / Early Decision setting.
+  draft.schoolText = {};
+  draft.schoolSettings = {};
+  SCHOOL_KINDS.forEach(k => {
+    draft.schoolText[k] = draft[k].map(x => x.name).join('\n');
+    draft[k].forEach(x => {
+      draft.schoolSettings[x.name] = { major: (x.major && x.major !== draft.major) ? x.major : '', decisionType: x.decisionType || 'Regular' };
+    });
+  });
+
   const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
   setVal('gpa-input', draft.gpa);
   setVal('weighted-gpa-input', draft.weightedGpa);
@@ -2308,7 +2847,7 @@ function loadDraftFromExisting(rows){
 }
 
 function resetSubmitForm(){
-  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
+  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
   const gpaInput = document.getElementById('gpa-input'); if(gpaInput) gpaInput.value = '';
   const weightedGpaInput = document.getElementById('weighted-gpa-input'); if(weightedGpaInput) weightedGpaInput.value = '';
@@ -2320,9 +2859,6 @@ function resetSubmitForm(){
   const essayInput = document.getElementById('essay-input'); if(essayInput) essayInput.value = '';
   const transferFromInput = document.getElementById('transfer-from-input'); if(transferFromInput) transferFromInput.value = '';
   const fileInput = document.getElementById('verify-file'); if(fileInput) fileInput.value = '';
-  ['accepted-input','waitlisted-input','rejected-input'].forEach(id=>{
-    const el = document.getElementById(id); if(el) el.value = '';
-  });
 
   setTransfer(false);
   renderChips('accepted');
@@ -2352,6 +2888,18 @@ async function submitResult(){
     return;
   }
 
+  const schoolCheck = collectSchools();
+  renderSchoolMatches();
+  if(!schoolCheck.ok){
+    const n = schoolCheck.problems + schoolCheck.conflicts;
+    alert(n === 1 ? 'One school in University results needs your attention before submitting.' : n + ' schools in University results need your attention before submitting.');
+    const first = document.querySelector('#page-upload .sm-warn, #page-upload .sm-err');
+    if(first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  draft.accepted = schoolCheck.accepted;
+  draft.waitlisted = schoolCheck.waitlisted;
+  draft.rejected = schoolCheck.rejected;
   const allSchools = [
     ...draft.accepted.map(s=>({...s,status:'accepted'})),
     ...draft.waitlisted.map(s=>({...s,status:'waitlisted'})),
@@ -3436,11 +3984,13 @@ function renderPredictBattery(){
 
 /* ---------------- init ---------------- */
 (async function init(){
+  wireSchoolBoxes();
   if(!PREDICTIONS_ENABLED){
     const predictBtn = document.getElementById('get-prediction-btn');
     if(predictBtn) predictBtn.style.display = 'none';
   }
   await Promise.all([loadUniversities(), loadUniversityProfileCounts()]);
+  renderSchoolMatches();
   const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname);
   if(!isTargetedRoute && window.location.pathname === '/') await loadRecentProfiles();
   await onAuthReady();
