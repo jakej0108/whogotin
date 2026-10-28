@@ -2347,23 +2347,10 @@ async function submitResult(){
   const keepPriorVerification = !file && isEditingExisting && !!existingMine[0].verified;
   const priorVerificationPath = keepPriorVerification ? existingMine[0].verificationPath : null;
 
-  // One id shared by every row this submission creates (one row per
-  // school), so the homepage feed and anywhere else can tell "these 5 rows
-  // are actually the same person's one submission" instead of treating each
-  // school as an unrelated stranger's result.
-  const submissionId = crypto.randomUUID();
-  const insertRows = allSchools.map(s=>({
-    owner_id: user.id,
-    submission_id: submissionId,
-    university: s.name,
-    status: s.status,
-    decision_type: s.decisionType || 'Regular',
+  // Fields that are the same on every school row of this submission.
+  const sharedFields = {
     transfer: draft.transfer,
     transfer_from: draft.transfer ? draft.transferFrom : null,
-    // Each school can have its own major (people don't always apply
-    // undecided-vs-declared, or the same major, everywhere) — falls back
-    // to the main Major field if that particular school's was left blank.
-    major: (s.major && s.major.trim()) || draft.major,
     class_year: Number(draft.classYear),
     gpa: draft.gpa,
     weighted_gpa: draft.weightedGpa || null,
@@ -2376,35 +2363,54 @@ async function submitResult(){
     ecs: draft.ecs.filter(e=>e.name),
     ap_exams: draft.apExams.filter(a=>a.name).map(a=>({ name: a.name, score: a.score ? Number(a.score) : null })),
     awards: draft.awards.filter(a=>a.name).map(a=>({ name: a.name, level: a.level || '', description: a.description || '' }))
+  };
+  // Fields that differ per school. Each school can have its own major
+  // (people don't always apply undecided-vs-declared, or the same major,
+  // everywhere) — falls back to the main Major field if left blank.
+  const schoolFields = allSchools.map(s=>({
+    university: s.name,
+    status: s.status,
+    decision_type: s.decisionType || 'Regular',
+    major: (s.major && s.major.trim()) || draft.major
   }));
 
-  // Editing an existing submission: delete the old rows first (same
-  // submission_id, or by owner_id as a fallback for rows saved before that
-  // column existed) so the account ends up with just the one fresh set
-  // instead of the old and new both hanging around.
-  if(isEditingExisting){
-    // Delete by owner_id rather than submission_id here — since a real
-    // account only ever has one submission going forward, this cleans up
-    // everything this account has previously saved (including any old rows
-    // from before submission_id existed), not just whatever happens to
-    // share the most recent submission_id.
-    const { error: delErr } = await supabaseClient.from('profiles').delete().eq('owner_id', user.id);
-    if(delErr){
-      if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Save changes'; }
-      alert('Could not update your result: ' + delErr.message);
-      return;
-    }
-    const oldIds = new Set(existingMine.map(p=>String(p.id)));
-    for(let i=PROFILES.length-1;i>=0;i--){ if(oldIds.has(String(PROFILES[i].id))) PROFILES.splice(i,1); }
+  let inserted, error;
+  if(isRealAccount){
+    // Real accounts: save through save_my_submission (sql/save_my_submission.sql),
+    // which creates or edits the account's one submission in a single
+    // transaction. Existing rows are updated in place rather than deleted and
+    // re-inserted, so likes, saves, reports, view counts and the share link
+    // all survive an edit, and a failed save can't leave the account with
+    // nothing.
+    ({ data: inserted, error } = await supabaseClient.rpc('save_my_submission', {
+      p_shared: sharedFields,
+      p_schools: schoolFields
+    }));
+  } else {
+    // Guests (anonymous sessions) keep the insert-only behavior. One id is
+    // shared by every row this submission creates (one row per school), so
+    // the feed can tell "these 5 rows are the same person's submission".
+    const newSubmissionId = crypto.randomUUID();
+    const insertRows = schoolFields.map(s=>({
+      ...sharedFields,
+      ...s,
+      owner_id: user.id,
+      submission_id: newSubmissionId
+    }));
+    ({ data: inserted, error } = await supabaseClient.from('profiles').insert(insertRows).select());
   }
-
-  const { data: inserted, error } = await supabaseClient.from('profiles').insert(insertRows).select();
   if(error){
     if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = isEditingExisting ? 'Save changes' : 'Submit to the ledger'; }
     alert('Could not save your result: ' + error.message);
     return;
   }
+  inserted = inserted || [];
+  const submissionId = (inserted[0] && inserted[0].submission_id) || crypto.randomUUID();
 
+  // Replace this account's previously loaded rows with what was just saved.
+  // Edited rows keep their ids, so drop any loaded copy of them too.
+  const replacedIds = new Set([...existingMine, ...inserted].map(p=>String(p.id)));
+  for(let i=PROFILES.length-1;i>=0;i--){ if(replacedIds.has(String(PROFILES[i].id))) PROFILES.splice(i,1); }
   const newProfiles = inserted.map(rowToProfile);
   PROFILES.push(...newProfiles);
   userRecord.profiles = isRealAccount ? newProfiles : userRecord.profiles.concat(newProfiles);
