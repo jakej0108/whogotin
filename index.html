@@ -1019,6 +1019,11 @@ function resolveSchoolPath(slug, short){
 
 let PROFILES = [];
 const HOME_SUBMISSION_LIMIT = 30;
+// Share ids of the submissions in "Recently shared", newest first, exactly
+// as get_recent_submission_ids returned them. PROFILES also collects rows
+// loaded elsewhere (school pages, opened submissions, the account page), so
+// the home feed is drawn from this list instead of from everything loaded.
+let HOME_FEED_KEYS = [];
 const UNIVERSITY_PAGE_SIZE = 50;
 let universityPage = 0;
 let universityHasMore = false;
@@ -1125,6 +1130,7 @@ async function loadRecentProfiles(){
   const { data: recent, error: recentError } = await supabaseClient.rpc('get_recent_submission_ids', { p_limit: HOME_SUBMISSION_LIMIT });
   if(recentError){ console.error('Failed to load recent submission ids', recentError); return; }
   const ids = (recent || []).map(row => row.share_short_id);
+  HOME_FEED_KEYS = ids.map(id => String(id || '').toLowerCase());
   if(!ids.length){ PROFILES = []; return; }
   const { data, error } = await supabaseClient.from('profiles').select('*')
     .in('share_short_id', ids).order('created_at', { ascending: false });
@@ -1753,9 +1759,12 @@ function renderHome(){
   // slicing first and filtering second. Transfer/major/GPA/etc. are the
   // same across every row in one submission, so filtering the ungrouped
   // list first and then grouping gives the identical result either way.
-  let filtered = PROFILES;
+  const rank = new Map(HOME_FEED_KEYS.map((k, i) => [k, i]));
+  let filtered = PROFILES.filter(p => rank.has(shortId(p.submissionId || p.id)));
   if(homeApplicantType!=='all') filtered = filtered.filter(p=>p.transfer===(homeApplicantType==='transfer'));
-  const groups = groupProfilesBySubmission(filtered).slice(0, 30);
+  const groups = groupProfilesBySubmission(filtered)
+    .sort((a, b) => rank.get(shortId(a[0].submissionId || a[0].id)) - rank.get(shortId(b[0].submissionId || b[0].id)))
+    .slice(0, 30);
   document.getElementById('home-recent').innerHTML = groups.map(groupCardHtml).join('') || `<div class="empty"><h3>No matching results</h3><p>Try a different filter.</p></div>`;
 }
 
