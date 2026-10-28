@@ -421,7 +421,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   }
   #page-upload select{padding-right:40px;}
   #page-upload input[type=file]{width:100%;font-size:14.5px;padding:10px 14px;border-radius:7px;}
-  #page-upload textarea{font-size:16px;line-height:1.5;padding:11px 14px;border-radius:7px;min-height:110px;}
+  #page-upload textarea{font-size:16px;line-height:1.5;padding:11px 14px;border-radius:7px;min-height:96px;overflow-y:hidden;}
   #page-upload input::placeholder, #page-upload textarea::placeholder{font-size:15.5px;color:var(--ink-faint);}
   #page-upload button{font-size:14px;padding:0 18px;min-height:42px;border-radius:7px;}
   #page-upload .toggle-pair button{min-height:40px;padding:0 22px;}
@@ -445,10 +445,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   #page-upload input.ec-desc-input{font-size:15px;}
   #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:28px;padding-top:20px;border-top:1.5px solid var(--rule);}
   #page-upload .form-submit button{min-height:46px;font-size:15px;padding:0 24px;}
-  #page-upload textarea.freetext-input{min-height:150px;}
+  #page-upload textarea.freetext-input{min-height:96px;}
   /* University results: matches are written under each box like ledger
      lines; anything that needs a decision gets a red proofreader's mark. */
-  #page-upload textarea.school-text{min-height:84px;}
+  #page-upload textarea.school-text{min-height:72px;}
+  #page-upload .sm-row select.ap-score-pick{flex:0 0 140px;width:140px;height:30px;font-size:14px;padding:0 28px 0 10px;}
   #page-upload .school-matches:empty{display:none;}
   #page-upload .sm-list{margin-top:6px;border-top:1px solid var(--rule);}
   #page-upload .sm-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:38px;padding:4px 0 4px 22px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35;}
@@ -479,6 +480,8 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     #page-upload .sm-break{display:block;flex-basis:100%;height:0;}
     #page-upload .sm-row input.sm-major{flex:1 1 0;min-width:0;}
     #page-upload .sm-main{flex-basis:100%;}
+    #page-upload .ap-row.sm-ok .sm-main{flex:1 1 0;}
+    #page-upload .sm-row select.ap-score-pick{flex:0 0 118px;width:118px;}
   }
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
@@ -718,7 +721,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
 
         <div class="field">
           <label for="accepted-text">Accepted</label>
-          <textarea id="accepted-text" class="school-text" rows="3" placeholder="e.g. UCLA, Berkeley, UMich"></textarea>
+          <textarea id="accepted-text" class="school-text" rows="2" placeholder="e.g. UCLA, Berkeley, UMich"></textarea>
           <div class="school-matches" id="accepted-matches" aria-live="polite"></div>
         </div>
 
@@ -741,7 +744,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <p class="section-hint">List your extracurricular activities, leadership roles, volunteering, work experience, and projects. You can write them however you like.</p>
         <div class="field">
           <label for="ecs-text-input" class="sr-only">Extracurricular activities</label>
-          <textarea id="ecs-text-input" class="freetext-input" rows="8" maxlength="5000" placeholder="President, Chess Club: led weekly practices, grew the club to 40 members&#10;Varsity Track &amp; Cross Country: 4 years, team captain senior year&#10;Hospital Volunteer: 150 hours in the pediatric ward&#10;Founded a small business: $15K in revenue"></textarea>
+          <textarea id="ecs-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="President, Chess Club: led weekly practices, grew it to 40 members&#10;Varsity Track: 4 years, captain senior year&#10;Hospital Volunteer: 150 hours"></textarea>
           <div class="hint">One activity per line. Put details after a colon (Activity: what you did) and they'll show under the activity on your profile.</div>
         </div>
       </div>
@@ -752,7 +755,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <p class="section-hint">Share academic honors, competition awards, and other achievements.</p>
         <div class="field">
           <label for="awards-text-input" class="sr-only">Honors and awards</label>
-          <textarea id="awards-text-input" class="freetext-input" rows="6" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad: state medalist in Chemistry Lab&#10;AP Scholar with Distinction"></textarea>
+          <textarea id="awards-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad: state medalist in Chemistry Lab&#10;AP Scholar with Distinction"></textarea>
           <div class="hint">One award per line. Details after a colon are optional.</div>
         </div>
       </div>
@@ -760,10 +763,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <!-- 6. AP exams -->
       <div class="form-section">
         <h3 class="form-section-title">AP exams <span class="opt">(optional)</span></h3>
-        <p class="section-hint">Scores are optional &mdash; leave the score blank if you haven't received it yet.</p>
+        <p class="section-hint">One exam per line or separated by commas, with the score after it. Short names like APUSH, Calc BC or Lang work. Leave the score off if you don't have it yet.</p>
         <div class="field">
-          <div id="ap-list"></div>
-          <button class="small add-row-btn" onclick="addApRow()">+ Add AP exam</button>
+          <label for="ap-text" class="sr-only">AP exams</label>
+          <textarea id="ap-text" class="ap-text" rows="3" placeholder="Calc BC 5, APUSH 4&#10;Physics C Mech (5), Chem: 5&#10;Lang 4"></textarea>
+          <div class="school-matches" id="ap-matches" aria-live="polite"></div>
         </div>
       </div>
 
@@ -772,7 +776,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <h3 class="form-section-title">Application essay <span class="opt">(optional)</span></h3>
         <div class="field">
           <label for="essay-input" class="sr-only">Application essay</label>
-          <textarea id="essay-input" rows="5" placeholder="What was your application essay about?"></textarea>
+          <textarea id="essay-input" rows="3" placeholder="What was your application essay about?"></textarea>
           <div class="hint">Share your essay topic, approach, or a brief summary.</div>
         </div>
       </div>
@@ -1231,7 +1235,7 @@ function goPage(name){
   if(name==='search') renderSchoolSearch();
   if(name==='myresult') renderMyResult();
   if(name==='admin') renderAdmin();
-  if(name==='upload') renderUploadPage();
+  if(name==='upload'){ renderUploadPage(); requestAnimationFrame(autosizeFormTextareas); }
   updateProfileBtn(name);
   window.scrollTo({top:0,behavior:'smooth'});
 
@@ -2152,7 +2156,7 @@ window.addEventListener('popstate', async ()=>{
 });
 
 /* ---------------- Upload wizard ---------------- */
-let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
+let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, apText:'', highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
 function setTransfer(val){
   draft.transfer = val;
@@ -2593,6 +2597,7 @@ function renderSchoolMatches(){
       });
     });
   }
+  autosizeFormTextareas();
 }
 
 function schoolRowHtml(kind, e, i){
@@ -2663,18 +2668,7 @@ function removeSchoolEntry(kind, i){
   const el = schoolTextEl(kind);
   const e = SCHOOL_ANALYSIS[kind] && SCHOOL_ANALYSIS[kind][i];
   if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderSchoolMatches(); return; }
-  const v = el.value;
-  let start = e.start, end = e.end;
-  const after = v.slice(end).match(/^[ \t]*[,;|][ \t]*/);
-  if(after) end += after[0].length;
-  else {
-    const before = v.slice(0, start).match(/[ \t]*[,;|][ \t]*$/);
-    if(before) start -= before[0].length;
-  }
-  let next = v.slice(0, start) + v.slice(end);
-  // Remove lines left with nothing but a bullet / number / whitespace.
-  next = next.split('\n').filter(line => !/^\s*(?:[-*•‣▪●◦·]+|\d{1,2}[.)])?\s*$/.test(line) || line === '').join('\n').replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
-  el.value = next;
+  el.value = removeTextRange(el.value, e.start, e.end);
   SCHOOL_FIX_OPEN.delete(kind + ':' + e.raw);
   renderSchoolMatches();
 }
@@ -2725,51 +2719,381 @@ function wireSchoolBoxes(){
 // old structured entries untouched so they're saved back unchanged.
 function renderEcRows(){
   const el = document.getElementById('ecs-text-input');
-  if(el) el.value = draft.ecsText || '';
+  if(el){ el.value = draft.ecsText || ''; autosizeTextarea(el); }
 }
 
 // Same repeatable-row pattern as extracurriculars: subject is free text
 // (profanity-filtered like Major), score is optional since scores aren't
 // released until July and plenty of people submit before then.
-function addApRow(){
-  draft.apExams.push({name:'', score:''});
-  renderApRows();
-}
-function removeApRow(i){
-  draft.apExams.splice(i,1);
-  renderApRows();
-}
-function updateAp(i, field, val){
-  draft.apExams[i][field] = val;
-}
-function renderApRows(){
-  const el = document.getElementById('ap-list');
-  if(!el) return;
-  el.innerHTML = draft.apExams.map((a,i)=>`
-    <div class="ec-row">
-      <div class="autocomplete-wrap">
-        <input type="text" id="ap-name-${i}" placeholder="e.g. AP Calculus BC" value="${esc(a.name)}" autocomplete="off" oninput="updateAp(${i},'name',this.value)">
-        <div class="autocomplete-list" id="ap-name-${i}-list"></div>
-      </div>
-      <input type="number" min="1" max="5" step="1" placeholder="Score" value="${esc(a.score)}" oninput="updateAp(${i},'score',this.value)">
-      <button class="small" onclick="removeApRow(${i})">Remove</button>
-    </div>
-  `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No AP exams added yet.</p>`;
+/* ---------------- AP exam matching ----------------
+   Same idea as the university matcher: pasted text like
+   "calculus bc(5), ab (5)\nAPUSH: 4\n5 - Chem" becomes a list of entries,
+   each with an official exam name from AP_EXAMS and a score, without AI.
+   Scores can come after the name ("Chem 5", "Chem: 5", "Chem - 5",
+   "Chem (5)") or before it ("5 - Chem"). Names that contain numbers
+   ("Physics 1") are matched first so their number isn't taken as a score.
+   A number that isn't 1-5 is kept as `badScore` so the form can flag it. */
 
-  // Rows get rebuilt from scratch on every render, so the autocomplete
-  // listeners have to be reattached each time too — same reason
-  // setupAutocomplete gets called fresh after any dynamic list re-render.
-  draft.apExams.forEach((a,i)=>{
-    setupAutocomplete('ap-name-'+i, ()=>AP_EXAMS, 'No matching AP exams');
-    const input = document.getElementById('ap-name-'+i);
-    if(input) input.addEventListener('change', ()=>updateAp(i,'name',input.value));
+// Curated aliases -> official names in AP_EXAMS.
+const AP_ALIASES = {
+  'AP US History': ['apush', 'ush', 'us history', 'u s history', 'american history', 'united states history', 'us hist'],
+  'AP European History': ['euro', 'apeuro', 'ap euro', 'euro history', 'european history', 'euro hist'],
+  'AP World History: Modern': ['world', 'whap', 'apwh', 'world history', 'world hist', 'world history modern', 'ap world'],
+  'AP Human Geography': ['hug', 'aphg', 'aphug', 'human geo', 'human geography', 'geography', 'apgeo', 'hum geo'],
+  'AP Psychology': ['psych', 'psychology', 'ap psych'],
+  'AP Biology': ['bio', 'biology', 'ap bio'],
+  'AP Chemistry': ['chem', 'chemistry', 'ap chem'],
+  'AP Environmental Science': ['apes', 'enviro', 'environmental', 'environmental science', 'env sci', 'es'],
+  'AP English Language and Composition': ['lang', 'english lang', 'english language', 'aplang', 'ap lang', 'eng lang', 'language and composition', 'lang and comp', 'english 11'],
+  'AP English Literature and Composition': ['lit', 'english lit', 'english literature', 'aplit', 'ap lit', 'eng lit', 'literature and composition', 'lit and comp', 'english 12'],
+  'AP Calculus AB': ['ab', 'calc ab', 'calculus ab', 'cab'],
+  'AP Calculus BC': ['bc', 'calc bc', 'calculus bc', 'cbc'],
+  'AP Statistics': ['stats', 'stat', 'statistics', 'ap stat', 'ap stats', 'apstat', 'apstats'],
+  'AP Precalculus': ['precalc', 'pre calc', 'precalculus', 'pre calculus'],
+  'AP Computer Science A': ['csa', 'cs a', 'apcsa', 'comp sci a', 'computer science a', 'java'],
+  'AP Computer Science Principles': ['csp', 'cs p', 'apcsp', 'comp sci p', 'comp sci principles', 'computer science principles', 'cs principles'],
+  'AP Macroeconomics': ['macro', 'macroeconomics', 'macro econ', 'ap macro'],
+  'AP Microeconomics': ['micro', 'microeconomics', 'micro econ', 'ap micro'],
+  'AP US Government and Politics': ['gov', 'govt', 'us gov', 'us government', 'ap gov', 'apgov', 'gopo', 'us gopo', 'government', 'american government', 'us govt'],
+  'AP Comparative Government and Politics': ['comp gov', 'comparative gov', 'comparative government', 'comp gopo', 'compgov'],
+  'AP Physics 1': ['physics 1', 'phys 1', 'p1', 'physics one', 'ap physics 1', 'physics i'],
+  'AP Physics 2': ['physics 2', 'phys 2', 'p2', 'physics two', 'ap physics 2', 'physics ii'],
+  'AP Physics C: Mechanics': ['physics c mech', 'physics c mechanics', 'phys c mech', 'c mech', 'mech', 'mechanics', 'pcm', 'physics c m'],
+  'AP Physics C: Electricity and Magnetism': ['physics c e and m', 'physics c em', 'physics c emag', 'phys c e and m', 'c e and m', 'e and m', 'em', 'emag', 'electricity and magnetism', 'pcem', 'physics c electricity and magnetism'],
+  'AP African American Studies': ['afam', 'african american studies', 'aas', 'african american'],
+  'AP Art History': ['art history', 'arth', 'art hist'],
+  'AP Music Theory': ['music theory', 'music'],
+  'AP Seminar': ['seminar', 'capstone seminar'],
+  'AP Research': ['research', 'capstone research'],
+  'AP Latin': ['latin'],
+  'AP Spanish Language and Culture': ['spanish lang', 'spanish language', 'span lang', 'ap spanish'],
+  'AP Spanish Literature and Culture': ['spanish lit', 'spanish literature', 'span lit'],
+  'AP French Language and Culture': ['french', 'french lang', 'french language', 'ap french'],
+  'AP German Language and Culture': ['german', 'german lang', 'german language'],
+  'AP Italian Language and Culture': ['italian', 'italian lang', 'italian language'],
+  'AP Japanese Language and Culture': ['japanese', 'japanese lang', 'japanese language'],
+  'AP Chinese Language and Culture': ['chinese', 'chinese lang', 'chinese language', 'mandarin'],
+  'AP Studio Art: 2-D Design': ['2d art', '2 d art', '2d design', '2d art and design', '2 d art and design', 'studio art 2d'],
+  'AP Studio Art: 3-D Design': ['3d art', '3 d art', '3d design', '3d art and design', '3 d art and design', 'studio art 3d'],
+  'AP Studio Art: Drawing': ['drawing', 'studio art drawing'],
+};
+
+// Inputs that fit several exams: the user picks.
+const AP_AMBIGUOUS = {
+  'calc': ['AP Calculus AB', 'AP Calculus BC'],
+  'calculus': ['AP Calculus AB', 'AP Calculus BC'],
+  'physics': ['AP Physics 1', 'AP Physics 2', 'AP Physics C: Mechanics', 'AP Physics C: Electricity and Magnetism'],
+  'physics c': ['AP Physics C: Mechanics', 'AP Physics C: Electricity and Magnetism'],
+  'phys c': ['AP Physics C: Mechanics', 'AP Physics C: Electricity and Magnetism'],
+  'cs': ['AP Computer Science A', 'AP Computer Science Principles'],
+  'comp sci': ['AP Computer Science A', 'AP Computer Science Principles'],
+  'computer science': ['AP Computer Science A', 'AP Computer Science Principles'],
+  'econ': ['AP Macroeconomics', 'AP Microeconomics'],
+  'economics': ['AP Macroeconomics', 'AP Microeconomics'],
+  'history': ['AP US History', 'AP World History: Modern', 'AP European History'],
+  'english': ['AP English Language and Composition', 'AP English Literature and Composition'],
+  'spanish': ['AP Spanish Language and Culture', 'AP Spanish Literature and Culture'],
+  'art': ['AP Studio Art: 2-D Design', 'AP Studio Art: 3-D Design', 'AP Studio Art: Drawing', 'AP Art History'],
+  'studio art': ['AP Studio Art: 2-D Design', 'AP Studio Art: 3-D Design', 'AP Studio Art: Drawing'],
+};
+
+function apShortName(name){ return String(name || '').replace(/^AP\s+/i, ''); }
+function apNormalize(s){
+  return String(s || '')
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/['’.]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/^ap\s+/, '')
+    .trim();
+}
+
+function createApMatcher(exams){
+  const nameSet = new Set(exams);
+  const exact = new Map();
+  const tokensOf = new Map();
+  for(const n of exams){
+    const k = apNormalize(n);
+    exact.set(k, n);
+    tokensOf.set(n, new Set(k.split(' ').filter(w => w && w !== 'and')));
+  }
+  const alias = new Map();
+  for(const [n, list] of Object.entries(AP_ALIASES)){
+    if(!nameSet.has(n)) continue;
+    for(const a of list) alias.set(apNormalize(a), n);
+  }
+  const ambiguous = new Map();
+  for(const [k, list] of Object.entries(AP_AMBIGUOUS)){
+    const present = list.filter(n => nameSet.has(n));
+    if(present.length > 1) ambiguous.set(apNormalize(k), present);
+  }
+  const fuzzyKeys = [...exact.entries(), ...[...alias.entries()].filter(([k]) => k.length >= 4)];
+
+  function matchName(text){
+    const k = apNormalize(text);
+    if(!k) return { status: 'none' };
+    if(exact.has(k)) return { status: 'exact', name: exact.get(k) };
+    if(ambiguous.has(k)) return { status: 'ambiguous', candidates: ambiguous.get(k) };
+    if(alias.has(k)) return { status: 'alias', name: alias.get(k) };
+    const words = k.split(' ').filter(w => w && w !== 'and');
+    if(words.length){
+      const hits = exams.filter(n => words.every(w => tokensOf.get(n).has(w)));
+      if(hits.length === 1) return { status: words.length >= 2 ? 'token' : 'fuzzy', name: hits[0] };
+      if(hits.length > 1 && hits.length <= 5) return { status: 'ambiguous', candidates: hits };
+    }
+    const compact = k.replace(/ /g, '');
+    if(compact.length < 5) return { status: 'none' };
+    const scored = new Map();
+    for(const [key, n] of fuzzyKeys){
+      const maxLen = Math.max(k.length, key.length);
+      const maxDist = maxLen < 8 ? 1 : maxLen < 20 ? 3 : 4;
+      const d = uniEditDistance(k, key, maxDist);
+      if(d > maxDist) continue;
+      const sim = 1 - d / maxLen;
+      if(!scored.has(n) || scored.get(n) < sim) scored.set(n, sim);
+    }
+    const ranked = [...scored].sort((a, b) => b[1] - a[1]);
+    if(!ranked.length) return { status: 'none' };
+    if(ranked.length === 1 || ranked[0][1] - ranked[1][1] >= 0.08) return { status: 'fuzzy', name: ranked[0][0] };
+    return { status: 'ambiguous', candidates: ranked.slice(0, 3).map(r => r[0]) };
+  }
+
+  const RANK = { exact: 4, alias: 4, token: 4, fuzzy: 2, ambiguous: 1, none: 0 };
+  // Tries "name only", "name + score at the end" and "score first - name",
+  // and keeps the reading whose name matches best.
+  function matchEntry(text){
+    const opts = [{ nameText: text, score: '' }];
+    let m = text.match(/^(.*?[^\s:=\-–—(])[\s:=\-–—]*\(?\s*(\d{1,2})\s*\)?\s*(?:\/\s*5)?$/);
+    if(m) opts.push({ nameText: m[1], score: m[2] });
+    m = text.match(/^\(?\s*(\d{1,2})\s*\)?\s*[:=\-–—]\s*(.+)$/);
+    if(m) opts.push({ nameText: m[2], score: m[1] });
+    let best = null;
+    for(const o of opts){
+      const r = matchName(o.nameText.trim());
+      const rank = RANK[r.status] + (o.score ? 0.5 : 0);
+      if(!best || rank > best.rank) best = { rank, r, o };
+    }
+    const out = Object.assign({}, best.r);
+    const n = best.o.score ? Number(best.o.score) : 0;
+    out.score = (n >= 1 && n <= 5) ? String(n) : '';
+    if(best.o.score && !(n >= 1 && n <= 5)) out.badScore = best.o.score;
+    return out;
+  }
+
+  // Entries separated by new lines, commas or semicolons, with ranges.
+  function parse(text){
+    const src = String(text || '');
+    const out = [];
+    const re = /[^\n,;|\t]+/g;
+    let m;
+    while((m = re.exec(src))){
+      let s = m.index, e = m.index + m[0].length;
+      while(s < e && /\s/.test(src[s])) s++;
+      while(e > s && /[\s.]/.test(src[e - 1])) e--;
+      const lead = src.slice(s, e).match(/^(?:[-*•‣▪●◦·]+|\d{1,2}[.)](?=\s))\s*/);
+      if(lead) s += lead[0].length;
+      if(s >= e) continue;
+      const raw = src.slice(s, e);
+      out.push(Object.assign({ raw, start: s, end: e }, matchEntry(raw)));
+    }
+    return out;
+  }
+  return { parse, matchName, matchEntry };
+}
+
+/* ---------------- AP exams: paste box ----------------
+   One textarea; the text is the source of truth, parsed like the school
+   boxes. Each entry is listed under the box with its official name and
+   score. Fixing an entry (confirming a suggestion, picking an exam,
+   changing the score) rewrites that entry in the text as "Name score". */
+let _apMatcher = null;
+function apMatcher(){ return _apMatcher || (_apMatcher = createApMatcher(AP_EXAMS)); }
+let AP_ANALYSIS = [];
+let AP_LAST_TEXT = null;
+const AP_FIX_OPEN = new Set();
+function apTextEl(){ return document.getElementById('ap-text'); }
+
+function analyzeAp(){
+  const el = apTextEl();
+  const text = el ? el.value : '';
+  AP_LAST_TEXT = text;
+  const entries = apMatcher().parse(text);
+  const firstByName = new Map();
+  entries.forEach(e => {
+    e.resolved = (e.status === 'exact' || e.status === 'alias' || e.status === 'token');
+    // An entry with an invalid score has its own message; compare it with
+    // the others only once its score is fixed.
+    if(!e.resolved || e.badScore) return;
+    const first = firstByName.get(e.name);
+    if(!first){ firstByName.set(e.name, e); return; }
+    if(first.score !== e.score){ first.scoreConflict = true; e.scoreConflict = true; }
+    else e.duplicate = true;
   });
+  return entries;
+}
+function apNeedsAttention(e){ return !e.resolved || !!e.badScore || !!e.scoreConflict; }
+
+function renderApMatches(){
+  AP_ANALYSIS = analyzeAp();
+  const box = document.getElementById('ap-matches');
+  if(box){
+    const needs = AP_ANALYSIS.filter(apNeedsAttention).length;
+    box.innerHTML = AP_ANALYSIS.length
+      ? `<div class="sm-list">${AP_ANALYSIS.map((e, i) => apRowHtml(e, i)).join('')}</div>${needs ? `<p class="sm-note">${needs === 1 ? '1 exam needs' : needs + ' exams need'} a decision before you submit.</p>` : ''}`
+      : '';
+    AP_ANALYSIS.forEach((e, i) => {
+      const input = document.getElementById('apfix-' + i);
+      if(!input) return;
+      setupAutocomplete('apfix-' + i, () => AP_EXAMS, 'No matching AP exams');
+      input.addEventListener('change', () => { if(AP_EXAMS.includes(input.value)) resolveApEntry(i, input.value); });
+    });
+  }
+  autosizeFormTextareas();
+}
+
+function apScoreSelect(e, i){
+  const cur = e.score || '';
+  return `<select class="ap-score-pick" onchange="setApScore(${i}, this.value)" aria-label="Score for ${esc(apShortName(e.name))}">
+    <option value="" ${cur ? '' : 'selected'}>No score yet</option>
+    ${[5, 4, 3, 2, 1].map(n => `<option value="${n}" ${cur === String(n) ? 'selected' : ''}>Score ${n}</option>`).join('')}
+  </select>`;
+}
+
+function apRowHtml(e, i){
+  const link = (label, onclick, cls) => `<button type="button" class="sm-link${cls ? ' ' + cls : ''}" onclick="${onclick}">${label}</button>`;
+  const remove = () => link('Remove', `removeApEntry(${i})`, 'sm-remove');
+  const fixKey = e.raw;
+  const searchBox = `<div class="autocomplete-wrap sm-search"><input type="text" id="apfix-${i}" placeholder="Search AP exams&hellip;" autocomplete="off" aria-label="Search for the exam you meant"><div class="autocomplete-list" id="apfix-${i}-list"></div></div>`;
+  const scoreNote = e.score ? ` (${e.score})` : '';
+
+  if(e.resolved && e.duplicate){
+    return `<div class="sm-row sm-muted"><span class="sm-main">${esc(apShortName(e.name))} <span class="sm-aside">is listed twice and counted once</span></span>${remove()}</div>`;
+  }
+  if(e.resolved){
+    const flag = e.badScore ? `${esc(e.badScore)} isn&rsquo;t an AP score. Pick 1&ndash;5, or no score yet.`
+               : e.scoreConflict ? 'is listed more than once with different scores. Remove the wrong one.' : '';
+    return `<div class="sm-row ap-row ${flag ? 'sm-flag sm-err' : 'sm-ok'}">${flag ? '<span class="sm-mark" aria-hidden="true">!</span>' : ''}
+      <span class="sm-main"><span class="sm-name">${esc(apShortName(e.name))}</span>${flag ? ` <span class="sm-aside">${flag}</span>` : ''}</span>
+      ${apScoreSelect(e, i)}
+      ${remove()}
+    </div>`;
+  }
+  if(e.status === 'fuzzy'){
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main"><s class="sm-typed" aria-label="You typed ${esc(e.raw)}">${esc(e.raw)}</s> ${esc(apShortName(e.name))}${scoreNote}?</span>
+      <span class="sm-actions">${link('Yes', `resolveApEntry(${i}, '${jsArg(e.name)}')`, 'sm-confirm')}${link('Pick another', `toggleApFix('${jsArg(fixKey)}')`)}${remove()}</span>
+      ${AP_FIX_OPEN.has(fixKey) ? searchBox : ''}
+    </div>`;
+  }
+  if(e.status === 'ambiguous'){
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main">Which ${esc(e.raw.replace(/[\s:=\-(]*\(?\d{1,2}\)?\s*$/, ''))}?
+        <span class="sm-choices">${e.candidates.map(c => link(esc(apShortName(c)), `resolveApEntry(${i}, '${jsArg(c)}')`, 'sm-choice')).join('<span class="sm-or">or</span>')}<span class="sm-or">or</span>${link('another exam', `toggleApFix('${jsArg(fixKey)}')`)}</span>
+      </span>
+      ${remove()}
+      ${AP_FIX_OPEN.has(fixKey) ? searchBox : ''}
+    </div>`;
+  }
+  return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">?</span>
+    <span class="sm-main">${esc(e.raw)} <span class="sm-aside">isn&rsquo;t an AP exam we recognize. Search for it, or remove it.</span></span>
+    ${remove()}
+    ${searchBox}
+  </div>`;
+}
+
+function toggleApFix(key){
+  if(AP_FIX_OPEN.has(key)) AP_FIX_OPEN.delete(key); else AP_FIX_OPEN.add(key);
+  renderApMatches();
+}
+// Rewrites entry i in the textarea as "<Exam> <score>".
+function rewriteApEntry(i, name, score){
+  const el = apTextEl();
+  const e = AP_ANALYSIS[i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderApMatches(); return; }
+  AP_FIX_OPEN.delete(e.raw);
+  const text = apShortName(name) + (score ? ' ' + score : '');
+  el.value = el.value.slice(0, e.start) + text + el.value.slice(e.end);
+  renderApMatches();
+}
+function resolveApEntry(i, name){
+  const e = AP_ANALYSIS[i];
+  if(e) rewriteApEntry(i, name, e.score || e.badScore || '');
+}
+function setApScore(i, score){
+  const e = AP_ANALYSIS[i];
+  if(e && e.name) rewriteApEntry(i, e.name, score);
+}
+function removeApEntry(i){
+  const el = apTextEl();
+  const e = AP_ANALYSIS[i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderApMatches(); return; }
+  el.value = removeTextRange(el.value, e.start, e.end);
+  AP_FIX_OPEN.delete(e.raw);
+  renderApMatches();
+}
+
+// Called on submit.
+function collectAp(){
+  const entries = analyzeAp();
+  const out = { ok: true, problems: 0, exams: [] };
+  for(const e of entries){
+    if(apNeedsAttention(e)){ out.problems++; continue; }
+    if(e.duplicate) continue;
+    out.exams.push({ name: e.name, score: e.score || '' });
+  }
+  out.ok = out.problems === 0;
+  return out;
+}
+
+// Keeps the old function name used by the edit/reset code.
+function renderApRows(){
+  const el = apTextEl();
+  if(el) el.value = draft.apText || '';
+  renderApMatches();
+}
+
+function wireApBox(){
+  const el = apTextEl();
+  if(!el) return;
+  let timer = null;
+  el.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(renderApMatches, 450); });
+  el.addEventListener('paste', () => { clearTimeout(timer); setTimeout(renderApMatches, 0); });
+  el.addEventListener('blur', () => { clearTimeout(timer); if(AP_LAST_TEXT !== el.value) renderApMatches(); });
+}
+
+// Remove [start, end) plus the separator next to it. If that leaves the
+// line empty (or just a bullet), the whole line goes too.
+function removeTextRange(v, start, end){
+  const after = v.slice(end).match(/^[ \t]*[,;|][ \t]*/);
+  if(after) end += after[0].length;
+  else {
+    const before = v.slice(0, start).match(/[ \t]*[,;|][ \t]*$/);
+    if(before) start -= before[0].length;
+  }
+  let next = v.slice(0, start) + v.slice(end);
+  const ls = next.lastIndexOf('\n', start - 1) + 1;
+  let le = next.indexOf('\n', ls); if(le === -1) le = next.length;
+  if(/^\s*(?:[-*•‣▪●◦·]+|\d{1,2}[.)])?\s*$/.test(next.slice(ls, le))){
+    next = next.slice(0, ls) + next.slice(le + 1 <= next.length && le < next.length ? le + 1 : le);
+  }
+  return next.replace(/\n+$/, '');
+}
+
+/* Text boxes on the form grow to fit their content (and start small). */
+function autosizeTextarea(el){
+  if(!el || el.offsetParent === null) return;   // hidden: size it when shown
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + 3) + 'px';
+}
+function autosizeFormTextareas(){
+  document.querySelectorAll('#page-upload textarea').forEach(autosizeTextarea);
 }
 
 // Honors & awards: one free-text box (draft.awardsText), same as ECs.
 function renderAwardRows(){
   const el = document.getElementById('awards-text-input');
-  if(el) el.value = draft.awardsText || '';
+  if(el){ el.value = draft.awardsText || ''; autosizeTextarea(el); }
 }
 
 // Covers people submitting a result from a few years back (a current
@@ -2848,6 +3172,9 @@ function loadDraftFromExisting(rows){
     awardsText: usesFreeText(rep.awardsText) ? rep.awardsText : legacyItemsToText(rep.awards)
   };
 
+  // AP exams as "Name score" lines in the AP box.
+  draft.apText = draft.apExams.filter(a => a.name).map(a => apShortName(a.name) + (a.score ? ' ' + a.score : '')).join('\n');
+
   // Fill the three school boxes (one official name per line) and keep each
   // school's own major / Early Decision setting.
   draft.schoolText = {};
@@ -2881,7 +3208,7 @@ function loadDraftFromExisting(rows){
 }
 
 function resetSubmitForm(){
-  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
+  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], schoolText:{accepted:'', waitlisted:'', rejected:''}, schoolSettings:{}, apText:'', highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
   const gpaInput = document.getElementById('gpa-input'); if(gpaInput) gpaInput.value = '';
   const weightedGpaInput = document.getElementById('weighted-gpa-input'); if(weightedGpaInput) weightedGpaInput.value = '';
@@ -2973,6 +3300,17 @@ async function submitResult(){
       return;
     }
   }
+
+  // AP exams come from the AP box; everything there must be resolved.
+  const apCheck = collectAp();
+  renderApMatches();
+  if(!apCheck.ok){
+    alert(apCheck.problems === 1 ? 'One AP exam needs your attention before submitting.' : apCheck.problems + ' AP exams need your attention before submitting.');
+    const firstAp = document.querySelector('#ap-matches .sm-flag');
+    if(firstAp) firstAp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  draft.apExams = apCheck.exams;
 
   // AP exam scores, if entered, must be a real AP score (1-5) — same spot
   // GPA/SAT/ACT get sanity-checked, just simpler since it's optional.
@@ -4013,6 +4351,9 @@ function renderPredictBattery(){
 /* ---------------- init ---------------- */
 (async function init(){
   wireSchoolBoxes();
+  wireApBox();
+  const uploadPage = document.getElementById('page-upload');
+  if(uploadPage) uploadPage.addEventListener('input', e => { if(e.target.tagName === 'TEXTAREA') autosizeTextarea(e.target); });
   if(!PREDICTIONS_ENABLED){
     const predictBtn = document.getElementById('get-prediction-btn');
     if(predictBtn) predictBtn.style.display = 'none';
