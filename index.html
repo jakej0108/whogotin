@@ -2142,7 +2142,11 @@ async function shareSubmission(groupKey){
 // Same real-navigation pattern as openProfile() — a proper history entry
 // so the back button steps back to home (or wherever) instead of leaving
 // the site.
-function openSubmissionGroup(groupKey){
+async function openSubmissionGroup(groupKey){
+  // Only some of this submission's schools may be loaded so far, e.g. when
+  // it was opened from one university's results page (which loads just that
+  // university's rows). Load the whole submission first so every school shows.
+  await loadSubmissionByShortId(shortId(groupKey));
   const opened = renderSubmissionPage(groupKey);
   if(!opened) return;
   history.pushState({ page: 'submission', groupKey }, '', '/submission/' + shortId(groupKey));
