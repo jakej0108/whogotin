@@ -378,57 +378,57 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   /* ---------- Submission form (Share your result) ----------
      Single column, larger type, generous spacing. Scoped to #page-upload
      so the rest of the site keeps its existing compact styles. */
-  #page-upload .form-wrap{max-width:720px;margin:0 auto;}
-  #page-upload .form-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;margin:0 0 8px;line-height:1.2;}
-  #page-upload .form-intro{color:var(--ink-soft);font-size:16px;line-height:1.5;margin:0 0 12px;}
-  #page-upload .form-section{padding-top:44px;margin-top:44px;border-top:1.5px solid var(--rule);}
-  #page-upload .form-section:first-of-type{border-top:none;margin-top:16px;padding-top:0;}
-  #page-upload .form-section-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 6px;line-height:1.25;}
-  #page-upload .form-section-title .opt{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;}
-  #page-upload .section-hint{color:var(--ink-soft);font-size:15px;line-height:1.5;margin:0 0 4px;}
+  #page-upload .form-wrap{max-width:680px;margin:0 auto;}
+  #page-upload .form-title{font-family:'Fraunces',serif;font-size:26px;font-weight:700;margin:0 0 6px;line-height:1.2;}
+  #page-upload .form-intro{color:var(--ink-soft);font-size:15px;line-height:1.5;margin:0 0 8px;}
+  #page-upload .form-section{padding-top:26px;margin-top:26px;border-top:1.5px solid var(--rule);}
+  #page-upload .form-section:first-of-type{border-top:none;margin-top:14px;padding-top:0;}
+  #page-upload .form-section-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin:0 0 4px;line-height:1.25;}
+  #page-upload .form-section-title .opt{font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;font-weight:400;}
+  #page-upload .section-hint{color:var(--ink-soft);font-size:14px;line-height:1.5;margin:0 0 4px;}
   #page-upload .form-section-title + .field,
-  #page-upload .section-hint + .field{margin-top:22px;}
-  #page-upload .field{margin-bottom:30px;}
+  #page-upload .section-hint + .field{margin-top:14px;}
+  #page-upload .field{margin-bottom:18px;}
   #page-upload .field:last-child{margin-bottom:0;}
   #page-upload .field > label{
-    font-size:17.5px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;margin-bottom:10px;
+    font-size:15px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;margin-bottom:6px;
   }
   #page-upload .opt{color:var(--ink-faint);font-weight:400;text-transform:none;letter-spacing:0;}
-  #page-upload .field .hint{font-family:'IBM Plex Sans',sans-serif;font-style:normal;font-size:14.5px;line-height:1.45;color:var(--ink-soft);margin-top:8px;}
+  #page-upload .field .hint{font-family:'IBM Plex Sans',sans-serif;font-style:normal;font-size:13px;line-height:1.45;color:var(--ink-soft);margin-top:5px;}
   #page-upload input[type=text], #page-upload input[type=number], #page-upload select{
-    width:100%;height:58px;font-size:18px;padding:0 16px;border-radius:8px;
+    width:100%;height:46px;font-size:16px;padding:0 14px;border-radius:7px;
   }
   #page-upload select{padding-right:40px;}
-  #page-upload input[type=file]{width:100%;font-size:16px;padding:14px 16px;border-radius:8px;}
-  #page-upload textarea{font-size:18px;line-height:1.5;padding:14px 16px;border-radius:8px;min-height:160px;}
-  #page-upload input::placeholder, #page-upload textarea::placeholder{font-size:17px;color:var(--ink-faint);}
-  #page-upload button{font-size:16px;padding:0 22px;min-height:50px;border-radius:8px;}
-  #page-upload .toggle-pair button{min-height:50px;padding:0 28px;}
+  #page-upload input[type=file]{width:100%;font-size:14.5px;padding:10px 14px;border-radius:7px;}
+  #page-upload textarea{font-size:16px;line-height:1.5;padding:11px 14px;border-radius:7px;min-height:110px;}
+  #page-upload input::placeholder, #page-upload textarea::placeholder{font-size:15.5px;color:var(--ink-faint);}
+  #page-upload button{font-size:14px;padding:0 18px;min-height:42px;border-radius:7px;}
+  #page-upload .toggle-pair button{min-height:40px;padding:0 22px;}
   #page-upload .adder-row{gap:10px;}
-  #page-upload .adder-row button{height:58px;flex:none;}
-  #page-upload button.small{font-size:15px;min-height:44px;padding:0 16px;}
-  #page-upload .add-row-btn{margin-top:14px;}
+  #page-upload .adder-row button{height:46px;flex:none;}
+  #page-upload button.small{font-size:13px;min-height:36px;padding:0 14px;}
+  #page-upload .add-row-btn{margin-top:10px;}
   /* Added schools: one full-width row each (name, major, decision type, remove) */
-  #page-upload .chip-row{flex-direction:column;gap:8px;margin:14px 0 0;}
-  #page-upload .chip{width:100%;flex-wrap:wrap;gap:8px 10px;font-size:16px;padding:8px 10px 8px 14px;border-radius:10px;border-width:1.5px;}
+  #page-upload .chip-row{flex-direction:column;gap:6px;margin:10px 0 0;}
+  #page-upload .chip{width:100%;flex-wrap:wrap;gap:6px 8px;font-size:15px;padding:6px 8px 6px 12px;border-radius:8px;border-width:1.5px;}
   #page-upload .chip > span{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:8px;font-weight:500;}
-  #page-upload .chip input.chip-major-input{flex:1 1 150px;width:auto;height:38px;font-size:15px;padding:0 12px;border-radius:8px;}
-  #page-upload .chip select{flex:0 0 170px;width:170px;height:38px;font-size:14.5px;padding:0 30px 0 12px;border-radius:8px;}
-  #page-upload .chip button{flex:none;min-height:34px;height:34px;width:34px;padding:0;font-size:17px;border-radius:50%;}
-  #page-upload .ec-row{gap:10px;margin-bottom:10px;}
+  #page-upload .chip input.chip-major-input{flex:1 1 150px;width:auto;height:34px;font-size:14px;padding:0 12px;border-radius:8px;}
+  #page-upload .chip select{flex:0 0 160px;width:160px;height:34px;font-size:13.5px;padding:0 30px 0 12px;border-radius:8px;}
+  #page-upload .chip button{flex:none;min-height:30px;height:30px;width:30px;padding:0;font-size:17px;border-radius:50%;}
+  #page-upload .ec-row{gap:8px;margin-bottom:8px;}
   #page-upload .ec-row > input, #page-upload .ec-row > .autocomplete-wrap{flex:1;min-width:0;}
   #page-upload .ec-row > input[type=number]{flex:0 0 150px;}
   #page-upload .ec-row > select{flex:0 0 210px;width:210px;}
-  #page-upload .ec-row-block{margin-bottom:18px;padding-bottom:18px;}
-  #page-upload textarea.ec-desc-input{min-height:90px;font-size:16px;}
-  #page-upload input.ec-desc-input{font-size:16px;}
-  #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:48px;padding-top:28px;border-top:1.5px solid var(--rule);}
-  #page-upload .form-submit button{min-height:56px;font-size:17px;padding:0 30px;}
+  #page-upload .ec-row-block{margin-bottom:12px;padding-bottom:12px;}
+  #page-upload textarea.ec-desc-input{min-height:70px;font-size:15px;}
+  #page-upload input.ec-desc-input{font-size:15px;}
+  #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:28px;padding-top:20px;border-top:1.5px solid var(--rule);}
+  #page-upload .form-submit button{min-height:46px;font-size:15px;padding:0 24px;}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
-    #page-upload .form-title{font-size:28px;}
-    #page-upload .form-section-title{font-size:23px;}
-    #page-upload .form-section{padding-top:36px;margin-top:36px;}
+    #page-upload .form-title{font-size:24px;}
+    #page-upload .form-section-title{font-size:19px;}
+    #page-upload .form-section{padding-top:22px;margin-top:22px;}
     #page-upload .ec-row{flex-wrap:wrap;}
     #page-upload .ec-row > input[type=text], #page-upload .ec-row > .autocomplete-wrap{flex:1 1 100%;}
     #page-upload .ec-row > input[type=number], #page-upload .ec-row > select{flex:1 1 140px;width:auto;}
