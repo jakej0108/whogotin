@@ -336,7 +336,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .ec-display-role{font-weight:400;color:var(--ink-soft);font-size:14px;}
   .ec-display-desc{font-size:15px;color:var(--ink);margin-top:5px;padding-left:16px;position:relative;line-height:1.5;}
   .ec-display-desc::before{content:'\2013';position:absolute;left:0;}
-  .essay-text{white-space:pre-line;line-height:1.55;}
+  .essay-text{font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
+  .essay-text p{margin:0 0 4px;}
+  .essay-text ul.freetext-list{margin:2px 0 6px;padding-left:22px;}
+  .essay-text li{margin:1px 0;}
+  .essay-text strong, .freetext-box strong{font-weight:600;}
   .ec-display-plain{font-size:15.5px;color:var(--ink);line-height:1.5;}
   /* Profile stats: large figures on a ruled line */
   .stat-row{display:flex;flex-wrap:wrap;margin:6px 0 22px;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);}
@@ -776,13 +780,13 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         </div>
       </div>
 
-      <!-- 7. Essay & LOR -->
+      <!-- 7. Essays, LORs & interviews -->
       <div class="form-section">
-        <h3 class="form-section-title">Essay &amp; LOR <span class="opt">(optional)</span></h3>
+        <h3 class="form-section-title">Essays, LORs &amp; interviews <span class="opt">(optional)</span></h3>
         <div class="field">
-          <label for="essay-input" class="sr-only">Essay and letters of recommendation</label>
-          <textarea id="essay-input" rows="3" placeholder="What was your essay about? Who wrote your letters of recommendation?"></textarea>
-          <div class="hint">Share your essay topic or approach, and anything about your letters of recommendation (LOR).</div>
+          <label for="essay-input" class="sr-only">Essays, letters of recommendation and interviews</label>
+          <textarea id="essay-input" rows="3" placeholder="What were your essays about? Who wrote your letters of recommendation? Did you interview?"></textarea>
+          <div class="hint">Share your essay topics or approach, your letters of recommendation (LORs), and any interviews.</div>
         </div>
       </div>
 
@@ -1539,7 +1543,12 @@ function awardsHtml(awards){
 // bulleted list. Nothing is rewritten or summarized.
 // (A smarter "Title: details" layout was tried and reverted for now; see
 // the EC display handoff note.)
-function freeTextHtml(text){
+// **text** shows as bold (common when pasting from notes or chat apps);
+// everything else is escaped as plain text.
+function inlineBold(escaped){
+  return escaped.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, '<strong>$1</strong>');
+}
+function freeTextHtml(text, boxClass){
   const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
   const out = [];
   let items = null;
@@ -1549,13 +1558,15 @@ function freeTextHtml(text){
   for(const raw of lines){
     const line = raw.trim();
     if(!line){ flush(); continue; }
-    const bullet = line.match(/^[-*•‣▪●◦]\s*(.+)$/);
-    if(bullet){ (items = items || []).push('<li>' + esc(bullet[1]) + '</li>'); }
-    else { flush(); out.push('<p>' + esc(line) + '</p>'); }
+    const bullet = line.match(/^(?:\*(?!\*)|[-•‣▪●◦])\s*(.+)$/);
+    if(bullet){ (items = items || []).push('<li>' + inlineBold(esc(bullet[1])) + '</li>'); }
+    else { flush(); out.push('<p>' + inlineBold(esc(line)) + '</p>'); }
   }
   flush();
-  return out.length ? '<div class="freetext-box">' + out.join('') + '</div>' : '';
+  return out.length ? '<div class="' + (boxClass || 'freetext-box') + '">' + out.join('') + '</div>' : '';
 }
+// Essay & LOR: same handling, no box, blank lines dropped.
+function essayHtml(text){ return freeTextHtml(text, 'essay-text'); }
 // Free-text awards, laid out like the old structured entries without
 // changing a word: each line is one entry. "Title: details" or
 // "Title — details" shows the title in bold with the details under it;
@@ -1690,13 +1701,13 @@ function renderGroupExpanded(group){
     <hr class="divider" style="margin:12px 0;">
     ${statsHtml(rep)}
     ${rep.highSchool ? `<div class="field"><label>High school</label><div>${esc(rep.highSchool)}</div></div>` : ''}
-    ${rep.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(rep.essay)}</div></div>` : ''}
     ${hasEcs(rep) ? `<div class="field"><label>Extracurriculars</label>${ecsDisplayHtml(rep)}</div>` : ''}
     ${hasAwards(rep) ? `<div class="field"><label>Awards &amp; honors</label>${awardsDisplayHtml(rep)}</div>` : ''}
     ${rep.apExams && rep.apExams.length ? `<div class="field">
       <label>AP exams</label>
       ${apExamsHtml(rep.apExams)}
     </div>` : ''}
+    ${rep.essay ? `<div class="field"><label>Essays, LORs &amp; interviews</label>${essayHtml(rep.essay)}</div>` : ''}
   `;
 }
 
@@ -2043,7 +2054,6 @@ function renderProfilePage(id){
     <hr class="divider">
     ${statsHtml(p)}
     ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    ${p.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsDisplayHtml(p)}
@@ -2056,6 +2066,7 @@ function renderProfilePage(id){
       <label>Awards &amp; honors</label>
       ${awardsDisplayHtml(p)}
     </div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essays, LORs &amp; interviews</label>${essayHtml(p.essay)}</div>` : ''}
   `;
   goPage('profile');
   return true;
@@ -4232,7 +4243,6 @@ function openProfileObj(id){
     <hr class="divider">
     ${statsHtml(p)}
     ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    ${p.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsDisplayHtml(p)}
@@ -4245,6 +4255,7 @@ function openProfileObj(id){
       <label>Awards &amp; honors</label>
       ${awardsDisplayHtml(p)}
     </div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essays, LORs &amp; interviews</label>${essayHtml(p.essay)}</div>` : ''}
   `;
 }
 
