@@ -484,6 +484,10 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     #page-upload .ap-row.sm-ok .sm-main{flex:1 1 0;}
     #page-upload .sm-row select.ap-score-pick{flex:0 0 118px;width:118px;}
   }
+  .freetext-box{border:1.5px solid var(--rule);border-radius:8px;padding:12px 18px;background:var(--paper-2);font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
+  .freetext-box p{margin:6px 0;}
+  .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
+  .freetext-box li{margin:3px 0;}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
     #page-upload .form-title{font-size:24px;}
@@ -745,8 +749,8 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <p class="section-hint">List your extracurricular activities, leadership roles, volunteering, work experience, and projects. You can write them however you like.</p>
         <div class="field">
           <label for="ecs-text-input" class="sr-only">Extracurricular activities</label>
-          <textarea id="ecs-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="President, Chess Club: led weekly practices, grew it to 40 members&#10;Varsity Track: 4 years, captain senior year&#10;Hospital Volunteer: 150 hours"></textarea>
-          <div class="hint">One activity per line. Put details after a colon (Activity: what you did) and they'll show under the activity on your profile.</div>
+          <textarea id="ecs-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="Volunteer EMT&#10;Varsity Track &amp; Cross Country — 4 years&#10;President of Chess Club"></textarea>
+          <div class="hint">One per line, bullet points or paragraphs all work. You can paste from a document.</div>
         </div>
       </div>
 
@@ -756,8 +760,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <p class="section-hint">Share academic honors, competition awards, and other achievements.</p>
         <div class="field">
           <label for="awards-text-input" class="sr-only">Honors and awards</label>
-          <textarea id="awards-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad: state medalist in Chemistry Lab&#10;AP Scholar with Distinction"></textarea>
-          <div class="hint">One award per line. Details after a colon are optional.</div>
+          <textarea id="awards-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad State Medalist&#10;AP Scholar with Distinction"></textarea>
         </div>
       </div>
 
@@ -1530,30 +1533,27 @@ function awardsHtml(awards){
   `).join('')}</div>`;
 }
 
-// Free-text ECs / awards, laid out like the old structured entries without
-// changing a word: each line is one entry. "Title: details" or
-// "Title — details" shows the title in bold with the details under it;
-// indented sub-bullets attach to the entry above. Everything is escaped.
+// Free-text ECs / awards are shown exactly as written: escaped, one line per
+// paragraph, and lines starting with -, * or a bullet character shown as a
+// bulleted list. Nothing is rewritten or summarized.
+// (A smarter "Title: details" layout was tried and reverted for now; see
+// the EC display handoff note.)
 function freeTextHtml(text){
-  const BULLET = /^[-*\u2022\u2023\u25AA\u25CF\u25E6\u00B7\u2013]\s*/;
-  const entries = [];
-  for(const raw of String(text || '').replace(/\r\n?/g, '\n').split('\n')){
-    if(!raw.trim()) continue;
-    const indented = /^\s{2,}|^\t/.test(raw) && BULLET.test(raw.trim());
-    const line = raw.trim().replace(BULLET, '').trim();
-    if(!line) continue;
-    if(indented && entries.length){ entries[entries.length - 1].details.push(line); continue; }
-    let title = line, detail = '';
-    const m = line.match(/^(.{2,80}?)(?::\s+|\s+[\u2014\u2013-]\s+)(.+)$/);
-    if(m){ title = m[1].trim(); detail = m[2].trim(); }
-    entries.push({ title, details: detail ? [detail] : [], long: !m && line.length > 90 });
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let items = null;
+  const flush = () => {
+    if(items){ out.push('<ul class="freetext-list">' + items.join('') + '</ul>'); items = null; }
+  };
+  for(const raw of lines){
+    const line = raw.trim();
+    if(!line){ flush(); continue; }
+    const bullet = line.match(/^[-*•‣▪●◦]\s*(.+)$/);
+    if(bullet){ (items = items || []).push('<li>' + esc(bullet[1]) + '</li>'); }
+    else { flush(); out.push('<p>' + esc(line) + '</p>'); }
   }
-  if(!entries.length) return '';
-  return `<div class="ec-display-box">${entries.map(e => `
-    <div class="ec-display-row">
-      <div class="${e.long ? 'ec-display-plain' : 'ec-display-title'}">${esc(e.title)}</div>
-      ${e.details.map(d => `<div class="ec-display-desc">${esc(d)}</div>`).join('')}
-    </div>`).join('')}</div>`;
+  flush();
+  return out.length ? '<div class="freetext-box">' + out.join('') + '</div>' : '';
 }
 const NONE_ADDED_HTML = '<p style="color:var(--ink-faint);font-size:13px;">None added.</p>';
 function usesFreeText(v){ return v !== null && v !== undefined; }
