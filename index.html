@@ -336,10 +336,9 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .ec-display-role{font-weight:400;color:var(--ink-soft);font-size:14px;}
   .ec-display-desc{font-size:15px;color:var(--ink);margin-top:5px;padding-left:16px;position:relative;line-height:1.5;}
   .ec-display-desc::before{content:'\2013';position:absolute;left:0;}
-  .essay-text{font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
-  .essay-text p{margin:0 0 4px;}
-  .essay-text ul.freetext-list{margin:2px 0 6px;padding-left:22px;}
-  .essay-text li{margin:1px 0;}
+  .freetext-box.essay-text p{margin:3px 0 4px;}
+  .freetext-box.essay-text ul.freetext-list{margin:2px 0 6px;}
+  .freetext-box.essay-text li{margin:1px 0;}
   .essay-text strong, .freetext-box strong{font-weight:600;}
   .ec-display-plain{font-size:15.5px;color:var(--ink);line-height:1.5;}
   /* Profile stats: large figures on a ruled line */
@@ -1565,8 +1564,8 @@ function freeTextHtml(text, boxClass){
   flush();
   return out.length ? '<div class="' + (boxClass || 'freetext-box') + '">' + out.join('') + '</div>' : '';
 }
-// Essay & LOR: same handling, no box, blank lines dropped.
-function essayHtml(text){ return freeTextHtml(text, 'essay-text'); }
+// Essays, LORs & interviews: same box as ECs/awards, a bit tighter.
+function essayHtml(text){ return freeTextHtml(text, 'freetext-box essay-text'); }
 // Free-text awards, laid out like the old structured entries without
 // changing a word: each line is one entry. "Title: details" or
 // "Title — details" shows the title in bold with the details under it;
