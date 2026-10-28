@@ -336,6 +336,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .ec-display-role{font-weight:400;color:var(--ink-soft);font-size:14px;}
   .ec-display-desc{font-size:15px;color:var(--ink);margin-top:5px;padding-left:16px;position:relative;line-height:1.5;}
   .ec-display-desc::before{content:'\2013';position:absolute;left:0;}
+  .ec-display-plain{font-size:15.5px;color:var(--ink);line-height:1.5;}
   /* Profile stats: large figures on a ruled line */
   .stat-row{display:flex;flex-wrap:wrap;margin:6px 0 22px;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);}
   .stat{flex:0 1 auto;min-width:110px;padding:12px 28px 12px 0;}
@@ -445,10 +446,6 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:28px;padding-top:20px;border-top:1.5px solid var(--rule);}
   #page-upload .form-submit button{min-height:46px;font-size:15px;padding:0 24px;}
   #page-upload textarea.freetext-input{min-height:150px;}
-  .freetext-box{border:1.5px solid var(--rule);border-radius:8px;padding:12px 18px;background:var(--paper-2);font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
-  .freetext-box p{margin:6px 0;}
-  .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
-  .freetext-box li{margin:3px 0;}
   /* University results: matches are written under each box like ledger
      lines; anything that needs a decision gets a red proofreader's mark. */
   #page-upload textarea.school-text{min-height:84px;}
@@ -1517,25 +1514,30 @@ function awardsHtml(awards){
   `).join('')}</div>`;
 }
 
-// Free-text ECs / awards are shown exactly as written: escaped, one line per
-// paragraph, and lines starting with -, * or a bullet character shown as a
-// bulleted list. Nothing is rewritten or summarized.
+// Free-text ECs / awards, laid out like the old structured entries without
+// changing a word: each line is one entry. "Title: details" or
+// "Title — details" shows the title in bold with the details under it;
+// indented sub-bullets attach to the entry above. Everything is escaped.
 function freeTextHtml(text){
-  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
-  const out = [];
-  let items = null;
-  const flush = () => {
-    if(items){ out.push('<ul class="freetext-list">' + items.join('') + '</ul>'); items = null; }
-  };
-  for(const raw of lines){
-    const line = raw.trim();
-    if(!line){ flush(); continue; }
-    const bullet = line.match(/^[-*•‣▪●◦]\s*(.+)$/);
-    if(bullet){ (items = items || []).push('<li>' + esc(bullet[1]) + '</li>'); }
-    else { flush(); out.push('<p>' + esc(line) + '</p>'); }
+  const BULLET = /^[-*\u2022\u2023\u25AA\u25CF\u25E6\u00B7\u2013]\s*/;
+  const entries = [];
+  for(const raw of String(text || '').replace(/\r\n?/g, '\n').split('\n')){
+    if(!raw.trim()) continue;
+    const indented = /^\s{2,}|^\t/.test(raw) && BULLET.test(raw.trim());
+    const line = raw.trim().replace(BULLET, '').trim();
+    if(!line) continue;
+    if(indented && entries.length){ entries[entries.length - 1].details.push(line); continue; }
+    let title = line, detail = '';
+    const m = line.match(/^(.{2,80}?)(?::\s+|\s+[\u2014\u2013-]\s+)(.+)$/);
+    if(m){ title = m[1].trim(); detail = m[2].trim(); }
+    entries.push({ title, details: detail ? [detail] : [], long: !m && line.length > 90 });
   }
-  flush();
-  return out.length ? '<div class="freetext-box">' + out.join('') + '</div>' : '';
+  if(!entries.length) return '';
+  return `<div class="ec-display-box">${entries.map(e => `
+    <div class="ec-display-row">
+      <div class="${e.long ? 'ec-display-plain' : 'ec-display-title'}">${esc(e.title)}</div>
+      ${e.details.map(d => `<div class="ec-display-desc">${esc(d)}</div>`).join('')}
+    </div>`).join('')}</div>`;
 }
 const NONE_ADDED_HTML = '<p style="color:var(--ink-faint);font-size:13px;">None added.</p>';
 function usesFreeText(v){ return v !== null && v !== undefined; }
