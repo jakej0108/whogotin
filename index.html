@@ -374,6 +374,68 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .progress-picker-preview b{color:var(--ink);font-weight:600;}
   .save-btn{margin-top:10px;display:inline-flex;align-items:center;gap:6px;}
 
+
+  /* ---------- Submission form (Share your result) ----------
+     Single column, larger type, generous spacing. Scoped to #page-upload
+     so the rest of the site keeps its existing compact styles. */
+  #page-upload .form-wrap{max-width:720px;margin:0 auto;}
+  #page-upload .form-title{font-family:'Fraunces',serif;font-size:30px;font-weight:700;margin:0 0 8px;line-height:1.2;}
+  #page-upload .form-intro{color:var(--ink-soft);font-size:16px;line-height:1.5;margin:0 0 12px;}
+  #page-upload .form-section{padding-top:44px;margin-top:44px;border-top:1.5px solid var(--rule);}
+  #page-upload .form-section:first-of-type{border-top:none;margin-top:16px;padding-top:0;}
+  #page-upload .form-section-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin:0 0 6px;line-height:1.25;}
+  #page-upload .form-section-title .opt{font-family:'IBM Plex Sans',sans-serif;font-size:15px;font-weight:400;}
+  #page-upload .section-hint{color:var(--ink-soft);font-size:15px;line-height:1.5;margin:0 0 4px;}
+  #page-upload .form-section-title + .field,
+  #page-upload .section-hint + .field{margin-top:22px;}
+  #page-upload .field{margin-bottom:30px;}
+  #page-upload .field:last-child{margin-bottom:0;}
+  #page-upload .field > label{
+    font-size:17.5px;font-weight:600;color:var(--ink);text-transform:none;letter-spacing:0;margin-bottom:10px;
+  }
+  #page-upload .opt{color:var(--ink-faint);font-weight:400;text-transform:none;letter-spacing:0;}
+  #page-upload .field .hint{font-family:'IBM Plex Sans',sans-serif;font-style:normal;font-size:14.5px;line-height:1.45;color:var(--ink-soft);margin-top:8px;}
+  #page-upload input[type=text], #page-upload input[type=number], #page-upload select{
+    width:100%;height:58px;font-size:18px;padding:0 16px;border-radius:8px;
+  }
+  #page-upload select{padding-right:40px;}
+  #page-upload input[type=file]{width:100%;font-size:16px;padding:14px 16px;border-radius:8px;}
+  #page-upload textarea{font-size:18px;line-height:1.5;padding:14px 16px;border-radius:8px;min-height:160px;}
+  #page-upload input::placeholder, #page-upload textarea::placeholder{font-size:17px;color:var(--ink-faint);}
+  #page-upload button{font-size:16px;padding:0 22px;min-height:50px;border-radius:8px;}
+  #page-upload .toggle-pair button{min-height:50px;padding:0 28px;}
+  #page-upload .adder-row{gap:10px;}
+  #page-upload .adder-row button{height:58px;flex:none;}
+  #page-upload button.small{font-size:15px;min-height:44px;padding:0 16px;}
+  #page-upload .add-row-btn{margin-top:14px;}
+  /* Added schools: one full-width row each (name, major, decision type, remove) */
+  #page-upload .chip-row{flex-direction:column;gap:8px;margin:14px 0 0;}
+  #page-upload .chip{width:100%;flex-wrap:wrap;gap:8px 10px;font-size:16px;padding:8px 10px 8px 14px;border-radius:10px;border-width:1.5px;}
+  #page-upload .chip > span{flex:1 1 200px;min-width:0;display:flex;align-items:center;gap:8px;font-weight:500;}
+  #page-upload .chip input.chip-major-input{flex:1 1 150px;width:auto;height:38px;font-size:15px;padding:0 12px;border-radius:8px;}
+  #page-upload .chip select{flex:0 0 170px;width:170px;height:38px;font-size:14.5px;padding:0 30px 0 12px;border-radius:8px;}
+  #page-upload .chip button{flex:none;min-height:34px;height:34px;width:34px;padding:0;font-size:17px;border-radius:50%;}
+  #page-upload .ec-row{gap:10px;margin-bottom:10px;}
+  #page-upload .ec-row > input, #page-upload .ec-row > .autocomplete-wrap{flex:1;min-width:0;}
+  #page-upload .ec-row > input[type=number]{flex:0 0 150px;}
+  #page-upload .ec-row > select{flex:0 0 210px;width:210px;}
+  #page-upload .ec-row-block{margin-bottom:18px;padding-bottom:18px;}
+  #page-upload textarea.ec-desc-input{min-height:90px;font-size:16px;}
+  #page-upload input.ec-desc-input{font-size:16px;}
+  #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:48px;padding-top:28px;border-top:1.5px solid var(--rule);}
+  #page-upload .form-submit button{min-height:56px;font-size:17px;padding:0 30px;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+  @media (max-width:600px){
+    #page-upload .form-title{font-size:28px;}
+    #page-upload .form-section-title{font-size:23px;}
+    #page-upload .form-section{padding-top:36px;margin-top:36px;}
+    #page-upload .ec-row{flex-wrap:wrap;}
+    #page-upload .ec-row > input[type=text], #page-upload .ec-row > .autocomplete-wrap{flex:1 1 100%;}
+    #page-upload .ec-row > input[type=number], #page-upload .ec-row > select{flex:1 1 140px;width:auto;}
+    #page-upload .chip > span{flex-basis:calc(100% - 50px);}
+    #page-upload .chip select{flex:1 1 140px;width:auto;}
+    #page-upload .form-submit button{width:100%;}
+  }
   @media (max-width:600px){
     main{padding:24px 18px;}
     .wrap{padding:0 12px 60px;}
@@ -529,141 +591,165 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
 
     <!-- ============ SHARE YOUR RESULT ============ -->
     <section class="page" id="page-upload">
-      <h2 class="section-title" id="upload-heading">Share your result</h2>
-      <p class="section-sub" id="upload-sub">Add your admission outcomes to the ledger. Just fill in what applies and scroll down.</p>
+      <div class="form-wrap">
+      <h2 class="form-title" id="upload-heading">Share your result</h2>
+      <p class="form-intro" id="upload-sub">Add your admission outcomes to the ledger. Fill in what applies &mdash; anything marked optional can be skipped.</p>
 
-      <div class="field">
-        <label>Are you a transfer applicant?</label>
-        <div class="toggle-pair">
-          <button id="transfer-no" class="on" onclick="setTransfer(false)">No</button>
-          <button id="transfer-yes" onclick="setTransfer(true)">Yes</button>
-        </div>
-      </div>
-      <div class="field" id="transfer-from-field" style="display:none;">
-        <label>Transferring from</label>
-        <input type="text" id="transfer-from-input" placeholder="Name of your current college">
-      </div>
+      <!-- 1. Academic background -->
+      <div class="form-section">
+        <h3 class="form-section-title">Academic background</h3>
 
-      <hr class="divider">
-
-      <div class="field">
-        <label style="font-size:14.5px;color:var(--ink);">Accepted schools</label>
-        <div class="adder-row">
-          <div class="autocomplete-wrap">
-            <input type="text" id="accepted-input" placeholder="Search a university&hellip;" autocomplete="off">
-            <div class="autocomplete-list" id="accepted-input-list"></div>
+        <div class="field">
+          <label>Are you a transfer applicant?</label>
+          <div class="toggle-pair">
+            <button id="transfer-no" class="on" onclick="setTransfer(false)">No</button>
+            <button id="transfer-yes" onclick="setTransfer(true)">Yes</button>
           </div>
-          <button onclick="addSchool('accepted')">Add</button>
         </div>
-        <div class="chip-row" id="accepted-chips"></div>
+        <div class="field" id="transfer-from-field" style="display:none;">
+          <label for="transfer-from-input">Transferring from</label>
+          <input type="text" id="transfer-from-input" placeholder="Name of your current college">
+        </div>
+
+        <div class="field">
+          <label for="hs-input">High school <span class="opt">(optional)</span></label>
+          <input type="text" id="hs-input" placeholder="Name of your high school">
+        </div>
+
+        <div class="field">
+          <label for="gpa-input">Unweighted GPA</label>
+          <input type="number" id="gpa-input" step="0.01" min="0" placeholder="e.g. 3.85" required>
+          <div class="hint">Whatever scale your school uses &mdash; 4.0, 5.0, 100, etc.</div>
+        </div>
+
+        <div class="field">
+          <label for="weighted-gpa-input">Weighted GPA <span class="opt">(optional)</span></label>
+          <input type="number" id="weighted-gpa-input" step="0.01" min="0" placeholder="e.g. 4.3">
+          <div class="hint">Leave blank if your school doesn't weight GPAs. Transfer applicants usually don't have one.</div>
+        </div>
+
+        <div class="field">
+          <label for="sat-input">SAT score <span class="opt">(optional)</span></label>
+          <input type="number" id="sat-input" step="10" min="0" max="1600" placeholder="e.g. 1450">
+        </div>
+
+        <div class="field">
+          <label for="act-input">ACT score <span class="opt">(optional)</span></label>
+          <input type="number" id="act-input" step="1" min="0" max="36" placeholder="e.g. 32">
+        </div>
       </div>
 
-      <div class="field">
-        <label style="font-size:14.5px;color:var(--ink);">Waitlisted schools <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <div class="adder-row">
-          <div class="autocomplete-wrap">
-            <input type="text" id="waitlisted-input" placeholder="Search a university&hellip;" autocomplete="off">
-            <div class="autocomplete-list" id="waitlisted-input-list"></div>
+      <!-- 2. College information -->
+      <div class="form-section">
+        <h3 class="form-section-title">College information</h3>
+
+        <div class="field">
+          <label for="major-input">Admitted major</label>
+          <input type="text" id="major-input" placeholder="e.g. Computer Science" required>
+          <div class="hint">If your admitted major differs by university, you can set it for each school below.</div>
+        </div>
+
+        <div class="field">
+          <label for="class-year-input">College entry year</label>
+          <input type="number" id="class-year-input" step="1" min="1990" max="2100" placeholder="e.g. 2029" required>
+        </div>
+      </div>
+
+      <!-- 3. University results -->
+      <div class="form-section">
+        <h3 class="form-section-title">University results</h3>
+        <p class="section-hint">Search for each school and click Add. Add at least one school in any of the three lists.</p>
+
+        <div class="field">
+          <label for="accepted-input">Accepted</label>
+          <div class="adder-row">
+            <div class="autocomplete-wrap">
+              <input type="text" id="accepted-input" placeholder="Search a university&hellip;" autocomplete="off">
+              <div class="autocomplete-list" id="accepted-input-list"></div>
+            </div>
+            <button onclick="addSchool('accepted')">Add</button>
           </div>
-          <button onclick="addSchool('waitlisted')">Add</button>
+          <div class="chip-row" id="accepted-chips"></div>
         </div>
-        <div class="chip-row" id="waitlisted-chips"></div>
-      </div>
 
-      <div class="field">
-        <label style="font-size:14.5px;color:var(--ink);">Rejected schools <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <div class="adder-row">
-          <div class="autocomplete-wrap">
-            <input type="text" id="rejected-input" placeholder="Search a university&hellip;" autocomplete="off">
-            <div class="autocomplete-list" id="rejected-input-list"></div>
+        <div class="field">
+          <label for="waitlisted-input">Waitlisted <span class="opt">(optional)</span></label>
+          <div class="adder-row">
+            <div class="autocomplete-wrap">
+              <input type="text" id="waitlisted-input" placeholder="Search a university&hellip;" autocomplete="off">
+              <div class="autocomplete-list" id="waitlisted-input-list"></div>
+            </div>
+            <button onclick="addSchool('waitlisted')">Add</button>
           </div>
-          <button onclick="addSchool('rejected')">Add</button>
+          <div class="chip-row" id="waitlisted-chips"></div>
         </div>
-        <div class="chip-row" id="rejected-chips"></div>
-      </div>
 
-      <hr class="divider">
-
-      <div class="row">
         <div class="field">
-          <label>GPA <span style="text-transform:none;color:var(--ink-faint);">(unweighted — whatever scale your school uses, 4.0, 5.0, 100, etc.)</span></label>
-          <input type="number" id="gpa-input" step="0.01" min="0" placeholder="e.g. 3.85" required style="width:100%;">
+          <label for="rejected-input">Rejected <span class="opt">(optional)</span></label>
+          <div class="adder-row">
+            <div class="autocomplete-wrap">
+              <input type="text" id="rejected-input" placeholder="Search a university&hellip;" autocomplete="off">
+              <div class="autocomplete-list" id="rejected-input-list"></div>
+            </div>
+            <button onclick="addSchool('rejected')">Add</button>
+          </div>
+          <div class="chip-row" id="rejected-chips"></div>
         </div>
+      </div>
+
+      <!-- 4. Extracurricular activities -->
+      <div class="form-section">
+        <h3 class="form-section-title">Extracurricular activities <span class="opt">(optional)</span></h3>
+        <p class="section-hint">Your activities, leadership roles, volunteering, work experience and projects.</p>
         <div class="field">
-          <label>Weighted GPA <span style="text-transform:none;color:var(--ink-faint);">(optional — leave blank if N/A, e.g. transfer applicants usually don't have one)</span></label>
-          <input type="number" id="weighted-gpa-input" step="0.01" min="0" placeholder="e.g. 4.3" style="width:100%;">
+          <div id="ec-list"></div>
+          <button class="small add-row-btn" onclick="addEcRow()">+ Add activity</button>
         </div>
       </div>
 
-      <div class="row">
+      <!-- 5. Honors & awards -->
+      <div class="form-section">
+        <h3 class="form-section-title">Honors &amp; awards <span class="opt">(optional)</span></h3>
+        <p class="section-hint">Academic honors, competition awards and other achievements.</p>
         <div class="field">
-          <label>Major <span style="text-transform:none;color:var(--ink-faint);">(default — override per school below if it's different there)</span></label>
-          <input type="text" id="major-input" placeholder="e.g. Computer Science" required style="width:100%;">
+          <div id="award-list"></div>
+          <button class="small add-row-btn" onclick="addAwardRow()">+ Add award</button>
         </div>
       </div>
 
-      <div class="row">
+      <!-- 6. AP exams -->
+      <div class="form-section">
+        <h3 class="form-section-title">AP exams <span class="opt">(optional)</span></h3>
+        <p class="section-hint">Scores are optional &mdash; leave the score blank if you haven't received it yet.</p>
         <div class="field">
-          <label>Enrolling year</label>
-          <input type="number" id="class-year-input" step="1" min="1990" max="2100" placeholder="e.g. 2029" required style="width:100%;">
+          <div id="ap-list"></div>
+          <button class="small add-row-btn" onclick="addApRow()">+ Add AP exam</button>
         </div>
       </div>
 
-      <div class="row">
+      <!-- 7. Application essay -->
+      <div class="form-section">
+        <h3 class="form-section-title">Application essay <span class="opt">(optional)</span></h3>
         <div class="field">
-          <label>High school <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="text" id="hs-input" placeholder="Name of your high school" style="width:100%;">
+          <label for="essay-input" class="sr-only">Application essay</label>
+          <textarea id="essay-input" rows="5" placeholder="What was your application essay about?"></textarea>
+          <div class="hint">Share your essay topic, approach, or a brief summary.</div>
         </div>
+      </div>
+
+      <!-- Verification -->
+      <div class="form-section">
+        <h3 class="form-section-title">Verify your result <span class="opt">(optional)</span></h3>
         <div class="field">
-          <label>SAT score <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" id="sat-input" step="10" min="0" max="1600" placeholder="e.g. 1450" style="width:100%;">
+          <label for="verify-file" class="sr-only">Verification file</label>
+          <input type="file" id="verify-file">
+          <div class="hint">Upload an admission email or letter to get a verified badge on your profile. The file stays private &mdash; only the checkmark is shown.</div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="field">
-          <label>ACT score <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" id="act-input" step="1" min="0" max="36" placeholder="e.g. 32" style="width:100%;">
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Essay <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <textarea id="essay-input" rows="3" placeholder="What did your essay talk about?"></textarea>
-      </div>
-
-      <div class="field">
-        <label>Verify your result <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <input type="file" id="verify-file">
-        <div class="hint" style="font-size:14.5px;line-height:1.5;">Upload an admission email or letter to get a verified badge on your profile. This stays private &mdash; only the verified checkmark is shown.</div>
-      </div>
-
-      <hr class="divider">
-
-      <div class="field">
-        <label>Extracurricular activities</label>
-        <div id="ec-list"></div>
-        <button class="small" style="margin-top:10px;" onclick="addEcRow()">+ Add activity</button>
-      </div>
-
-      <hr class="divider">
-
-      <div class="field">
-        <label>AP exams <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <div id="ap-list"></div>
-        <button class="small" style="margin-top:10px;" onclick="addApRow()">+ Add AP exam</button>
-      </div>
-
-      <hr class="divider">
-
-      <div class="field">
-        <label>Awards &amp; honors <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <div id="award-list"></div>
-        <button class="small" style="margin-top:10px;" onclick="addAwardRow()">+ Add award</button>
-      </div>
-
-      <div class="cta-row" style="justify-content:flex-end;margin-top:16px;">
+      <div class="form-submit">
         <button class="primary" id="submit-result-btn" onclick="submitResult()">Submit to the ledger</button>
+      </div>
       </div>
     </section>
 
@@ -2072,11 +2158,11 @@ function renderApRows(){
   if(!el) return;
   el.innerHTML = draft.apExams.map((a,i)=>`
     <div class="ec-row">
-      <div class="autocomplete-wrap" style="flex:1;">
+      <div class="autocomplete-wrap">
         <input type="text" id="ap-name-${i}" placeholder="e.g. AP Calculus BC" value="${esc(a.name)}" autocomplete="off" oninput="updateAp(${i},'name',this.value)">
         <div class="autocomplete-list" id="ap-name-${i}-list"></div>
       </div>
-      <input type="number" min="1" max="5" step="1" placeholder="Score (optional)" value="${esc(a.score)}" oninput="updateAp(${i},'score',this.value)">
+      <input type="number" min="1" max="5" step="1" placeholder="Score" value="${esc(a.score)}" oninput="updateAp(${i},'score',this.value)">
       <button class="small" onclick="removeApRow(${i})">Remove</button>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No AP exams added yet.</p>`;
@@ -2166,7 +2252,7 @@ function renderUploadPage(){
   } else {
     resetSubmitForm();
     if(heading) heading.textContent = 'Share your result';
-    if(sub) sub.textContent = 'Add your admission outcomes to the ledger. Just fill in what applies and scroll down.';
+    if(sub) sub.textContent = 'Add your admission outcomes to the ledger. Fill in what applies — anything marked optional can be skipped.';
     if(submitBtn) submitBtn.textContent = 'Submit to the ledger';
   }
 }
