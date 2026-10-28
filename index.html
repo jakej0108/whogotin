@@ -889,9 +889,28 @@ let UNIVERSITY_PROFILE_COUNTS = {};
 // the main GPA value itself. It's treated as unweighted; weighted is a
 // separate, optional number (transfer applicants usually don't have a
 // weighted GPA from college coursework, so it's fine to leave blank).
+// Escapes user-submitted text before it's placed into HTML (innerHTML /
+// template strings). Every value that came from a profile row, a form
+// field or the URL must go through esc() when rendered as markup, since
+// anyone can submit (including anonymously) and rows are shown to every
+// visitor.
+function esc(v){
+  return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+// For a value inside a single-quoted JS string inside an HTML attribute,
+// e.g. onclick="openUniversity('${jsArg(name)}')". JS-escape first, then
+// HTML-escape, because the browser HTML-decodes the attribute before
+// running it as JS.
+function jsArg(v){
+  return esc(String(v === null || v === undefined ? '' : v)
+    .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n\u2028\u2029]/g, ' '));
+}
+
 function gpaTypeLabel(p){
   if(!p || (p.weightedGpa === '' || p.weightedGpa === null || p.weightedGpa === undefined)) return '';
-  return ' &middot; Weighted ' + p.weightedGpa;
+  return ' &middot; Weighted ' + esc(p.weightedGpa);
 }
 function rowToProfile(row){
   return {
@@ -977,7 +996,7 @@ function setupAutocomplete(inputId, getSource, emptyLabel){
   function render(matches){
     activeIndex = -1;
     list.innerHTML = matches.length
-      ? matches.map(u=>`<div class="autocomplete-item" data-value="${u.replace(/"/g,'&quot;')}">${u}</div>`).join('')
+      ? matches.map(u=>`<div class="autocomplete-item" data-value="${esc(u)}">${esc(u)}</div>`).join('')
       : `<div class="autocomplete-empty">${empty}</div>`;
     list.classList.add('open');
   }
@@ -1078,7 +1097,7 @@ function updateProfileBtn(activePage){
   if(!area) return;
   const onMyResult = (activePage || document.querySelector('.page.active')?.id.replace('page-','')) === 'myresult';
   if(currentUser && !isAnonymousUser){
-    area.innerHTML = `<button class="profile-btn${onMyResult?' active':''}" id="profile-btn" onclick="goPage('myresult')" aria-label="My account" title="My account">${currentUser.slice(0,2).toUpperCase()}</button>`;
+    area.innerHTML = `<button class="profile-btn${onMyResult?' active':''}" id="profile-btn" onclick="goPage('myresult')" aria-label="My account" title="My account">${esc(currentUser.slice(0,2).toUpperCase())}</button>`;
   } else {
     area.innerHTML = `
       <button class="auth-login" onclick="openLoginModal()">Log In</button>
@@ -1285,7 +1304,7 @@ function uniLogo(name, big){
   const shrink = initials.length > 3
     ? (big ? ' style="font-size:11px;letter-spacing:-0.3px;"' : ' style="font-size:7.5px;letter-spacing:-0.3px;"')
     : '';
-  return `<span class="uni-logo${big?' uni-logo-lg':''}"${shrink}>${initials}</span>`;
+  return `<span class="uni-logo${big?' uni-logo-lg':''}"${shrink}>${esc(initials)}</span>`;
 }
 
 function formatUSD(n){
@@ -1297,8 +1316,8 @@ function uniFactsHtml(name, compact){
   if(!info) return '';
   if(compact){
     const parts = [];
-    if(info.loc) parts.push(info.loc);
-    if(info.type) parts.push(info.type);
+    if(info.loc) parts.push(esc(info.loc));
+    if(info.type) parts.push(esc(info.type));
     if(typeof info.accept === 'number') parts.push(info.accept + '% accepted');
     return parts.length ? `<div class="uni-facts-compact">${parts.join(' &middot; ')}</div>` : '';
   }
@@ -1312,8 +1331,8 @@ function uniFactsHtml(name, compact){
   }
   return `
     <div class="uni-facts">
-      <div class="uni-fact"><span class="uni-fact-label">Location</span><span class="uni-fact-value">${info.loc||'&mdash;'}</span></div>
-      <div class="uni-fact"><span class="uni-fact-label">Type</span><span class="uni-fact-value">${info.type||'&mdash;'}</span></div>
+      <div class="uni-fact"><span class="uni-fact-label">Location</span><span class="uni-fact-value">${info.loc ? esc(info.loc) : '&mdash;'}</span></div>
+      <div class="uni-fact"><span class="uni-fact-label">Type</span><span class="uni-fact-value">${info.type ? esc(info.type) : '&mdash;'}</span></div>
       <div class="uni-fact"><span class="uni-fact-label">Acceptance rate</span><span class="uni-fact-value">${typeof info.accept==='number' ? info.accept+'%' : '&mdash;'}</span></div>
       ${info.rank ? `<div class="uni-fact"><span class="uni-fact-label">Ranking</span><span class="uni-fact-value">#${info.rank}</span></div>` : ''}
       <div class="uni-fact"><span class="uni-fact-label">Tuition</span><span class="uni-fact-value">${tuitionValue}</span></div>
@@ -1328,8 +1347,8 @@ function ecsHtml(ecs){
   if(!ecs || !ecs.length) return '<p style="color:var(--ink-faint);font-size:13px;">None added.</p>';
   return `<div class="ec-display-box">${ecs.map(e=>`
     <div class="ec-display-row">
-      <div class="ec-display-title">${e.name}${e.role ? ` <span class="ec-display-role">(${e.role})</span>` : ''}</div>
-      ${e.description ? `<div class="ec-display-desc">${e.description}</div>` : ''}
+      <div class="ec-display-title">${esc(e.name)}${e.role ? ` <span class="ec-display-role">(${esc(e.role)})</span>` : ''}</div>
+      ${e.description ? `<div class="ec-display-desc">${esc(e.description)}</div>` : ''}
     </div>
   `).join('')}</div>`;
 }
@@ -1338,16 +1357,16 @@ function awardsHtml(awards){
   if(!awards || !awards.length) return '';
   return `<div class="ec-display-box">${awards.map(a=>`
     <div class="ec-display-row">
-      <div class="ec-display-title">${a.name}${a.level ? ` <span class="ec-display-role">(${a.level})</span>` : ''}</div>
-      ${a.description ? `<div class="ec-display-desc">${a.description}</div>` : ''}
+      <div class="ec-display-title">${esc(a.name)}${a.level ? ` <span class="ec-display-role">(${esc(a.level)})</span>` : ''}</div>
+      ${a.description ? `<div class="ec-display-desc">${esc(a.description)}</div>` : ''}
     </div>
   `).join('')}</div>`;
 }
 
 function stampHtml(status, decisionType, big){
   const label = status==='accepted' ? 'Accepted' : status==='waitlisted' ? 'Waitlisted' : 'Rejected';
-  const sub = (status==='accepted' && decisionType) ? ' &middot; '+decisionType : '';
-  return `<span class="stamp stamp-${status}${big?' stamp-big':''}">${label}${big?sub:''}</span>`;
+  const sub = (status==='accepted' && decisionType) ? ' &middot; '+esc(decisionType) : '';
+  return `<span class="stamp stamp-${esc(status)}${big?' stamp-big':''}">${label}${big?sub:''}</span>`;
 }
 
 // Purple = transfer, blue = freshman — shown right next to the
@@ -1409,14 +1428,14 @@ function statusSummaryLine(label, names){
   if(!names.length) return '';
   const headliner = pickHeadlinerSchool(names);
   const rest = names.length - 1;
-  return `<div class="home-status-line"><b>${label}:</b> ${headliner}${rest>0 ? ' and '+rest+' more' : ''}</div>`;
+  return `<div class="home-status-line"><b>${label}:</b> ${esc(headliner)}${rest>0 ? ' and '+rest+' more' : ''}</div>`;
 }
 
 function schoolListHtml(rows){
   return rows.map(p=>`
-    <div class="hc-school-row" onclick="event.stopPropagation();openProfile('${p.id}')">
-      <span>${uniLogo(p.university)}${p.university}</span>
-      ${p.major ? `<span class="type-badge hc-major-badge">${p.major}</span>` : ''}
+    <div class="hc-school-row" onclick="event.stopPropagation();openProfile('${jsArg(p.id)}')">
+      <span>${uniLogo(p.university)}${esc(p.university)}</span>
+      ${p.major ? `<span class="type-badge hc-major-badge">${esc(p.major)}</span>` : ''}
     </div>
   `).join('');
 }
@@ -1437,16 +1456,16 @@ function renderGroupExpanded(group){
     ${waitlisted.length ? `<div class="hc-section"><div class="hc-section-title" style="color:var(--waitlisted);">Waitlisted</div>${schoolListHtml(waitlisted)}</div>` : ''}
     <hr class="divider" style="margin:12px 0;">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.gpa}${gpaTypeLabel(rep)}</div></div>
-      ${rep.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.sat}</div></div>` : ''}
-      ${rep.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${rep.act}</div></div>` : ''}
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.gpa)}${gpaTypeLabel(rep)}</div></div>
+      ${rep.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.sat)}</div></div>` : ''}
+      ${rep.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.act)}</div></div>` : ''}
     </div>
     ${rep.ecs && rep.ecs.length ? `<div class="field"><label>Extracurriculars</label>${ecsHtml(rep.ecs)}</div>` : ''}
     ${rep.awards && rep.awards.length ? `<div class="field"><label>Awards &amp; honors</label>${awardsHtml(rep.awards)}</div>` : ''}
     ${rep.apExams && rep.apExams.length ? `<div class="field">
       <label>AP exams</label>
       <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
-        ${rep.apExams.map(a=>`<div class="idx-card" style="cursor:default;padding:10px;"><h3 style="font-size:13px;margin:0 0 4px;">${a.name}</h3>${a.score ? `<div class="meta">Score: ${a.score}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
+        ${rep.apExams.map(a=>`<div class="idx-card" style="cursor:default;padding:10px;"><h3 style="font-size:13px;margin:0 0 4px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
       </div>
     </div>` : ''}
   `;
@@ -1468,13 +1487,13 @@ function groupCardHtml(group){
   group.forEach(p=>{ if(p.major) majorCounts[p.major] = (majorCounts[p.major]||0)+1; });
   const topMajor = Object.keys(majorCounts).sort((a,b)=>majorCounts[b]-majorCounts[a])[0] || rep.major;
   return `
-    <div class="idx-card" id="home-card-${groupKey}" onclick="openSubmissionGroup('${groupKey}')">
+    <div class="idx-card" id="home-card-${esc(groupKey)}" onclick="openSubmissionGroup('${jsArg(groupKey)}')">
       <div class="home-status-lines">
         ${statusSummaryLine('Accepted', acceptedNames)}
         ${statusSummaryLine('Rejected', rejectedNames)}
         ${statusSummaryLine('Waitlisted', waitlistedNames)}
       </div>
-      <div class="meta" style="font-size:15px;">${topMajor} &middot; GPA <b>${rep.gpa}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+rep.classYear+'</b>' : ''}</div>
+      <div class="meta" style="font-size:15px;">${esc(topMajor)} &middot; GPA <b>${esc(rep.gpa)}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+esc(rep.classYear)+'</b>' : ''}</div>
       <div style="margin:6px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         ${typeBadgeHtml(rep)}
@@ -1560,8 +1579,8 @@ function renderSchoolSearch(){
   document.getElementById('school-results').innerHTML = matches.map(u=>{
     const c = UNIVERSITY_PROFILE_COUNTS[u] || 0;
     return `
-    <div class="idx-card" onclick="openUniversity('${u.replace(/'/g,"\\'")}')">
-      <h3>${uniLogo(u)}${u}</h3>
+    <div class="idx-card" onclick="openUniversity('${jsArg(u)}')">
+      <h3>${uniLogo(u)}${esc(u)}</h3>
       ${uniFactsHtml(u, true)}
       <div class="meta"><b>${c}</b> results shared</div>
     </div>`;
@@ -1579,7 +1598,7 @@ function renderUniversityPage(name){
   if(!UNIS.includes(name)) return false;
   currentUni = name;
   uniApplicantType = 'all';
-  document.getElementById('uni-name').innerHTML = uniLogo(name, true) + name;
+  document.getElementById('uni-name').innerHTML = uniLogo(name, true) + esc(name);
   document.getElementById('uni-facts-holder').innerHTML = uniFactsHtml(name, false);
   document.getElementById('uni-save-holder').innerHTML = saveSchoolButtonHtml(name);
   document.getElementById('uni-tab-all').classList.add('on');
@@ -1631,9 +1650,9 @@ function renderUniResults(){
   else results.sort((a,b)=> new Date(b.createdAt||0) - new Date(a.createdAt||0));
 
   document.getElementById('uni-results').innerHTML = results.map(p=>`
-    <div class="idx-card" onclick="openSubmissionGroup('${p.submissionId || p.id}')">
-      <h3>${p.major}</h3>
-      <div class="meta">GPA <b>${p.gpa}${gpaTypeLabel(p)}</b>${p.classYear ? ' &middot; Enrolling <b>'+p.classYear+'</b>' : ''}${p.highSchool?' &middot; '+p.highSchool:''}${p.transferFrom?' &middot; from '+p.transferFrom:''}</div>
+    <div class="idx-card" onclick="openSubmissionGroup('${jsArg(p.submissionId || p.id)}')">
+      <h3>${esc(p.major)}</h3>
+      <div class="meta">GPA <b>${esc(p.gpa)}${gpaTypeLabel(p)}</b>${p.classYear ? ' &middot; Enrolling <b>'+esc(p.classYear)+'</b>' : ''}${p.highSchool?' &middot; '+esc(p.highSchool):''}${p.transferFrom?' &middot; from '+esc(p.transferFrom):''}</div>
       <div class="meta">&#128065; ${p.viewCount||0} &middot; &#9829; ${p.likeCount||0}</div>
       <div style="margin-bottom:8px;">${p.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}</div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${typeBadgeHtml(p)}${stampHtml(p.status,p.decisionType,false)}</div>
@@ -1776,29 +1795,29 @@ function renderProfilePage(id){
   document.getElementById('profile-content').innerHTML = `
     <div class="profile-head">
       <div>
-        <h2 class="section-title" style="margin-bottom:2px;">${uniLogo(p.university, true)}${p.university}</h2>
-        <p class="section-sub" style="margin-bottom:6px;">${p.transfer ? 'Transfer applicant'+(p.transferFrom?' from '+p.transferFrom:'') : 'Freshman applicant'} &middot; ${p.major}${p.classYear ? ' &middot; Enrolling '+p.classYear : ''}</p>
+        <h2 class="section-title" style="margin-bottom:2px;">${uniLogo(p.university, true)}${esc(p.university)}</h2>
+        <p class="section-sub" style="margin-bottom:6px;">${p.transfer ? 'Transfer applicant'+(p.transferFrom?' from '+esc(p.transferFrom):'') : 'Freshman applicant'} &middot; ${esc(p.major)}${p.classYear ? ' &middot; Enrolling '+esc(p.classYear) : ''}</p>
         ${uniFactsHtml(p.university, true)}
         ${p.verified ? `<span class="stamp stamp-accepted" style="font-size:10.5px;padding:4px 10px;">&#10003; Verified with admission email</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         <div class="meta" style="margin-top:6px;">&#128065; ${p.viewCount} views &middot; ${p.likeCount||0} likes</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
           ${saveButtonHtml(p.id)}
           ${likeButtonHtml(p.id, p.likeCount||0)}
-          <button class="ghost small" id="share-profile-btn" onclick="shareProfile('${p.id}')">&#128279; Share</button>
-          <button class="ghost small" onclick="reportProfile('${p.id}')">&#9873; Report</button>
-          ${isAdmin ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteProfileDirect('${p.id}')">&#128465; Delete (admin)</button>` : ''}
+          <button class="ghost small" id="share-profile-btn" onclick="shareProfile('${jsArg(p.id)}')">&#128279; Share</button>
+          <button class="ghost small" onclick="reportProfile('${jsArg(p.id)}')">&#9873; Report</button>
+          ${isAdmin ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteProfileDirect('${jsArg(p.id)}')">&#128465; Delete (admin)</button>` : ''}
         </div>
       </div>
       ${stampHtml(p.status, p.decisionType, true)}
     </div>
     <hr class="divider">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}${gpaTypeLabel(p)}</div></div>
-      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.sat}</div></div>` : ''}
-      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.act}</div></div>` : ''}
-      ${p.highSchool ? `<div class="field"><label>High school</label><div>${p.highSchool}</div></div>` : ''}
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.gpa)}${gpaTypeLabel(p)}</div></div>
+      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.sat)}</div></div>` : ''}
+      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.act)}</div></div>` : ''}
+      ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
     </div>
-    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${p.essay}</div></div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsHtml(p.ecs)}
@@ -1806,7 +1825,7 @@ function renderProfilePage(id){
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
       <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
-        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${a.name}</h3>${a.score ? `<div class="meta">Score: ${a.score}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
+        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
       </div>
     </div>` : ''}
     ${p.awards && p.awards.length ? `<div class="field">
@@ -1852,16 +1871,16 @@ function renderSubmissionPage(groupKey){
   document.getElementById('submission-content').innerHTML = `
     <div class="profile-head">
       <div>
-        <h2 class="section-title" style="margin-bottom:2px;">${rep.major || 'Undeclared'}</h2>
-        <p class="section-sub" style="margin-bottom:6px;">${rep.transfer ? 'Transfer applicant'+(rep.transferFrom?' from '+rep.transferFrom:'') : 'Freshman applicant'}${rep.classYear ? ' &middot; Enrolling '+rep.classYear : ''} &middot; GPA ${rep.gpa}${gpaTypeLabel(rep)}</p>
+        <h2 class="section-title" style="margin-bottom:2px;">${esc(rep.major || 'Undeclared')}</h2>
+        <p class="section-sub" style="margin-bottom:6px;">${rep.transfer ? 'Transfer applicant'+(rep.transferFrom?' from '+esc(rep.transferFrom):'') : 'Freshman applicant'}${rep.classYear ? ' &middot; Enrolling '+esc(rep.classYear) : ''} &middot; GPA ${esc(rep.gpa)}${gpaTypeLabel(rep)}</p>
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:10.5px;padding:4px 10px;">&#10003; Verified with admission email</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         <div class="meta" style="margin-top:6px;">&#128065; ${rep.viewCount} views &middot; ${rep.likeCount||0} likes</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
           ${saveButtonHtml(rep.id, 'group')}
           ${likeButtonHtml(rep.id, rep.likeCount||0)}
-          <button class="ghost small" id="share-submission-btn" onclick="shareSubmission('${groupKey}')">&#128279; Share</button>
-          <button class="ghost small" onclick="reportProfile('${rep.id}')">&#9873; Report</button>
-          ${isAdmin ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="openDeleteScopeModal('${rep.id}', {mode:'direct'})">&#128465; Delete (admin)</button>` : ''}
+          <button class="ghost small" id="share-submission-btn" onclick="shareSubmission('${jsArg(groupKey)}')">&#128279; Share</button>
+          <button class="ghost small" onclick="reportProfile('${jsArg(rep.id)}')">&#9873; Report</button>
+          ${isAdmin ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="openDeleteScopeModal('${jsArg(rep.id)}', {mode:'direct'})">&#128465; Delete (admin)</button>` : ''}
         </div>
       </div>
       ${typeBadgeHtml(rep)}
@@ -1998,13 +2017,13 @@ function renderChips(kind){
   const el = document.getElementById(kind+'-chips');
   el.innerHTML = draft[kind].map(s=>`
     <div class="chip">
-      <span>${uniLogo(s.name)}${s.name}</span>
-      <input type="text" class="chip-major-input" placeholder="Major" value="${(s.major||'').replace(/"/g,'&quot;')}" oninput="updateSchoolMajor('${kind}','${s.name.replace(/'/g,"\\'")}', this.value)">
-      ${kind==='accepted' ? `<select onchange="setDecisionType('${s.name.replace(/'/g,"\\'")}', this.value)">
+      <span>${uniLogo(s.name)}${esc(s.name)}</span>
+      <input type="text" class="chip-major-input" placeholder="Major" value="${esc(s.major)}" oninput="updateSchoolMajor('${kind}','${jsArg(s.name)}', this.value)">
+      ${kind==='accepted' ? `<select onchange="setDecisionType('${jsArg(s.name)}', this.value)">
         <option ${s.decisionType==='Regular'?'selected':''}>Regular</option>
         <option ${s.decisionType==='Early Decision'?'selected':''}>Early Decision</option>
       </select>` : ''}
-      <button onclick="removeSchool('${kind}','${s.name.replace(/'/g,"\\'")}')" aria-label="Remove">&times;</button>
+      <button onclick="removeSchool('${kind}','${jsArg(s.name)}')" aria-label="Remove">&times;</button>
     </div>
   `).join('');
 }
@@ -2025,10 +2044,10 @@ function renderEcRows(){
   el.innerHTML = draft.ecs.map((e,i)=>`
     <div class="ec-row-block">
       <div class="ec-row">
-        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateEc(${i},'name',this.value)">
+        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${esc(e.name)}" oninput="updateEc(${i},'name',this.value)">
         <button class="small" onclick="removeEcRow(${i})">Remove</button>
       </div>
-      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateEc(${i},'description',this.value)">${e.description||''}</textarea>
+      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateEc(${i},'description',this.value)">${esc(e.description)}</textarea>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
@@ -2054,10 +2073,10 @@ function renderApRows(){
   el.innerHTML = draft.apExams.map((a,i)=>`
     <div class="ec-row">
       <div class="autocomplete-wrap" style="flex:1;">
-        <input type="text" id="ap-name-${i}" placeholder="e.g. AP Calculus BC" value="${a.name}" autocomplete="off" oninput="updateAp(${i},'name',this.value)">
+        <input type="text" id="ap-name-${i}" placeholder="e.g. AP Calculus BC" value="${esc(a.name)}" autocomplete="off" oninput="updateAp(${i},'name',this.value)">
         <div class="autocomplete-list" id="ap-name-${i}-list"></div>
       </div>
-      <input type="number" min="1" max="5" step="1" placeholder="Score (optional)" value="${a.score}" oninput="updateAp(${i},'score',this.value)">
+      <input type="number" min="1" max="5" step="1" placeholder="Score (optional)" value="${esc(a.score)}" oninput="updateAp(${i},'score',this.value)">
       <button class="small" onclick="removeApRow(${i})">Remove</button>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No AP exams added yet.</p>`;
@@ -2093,14 +2112,14 @@ function renderAwardRows(){
   el.innerHTML = draft.awards.map((a,i)=>`
     <div class="ec-row-block">
       <div class="ec-row">
-        <input type="text" placeholder="Award name, e.g. National Merit Scholar" value="${a.name}" oninput="updateAward(${i},'name',this.value)">
+        <input type="text" placeholder="Award name, e.g. National Merit Scholar" value="${esc(a.name)}" oninput="updateAward(${i},'name',this.value)">
         <select onchange="updateAward(${i},'level',this.value)">
           <option value="" ${!a.level?'selected':''}>Level (optional)</option>
           ${AWARD_LEVELS.map(l=>`<option value="${l}" ${a.level===l?'selected':''}>${l}</option>`).join('')}
         </select>
         <button class="small" onclick="removeAwardRow(${i})">Remove</button>
       </div>
-      <input type="text" class="ec-desc-input" placeholder="Details (optional)" value="${a.description||''}" oninput="updateAward(${i},'description',this.value)">
+      <input type="text" class="ec-desc-input" placeholder="Details (optional)" value="${esc(a.description)}" oninput="updateAward(${i},'description',this.value)">
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No awards added yet.</p>`;
 }
@@ -2523,7 +2542,7 @@ function isSaved(id){
 function saveButtonHtml(id, scope){
   const saved = isSaved(id);
   const s = scope || 'single';
-  return `<button class="save-btn small ${saved?'primary':'ghost'}" data-save-btn-id="${id}" data-save-scope="${s}" onclick="toggleSave('${id}','${s}')">${saved ? '&#9733; Saved' : '&#9734; Save profile'}</button>`;
+  return `<button class="save-btn small ${saved?'primary':'ghost'}" data-save-btn-id="${id}" data-save-scope="${s}" onclick="toggleSave('${jsArg(id)}','${s}')">${saved ? '&#9733; Saved' : '&#9734; Save profile'}</button>`;
 }
 async function toggleSave(id, scope){
   if(!currentUser || isAnonymousUser || !userRecord){
@@ -2563,7 +2582,7 @@ function isSchoolSaved(name){
 }
 function saveSchoolButtonHtml(name){
   const saved = isSchoolSaved(name);
-  return `<button id="save-school-btn" class="save-btn small ${saved?'primary':'ghost'}" onclick="toggleSchoolSaved('${name.replace(/'/g,"\\'")}')">${saved ? '&#9733; School saved' : '&#9734; Save school'}</button>`;
+  return `<button id="save-school-btn" class="save-btn small ${saved?'primary':'ghost'}" onclick="toggleSchoolSaved('${jsArg(name)}')">${saved ? '&#9733; School saved' : '&#9734; Save school'}</button>`;
 }
 async function toggleSchoolSaved(name){
   if(!currentUser || isAnonymousUser || !userRecord){
@@ -2595,7 +2614,7 @@ function isLiked(id){
 }
 function likeButtonHtml(id, count){
   const liked = isLiked(id);
-  return `<button class="save-btn small ${liked?'primary':'ghost'}" data-like-btn-id="${id}" onclick="toggleLike('${id}')">${liked ? '&#9829;' : '&#9825;'} Like${typeof count==='number' ? ' ('+count+')' : ''}</button>`;
+  return `<button class="save-btn small ${liked?'primary':'ghost'}" data-like-btn-id="${id}" onclick="toggleLike('${jsArg(id)}')">${liked ? '&#9829;' : '&#9825;'} Like${typeof count==='number' ? ' ('+count+')' : ''}</button>`;
 }
 async function toggleLike(id){
   if(!currentUser || isAnonymousUser || !userRecord){
@@ -2665,7 +2684,7 @@ function renderTargetSchoolChips(){
   const el = document.getElementById('target-school-chips');
   if(!el) return;
   el.innerHTML = userRecord.targetSchools.map(s=>`
-    <div class="chip"><span>${uniLogo(s)}${s}</span><button onclick="removeTargetSchool('${s.replace(/'/g,"\\'")}')" aria-label="Remove">&times;</button></div>
+    <div class="chip"><span>${uniLogo(s)}${esc(s)}</span><button onclick="removeTargetSchool('${jsArg(s)}')" aria-label="Remove">&times;</button></div>
   `).join('') || '<p style="color:var(--ink-faint);font-size:13px;">No target schools yet.</p>';
 }
 
@@ -2726,10 +2745,10 @@ function renderProgressEcRowsFor(pid){
   el.innerHTML = p.ecs.map((e,i)=>`
     <div class="ec-row-block">
       <div class="ec-row">
-        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${e.name}" oninput="updateProgressEc('${pid}',${i},'name',this.value)">
-        <button class="small" onclick="removeProgressEcRow('${pid}',${i})">Remove</button>
+        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${esc(e.name)}" oninput="updateProgressEc('${jsArg(pid)}',${i},'name',this.value)">
+        <button class="small" onclick="removeProgressEcRow('${jsArg(pid)}',${i})">Remove</button>
       </div>
-      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateProgressEc('${pid}',${i},'description',this.value)">${e.description||''}</textarea>
+      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateProgressEc('${jsArg(pid)}',${i},'description',this.value)">${esc(e.description)}</textarea>
     </div>
   `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
 }
@@ -2741,7 +2760,7 @@ function renderProgressEditorSelect(){
     editingProgressId = userRecord.progressList[0].id;
   }
   select.innerHTML = userRecord.progressList.map(p=>
-    `<option value="${p.id}" ${p.id===editingProgressId?'selected':''}>${p.name}</option>`
+    `<option value="${p.id}" ${p.id===editingProgressId?'selected':''}>${esc(p.name)}</option>`
   ).join('');
   const delBtn = document.getElementById('progress-delete-btn');
   if(delBtn) delBtn.style.display = userRecord.progressList.length>1 ? 'inline-block' : 'none';
@@ -2756,30 +2775,30 @@ function renderProgressCardEditor(){
     <div class="idx-card" style="cursor:default;max-width:100%;">
       <div class="field">
         <label>Name</label>
-        <input type="text" placeholder="e.g. Senior year stats" value="${p.name}" oninput="updateProgressField('${p.id}','name',this.value)">
+        <input type="text" placeholder="e.g. Senior year stats" value="${esc(p.name)}" oninput="updateProgressField('${jsArg(p.id)}','name',this.value)">
       </div>
       <div class="row">
         <div class="field">
           <label>GPA <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" step="0.01" min="0" placeholder="e.g. 3.8" value="${p.gpa}" oninput="updateProgressField('${p.id}','gpa',this.value)">
+          <input type="number" step="0.01" min="0" placeholder="e.g. 3.8" value="${esc(p.gpa)}" oninput="updateProgressField('${jsArg(p.id)}','gpa',this.value)">
         </div>
         <div class="field">
           <label>SAT <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" step="10" min="400" max="1600" placeholder="e.g. 1450" value="${p.sat}" oninput="updateProgressField('${p.id}','sat',this.value)">
+          <input type="number" step="10" min="400" max="1600" placeholder="e.g. 1450" value="${esc(p.sat)}" oninput="updateProgressField('${jsArg(p.id)}','sat',this.value)">
         </div>
         <div class="field">
           <label>ACT <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-          <input type="number" step="1" min="1" max="36" placeholder="e.g. 32" value="${p.act}" oninput="updateProgressField('${p.id}','act',this.value)">
+          <input type="number" step="1" min="1" max="36" placeholder="e.g. 32" value="${esc(p.act)}" oninput="updateProgressField('${jsArg(p.id)}','act',this.value)">
         </div>
       </div>
       <div class="field">
         <label>Major <span style="text-transform:none;color:var(--ink-faint);">(optional)</span></label>
-        <input type="text" placeholder="e.g. Computer Science" value="${p.major}" oninput="updateProgressField('${p.id}','major',this.value)">
+        <input type="text" placeholder="e.g. Computer Science" value="${esc(p.major)}" oninput="updateProgressField('${jsArg(p.id)}','major',this.value)">
       </div>
       <div class="field">
         <label>Extracurriculars</label>
         <div id="progress-ec-list-${p.id}"></div>
-        <button class="small" style="margin-top:10px;" onclick="addProgressEcRow('${p.id}')">+ Add activity</button>
+        <button class="small" style="margin-top:10px;" onclick="addProgressEcRow('${jsArg(p.id)}')">+ Add activity</button>
       </div>
       <div class="cta-row" style="justify-content:flex-start;margin-top:6px;">
         <button class="primary" onclick="saveProgress()">Save this progress</button>
@@ -2862,7 +2881,7 @@ function renderMyResult(){
   el.innerHTML = `
     <div class="profile-head">
       <div>
-        <h2 class="section-title" style="margin-bottom:2px;">${currentUser}</h2>
+        <h2 class="section-title" style="margin-bottom:2px;">${esc(currentUser)}</h2>
         <p class="section-sub">Signed in on this device</p>
       </div>
       <button class="ghost" onclick="logout()">Log out</button>
@@ -2925,8 +2944,8 @@ function renderMyResult(){
     <h2 class="section-title" style="font-size:18px;">Saved schools</h2>
     <p class="section-sub">Universities you've bookmarked, separate from any specific result.</p>
     ${savedSchools.length ? `<div class="card-grid">${savedSchools.map(name=>`
-        <div class="idx-card" onclick="openUniversity('${name.replace(/'/g,"\\'")}')">
-          <h3>${uniLogo(name)}${name}</h3>
+        <div class="idx-card" onclick="openUniversity('${jsArg(name)}')">
+          <h3>${uniLogo(name)}${esc(name)}</h3>
           ${uniFactsHtml(name, true)}
         </div>`).join('')}</div>`
       : `<p class="section-sub">No saved schools yet. Bookmark one from its university page.</p>`}
@@ -2944,9 +2963,9 @@ function renderMyResult(){
           return groupCardHtml(group.length ? group : [p]);
         }
         return `
-        <div class="idx-card" onclick="openProfile('${p.id}')">
-          <h3>${uniLogo(p.university)}${p.university}</h3>
-          <div class="meta">${p.major?p.major+' &middot; ':''}${p.gpa && p.gpa!=='&mdash;'?'GPA '+p.gpa:''}</div>
+        <div class="idx-card" onclick="openProfile('${jsArg(p.id)}')">
+          <h3>${uniLogo(p.university)}${esc(p.university)}</h3>
+          <div class="meta">${p.major?esc(p.major)+' &middot; ':''}${p.gpa && p.gpa!=='&mdash;'?'GPA '+esc(p.gpa):''}</div>
           <div style="margin-bottom:8px;">${p.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}</div>
           ${stampHtml(p.status,p.decisionType,false)}
         </div>`;
@@ -2996,7 +3015,7 @@ async function renderAdmin(){
     .order('created_at', { ascending: false });
 
   if(error){
-    el.innerHTML = `<p class="section-sub">Could not load reports: ${error.message}</p>`;
+    el.innerHTML = `<p class="section-sub">Could not load reports: ${esc(error.message)}</p>`;
     return;
   }
 
@@ -3012,17 +3031,17 @@ async function renderAdmin(){
     <div class="idx-card" style="cursor:default;margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div>
-          ${p ? `<h3>${uniLogo(p.university)}${p.university}</h3>
-          <div class="meta">${p.major ? p.major + ' &middot; ' : ''}${p.gpa ? 'GPA ' + p.gpa : ''}</div>
+          ${p ? `<h3>${uniLogo(p.university)}${esc(p.university)}</h3>
+          <div class="meta">${p.major ? esc(p.major) + ' &middot; ' : ''}${p.gpa ? 'GPA ' + esc(p.gpa) : ''}</div>
           ${stampHtml(p.status, p.decision_type, false)}` : `<p class="section-sub">The reported result was already removed.</p>`}
         </div>
         <div class="meta" style="text-align:right;">Reported ${when}</div>
       </div>
-      <p class="section-sub" style="margin-top:10px;"><strong>Reason given:</strong> ${r.reason ? r.reason : '(none provided)'}</p>
+      <p class="section-sub" style="margin-top:10px;"><strong>Reason given:</strong> ${r.reason ? esc(r.reason) : '(none provided)'}</p>
       <div class="cta-row" style="margin-top:10px;">
-        ${p ? `<button class="ghost small" onclick="openProfileObj('${p.id}')">View result</button>` : ''}
-        <button class="small" onclick="dismissReport('${r.id}')">Dismiss report</button>
-        ${p ? `<button class="small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteReportedProfile('${r.id}','${p.id}')">Delete result</button>` : `<button class="small" onclick="dismissReport('${r.id}')">Clear (result gone)</button>`}
+        ${p ? `<button class="ghost small" onclick="openProfileObj('${jsArg(p.id)}')">View result</button>` : ''}
+        <button class="small" onclick="dismissReport('${jsArg(r.id)}')">Dismiss report</button>
+        ${p ? `<button class="small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteReportedProfile('${jsArg(r.id)}','${jsArg(p.id)}')">Delete result</button>` : `<button class="small" onclick="dismissReport('${jsArg(r.id)}')">Clear (result gone)</button>`}
       </div>
     </div>`;
   }).join('');
@@ -3131,8 +3150,8 @@ function openProfileObj(id){
   document.getElementById('profile-content').innerHTML = `
     <div class="profile-head">
       <div>
-        <h2 class="section-title" style="margin-bottom:2px;">${uniLogo(p.university, true)}${p.university}</h2>
-        <p class="section-sub" style="margin-bottom:6px;">${p.transfer ? 'Transfer applicant'+(p.transferFrom?' from '+p.transferFrom:'') : 'Freshman applicant'}${p.classYear ? ' &middot; Enrolling '+p.classYear : ''}</p>
+        <h2 class="section-title" style="margin-bottom:2px;">${uniLogo(p.university, true)}${esc(p.university)}</h2>
+        <p class="section-sub" style="margin-bottom:6px;">${p.transfer ? 'Transfer applicant'+(p.transferFrom?' from '+esc(p.transferFrom):'') : 'Freshman applicant'}${p.classYear ? ' &middot; Enrolling '+esc(p.classYear) : ''}</p>
         ${uniFactsHtml(p.university, true)}
         ${p.verified ? `<span class="stamp stamp-accepted" style="font-size:10.5px;padding:4px 10px;">&#10003; Verified with admission email</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
       </div>
@@ -3140,12 +3159,12 @@ function openProfileObj(id){
     </div>
     <hr class="divider">
     <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.gpa}${gpaTypeLabel(p)}</div></div>
-      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.sat}</div></div>` : ''}
-      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${p.act}</div></div>` : ''}
-      ${p.highSchool ? `<div class="field"><label>High school</label><div>${p.highSchool}</div></div>` : ''}
+      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.gpa)}${gpaTypeLabel(p)}</div></div>
+      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.sat)}</div></div>` : ''}
+      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.act)}</div></div>` : ''}
+      ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
     </div>
-    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${p.essay}</div></div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsHtml(p.ecs)}
@@ -3153,7 +3172,7 @@ function openProfileObj(id){
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
       <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
-        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${a.name}</h3>${a.score ? `<div class="meta">Score: ${a.score}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
+        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
       </div>
     </div>` : ''}
     ${p.awards && p.awards.length ? `<div class="field">
@@ -3208,7 +3227,7 @@ function populatePredictProgressSelect(){
   const select = document.getElementById('predict-progress-select');
   if(!select || !currentUser || !userRecord) return;
   select.innerHTML = userRecord.progressList.map(p=>
-    `<option value="${p.id}" ${p.id===userRecord.activeProgressId?'selected':''}>${p.name}</option>`
+    `<option value="${p.id}" ${p.id===userRecord.activeProgressId?'selected':''}>${esc(p.name)}</option>`
   ).join('');
 }
 
@@ -3217,10 +3236,10 @@ function renderPredictProgressPreview(progress){
   if(!el) return;
   if(!progress){ el.innerHTML = ''; return; }
   const parts = [];
-  parts.push(`GPA <b>${progress.gpa || '&mdash;'}</b>`);
-  if(progress.sat) parts.push(`SAT <b>${progress.sat}</b>`);
-  if(progress.act) parts.push(`ACT <b>${progress.act}</b>`);
-  parts.push(`Major <b>${progress.major || 'Undeclared'}</b>`);
+  parts.push(`GPA <b>${progress.gpa ? esc(progress.gpa) : '&mdash;'}</b>`);
+  if(progress.sat) parts.push(`SAT <b>${esc(progress.sat)}</b>`);
+  if(progress.act) parts.push(`ACT <b>${esc(progress.act)}</b>`);
+  parts.push(`Major <b>${esc(progress.major || 'Undeclared')}</b>`);
   el.innerHTML = parts.map(p=>`<span>${p}</span>`).join('');
 }
 
@@ -3243,8 +3262,8 @@ function renderCollegeRecommendations(gpa, transfer){
       <h3 style="font-size:12.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-soft);margin:0 0 8px;font-family:'IBM Plex Mono',monospace;">${label}</h3>
       <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));">
         ${arr.map(s=>`
-          <div class="idx-card" onclick="openUniversity('${s.university.replace(/'/g,"\\'")}')">
-            <h3 style="font-size:14px;">${uniLogo(s.university)}${s.university}</h3>
+          <div class="idx-card" onclick="openUniversity('${jsArg(s.university)}')">
+            <h3 style="font-size:14px;">${uniLogo(s.university)}${esc(s.university)}</h3>
             ${uniFactsHtml(s.university, true)}
           </div>`).join('')}
       </div>
@@ -3280,7 +3299,7 @@ function renderPredictBattery(){
     return;
   }
   if(!progress || !progress.gpa){
-    container.innerHTML = `<div class="empty"><h3>Add a GPA</h3><p>Add a GPA to "${progress?progress.name:'this progress'}" above to get predictions.</p></div>`;
+    container.innerHTML = `<div class="empty"><h3>Add a GPA</h3><p>Add a GPA to "${progress?esc(progress.name):'this progress'}" above to get predictions.</p></div>`;
     if(recEl) recEl.innerHTML = '';
     return;
   }
@@ -3291,8 +3310,8 @@ function renderPredictBattery(){
     const agg = computeAggregate(school, transfer);
     const result = computeBatteryLevel(gpa, agg);
     return `
-      <div class="idx-card" style="cursor:pointer;max-width:100%;margin-bottom:10px;" onclick="openUniversity('${school.replace(/'/g,"\\'")}')">
-        <h3>${uniLogo(school)}${school}</h3>
+      <div class="idx-card" style="cursor:pointer;max-width:100%;margin-bottom:10px;" onclick="openUniversity('${jsArg(school)}')">
+        <h3>${uniLogo(school)}${esc(school)}</h3>
         ${uniFactsHtml(school, true)}
         ${batteryHtml(result.level, result.hasData)}
       </div>
