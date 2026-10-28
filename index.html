@@ -345,21 +345,25 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .stat-row{display:flex;flex-wrap:wrap;margin:6px 0 22px;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);}
   .stat{flex:0 1 auto;min-width:110px;padding:12px 28px 12px 0;}
   .stat + .stat{padding-left:28px;border-left:1px solid var(--rule);}
-  .stat-num{font-family:'Fraunces',serif;font-size:36px;font-weight:600;line-height:1.05;color:var(--ink);font-variant-numeric:lining-nums tabular-nums;}
+  .stat-num{font-family:'IBM Plex Sans',sans-serif;font-size:32px;font-weight:600;line-height:1.1;letter-spacing:-0.5px;color:var(--ink);font-variant-numeric:tabular-nums;}
   .stat-label{margin-top:4px;font-size:13px;color:var(--ink-soft);}
   /* AP exams: transcript lines with a dotted leader to the score */
   .ap-list{list-style:none;margin:2px 0 0;padding:0;columns:2 280px;column-gap:48px;}
   .ap-item{display:flex;align-items:baseline;gap:8px;padding:5px 0;break-inside:avoid;font-size:15.5px;color:var(--ink);}
   .ap-name{flex:0 1 auto;min-width:0;}
   .ap-leader{flex:1 1 24px;min-width:24px;border-bottom:2px dotted var(--rule);transform:translateY(-4px);}
-  .ap-score{flex:none;min-width:14px;text-align:right;font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1;font-variant-numeric:lining-nums tabular-nums;}
+  .ap-score{flex:none;min-width:14px;text-align:right;font-family:'IBM Plex Sans',sans-serif;font-size:17px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;}
   .ap-none{color:var(--ink-faint);font-weight:400;}
   /* Home cards: the major is the headline under the decisions */
-  .hc-major{margin:12px 0 2px;font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.25;color:var(--ink);}
+  .hc-major{margin:0 0 3px;font-family:'IBM Plex Sans',sans-serif;font-size:18px;font-weight:600;line-height:1.3;color:var(--ink);}
+  .hc-gpa{margin:0 0 12px;font-size:15px;color:var(--ink);display:flex;align-items:baseline;flex-wrap:wrap;gap:0 8px;}
+  .hc-gpa-label{font-weight:600;letter-spacing:0.3px;color:var(--ink);}
+  .hc-gpa-num{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .hc-gpa-w{font-size:14px;color:var(--ink-soft);}
   @media (max-width:600px){
     .stat{min-width:0;padding-right:18px;}
     .stat + .stat{padding-left:18px;}
-    .stat-num{font-size:30px;}
+    .stat-num{font-size:28px;}
   }
   /* Profile page specifically reads small/light by default (same .field
      label style used everywhere) — bumped just here per feedback that the
@@ -452,45 +456,48 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   #page-upload textarea.freetext-input{min-height:96px;}
   /* University results: matches are written under each box like ledger
      lines; anything that needs a decision gets a red proofreader's mark. */
-  #page-upload textarea.school-text{min-height:72px;}
-  #page-upload .sm-row select.ap-score-pick{flex:0 0 140px;width:140px;height:30px;font-size:14px;padding:0 28px 0 10px;}
-  #page-upload .school-matches:empty{display:none;}
-  #page-upload .sm-list{margin-top:6px;border-top:1px solid var(--rule);}
-  #page-upload .sm-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:38px;padding:4px 0 4px 22px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35;}
-  #page-upload .sm-mark{position:absolute;left:2px;top:7px;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--accent);}
-  #page-upload .sm-main{flex:1 1 240px;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
-  #page-upload .sm-main .uni-logo{width:24px;height:24px;font-size:8px;margin:0;}
-  #page-upload .sm-name{font-weight:500;}
-  #page-upload .sm-aside{color:var(--ink-soft);}
-  #page-upload .sm-muted .sm-main{color:var(--ink-soft);}
-  #page-upload .sm-typed{color:var(--ink-faint);text-decoration-color:var(--accent);text-decoration-thickness:1.5px;}
-  #page-upload .sm-row input.sm-major{flex:0 1 190px;width:auto;height:28px;font-size:14px;padding:0 2px;border:none;border-bottom:1px dashed var(--ink-faint);border-radius:0;background:transparent;}
-  #page-upload .sm-row input.sm-major:focus{border-bottom:1.5px solid var(--accent);}
-  #page-upload .field .sm-ed{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
-  #page-upload .sm-ed input{width:15px;height:15px;margin:0;accent-color:var(--accent);}
-  #page-upload .sm-actions{display:inline-flex;align-items:center;gap:14px;}
-  #page-upload .sm-choices{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;}
-  #page-upload .sm-or{color:var(--ink-faint);font-size:14px;}
-  #page-upload .sm-row button.sm-link{min-height:0;height:auto;padding:2px 0;border:none;border-radius:0;background:none;font-family:'IBM Plex Sans',sans-serif;font-size:14px;letter-spacing:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
-  #page-upload .sm-row button.sm-link:hover{background:none;text-decoration-thickness:2px;}
-  #page-upload .sm-row button.sm-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-  #page-upload .sm-row button.sm-confirm{font-weight:600;}
-  #page-upload .sm-row button.sm-remove{color:var(--ink-soft);text-decoration-color:var(--ink-faint);}
-  #page-upload .sm-note{margin:6px 0 0;font-size:13.5px;color:var(--accent);}
-  #page-upload .sm-search{flex:1 1 100%;margin:2px 0 4px;}
-  #page-upload .sm-search input{height:38px;font-size:15px;}
-  #page-upload .sm-break{display:none;}
+  :is(#page-upload, .match-scope) textarea.school-text{min-height:72px;}
+  :is(#page-upload, .match-scope) .sm-row select.ap-score-pick{flex:0 0 140px;width:140px;height:30px;font-size:14px;padding:0 28px 0 10px;}
+  :is(#page-upload, .match-scope) .school-matches:empty{display:none;}
+  :is(#page-upload, .match-scope) .sm-list{margin-top:6px;border-top:1px solid var(--rule);}
+  :is(#page-upload, .match-scope) .sm-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:38px;padding:4px 0 4px 22px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35;}
+  :is(#page-upload, .match-scope) .sm-mark{position:absolute;left:2px;top:7px;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--accent);}
+  :is(#page-upload, .match-scope) .sm-main{flex:1 1 240px;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
+  :is(#page-upload, .match-scope) .sm-main .uni-logo{width:24px;height:24px;font-size:8px;margin:0;}
+  :is(#page-upload, .match-scope) .sm-name{font-weight:500;}
+  :is(#page-upload, .match-scope) .sm-aside{color:var(--ink-soft);}
+  :is(#page-upload, .match-scope) .sm-muted .sm-main{color:var(--ink-soft);}
+  :is(#page-upload, .match-scope) .sm-typed{color:var(--ink-faint);text-decoration-color:var(--accent);text-decoration-thickness:1.5px;}
+  :is(#page-upload, .match-scope) .sm-row input.sm-major{flex:0 1 190px;width:auto;height:28px;font-size:14px;padding:0 2px;border:none;border-bottom:1px dashed var(--ink-faint);border-radius:0;background:transparent;}
+  :is(#page-upload, .match-scope) .sm-row input.sm-major:focus{border-bottom:1.5px solid var(--accent);}
+  :is(#page-upload, .match-scope) .field .sm-ed{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+  :is(#page-upload, .match-scope) .sm-ed input{width:15px;height:15px;margin:0;accent-color:var(--accent);}
+  :is(#page-upload, .match-scope) .sm-actions{display:inline-flex;align-items:center;gap:14px;}
+  :is(#page-upload, .match-scope) .sm-choices{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;}
+  :is(#page-upload, .match-scope) .sm-or{color:var(--ink-faint);font-size:14px;}
+  :is(#page-upload, .match-scope) .sm-row button.sm-link{min-height:0;height:auto;padding:2px 0;border:none;border-radius:0;background:none;font-family:'IBM Plex Sans',sans-serif;font-size:14px;letter-spacing:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
+  :is(#page-upload, .match-scope) .sm-row button.sm-link:hover{background:none;text-decoration-thickness:2px;}
+  :is(#page-upload, .match-scope) .sm-row button.sm-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  :is(#page-upload, .match-scope) .sm-row button.sm-confirm{font-weight:600;}
+  :is(#page-upload, .match-scope) .sm-row button.sm-remove{color:var(--ink-soft);text-decoration-color:var(--ink-faint);}
+  :is(#page-upload, .match-scope) .sm-note{margin:6px 0 0;font-size:13.5px;color:var(--accent);}
+  :is(#page-upload, .match-scope) .sm-search{flex:1 1 100%;margin:2px 0 4px;}
+  :is(#page-upload, .match-scope) .sm-search input{height:38px;font-size:15px;}
+  :is(#page-upload, .match-scope) .sm-break{display:none;}
   @media (max-width:600px){
-    #page-upload .sm-break{display:block;flex-basis:100%;height:0;}
-    #page-upload .sm-row input.sm-major{flex:1 1 0;min-width:0;}
-    #page-upload .sm-main{flex-basis:100%;}
-    #page-upload .ap-row.sm-ok .sm-main{flex:1 1 0;}
-    #page-upload .sm-row select.ap-score-pick{flex:0 0 118px;width:118px;}
+    :is(#page-upload, .match-scope) .sm-break{display:block;flex-basis:100%;height:0;}
+    :is(#page-upload, .match-scope) .sm-row input.sm-major{flex:1 1 0;min-width:0;}
+    :is(#page-upload, .match-scope) .sm-main{flex-basis:100%;}
+    :is(#page-upload, .match-scope) .ap-row.sm-ok .sm-main{flex:1 1 0;}
+    :is(#page-upload, .match-scope) .sm-row select.ap-score-pick{flex:0 0 118px;width:118px;}
   }
   .freetext-box{border:1.5px solid var(--rule);border-radius:8px;padding:12px 18px;background:var(--paper-2);font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
   .freetext-box p{margin:6px 0;}
   .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
   .freetext-box li{margin:3px 0;}
+  .match-scope textarea.school-text{width:100%;font-size:16px;line-height:1.5;padding:10px 14px;border-radius:7px;min-height:72px;overflow-y:hidden;}
+  .match-scope .hint{margin-top:5px;}
+  textarea.progress-ecs-text{width:100%;font-size:15px;line-height:1.5;min-height:96px;overflow-y:hidden;}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
     #page-upload .form-title{font-size:24px;}
@@ -1220,7 +1227,6 @@ function setupAutocomplete(inputId, getSource, emptyLabel){
     input.dispatchEvent(new Event('change', { bubbles:true }));
   });
 }
-['target-school-input'].forEach(id=>setupAutocomplete(id));
 setupAutocomplete('school-state-input', ()=>Array.from(new Set(UNIS.map(schoolStateFullName).filter(Boolean))).sort(), 'No matching states');
 
 // Predictive search on the homepage bar — same type-ahead as everywhere
@@ -1733,13 +1739,13 @@ function groupCardHtml(group){
   const topMajor = Object.keys(majorCounts).sort((a,b)=>majorCounts[b]-majorCounts[a])[0] || rep.major;
   return `
     <div class="idx-card" id="home-card-${esc(groupKey)}" onclick="openSubmissionGroup('${jsArg(groupKey)}')">
+      ${topMajor ? `<div class="hc-major">${esc(topMajor)}</div>` : ''}
+      <div class="hc-gpa"><span class="hc-gpa-label">GPA</span> <span class="hc-gpa-num">${esc(rep.gpa)}</span>${rep.weightedGpa ? ` <span class="hc-gpa-w">Weighted ${esc(rep.weightedGpa)}</span>` : ''}</div>
       <div class="home-status-lines">
         ${statusSummaryLine('Accepted', acceptedNames)}
         ${statusSummaryLine('Rejected', rejectedNames)}
         ${statusSummaryLine('Waitlisted', waitlistedNames)}
       </div>
-      ${topMajor ? `<div class="hc-major">${esc(topMajor)}</div>` : ''}
-      <div class="meta" style="font-size:15px;">GPA <b>${esc(rep.gpa)}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+esc(rep.classYear)+'</b>' : ''}</div>
       <div style="margin:6px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         ${typeBadgeHtml(rep)}
@@ -3312,7 +3318,7 @@ async function submitResult(){
   if(!schoolCheck.ok){
     const n = schoolCheck.problems + schoolCheck.conflicts;
     alert(n === 1 ? 'One school in University results needs your attention before submitting.' : n + ' schools in University results need your attention before submitting.');
-    const first = document.querySelector('#page-upload .sm-warn, #page-upload .sm-err');
+    const first = document.querySelector(':is(#page-upload, .match-scope) .sm-warn, :is(#page-upload, .match-scope) .sm-err');
     if(first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
@@ -3613,7 +3619,8 @@ async function loadUserRecord(){
     targetSchools: (settingsRes.data && settingsRes.data.target_schools) || [],
     progressList: (progressRes.data || []).map(r => ({
       id: r.id, name: r.name, gpa: r.gpa==null?'':String(r.gpa), sat: r.sat==null?'':String(r.sat),
-      act: r.act==null?'':String(r.act), major: r.major || '', ecs: r.ecs || []
+      act: r.act==null?'':String(r.act), major: r.major || '', ecs: r.ecs || [],
+      ecsText: (r.ecs_text === undefined || r.ecs_text === null) ? legacyItemsToText(r.ecs) : r.ecs_text
     })),
     activeProgressId: (settingsRes.data && settingsRes.data.active_progress_id) || null
   };
@@ -3759,24 +3766,94 @@ async function logout(){
   updateProfileBtn('myresult');
 }
 
-function addTargetSchool(){
-  const input = document.getElementById('target-school-input');
-  const name = input.value.trim();
-  if(!name || !UNIS.includes(name)){ if(name) alert('Pick a university from the suggestions list.'); return; }
-  if(!userRecord.targetSchools.includes(name)) userRecord.targetSchools.push(name);
-  input.value='';
-  renderTargetSchoolChips();
+/* Target schools (account page): a paste box with the same matching as
+   the university boxes on the share form. The text is the source of truth;
+   resolved official names become userRecord.targetSchools, which "Save
+   this progress" stores in user_settings. */
+let TARGET_ANALYSIS = [];
+let TARGET_LAST_TEXT = null;
+const TARGET_FIX_OPEN = new Set();
+function targetTextEl(){ return document.getElementById('target-text'); }
+function analyzeTargets(){
+  const el = targetTextEl();
+  const text = el ? el.value : '';
+  TARGET_LAST_TEXT = text;
+  const entries = UNIS.length ? uniMatcher().parse(text) : [];
+  const seen = new Set();
+  entries.forEach(e => {
+    e.resolved = (e.status === 'exact' || e.status === 'alias' || e.status === 'token');
+    if(e.resolved){ if(seen.has(e.name)) e.duplicate = true; seen.add(e.name); }
+  });
+  return entries;
 }
-function removeTargetSchool(name){
-  userRecord.targetSchools = userRecord.targetSchools.filter(s=>s!==name);
-  renderTargetSchoolChips();
+function renderTargetMatches(){
+  TARGET_ANALYSIS = analyzeTargets();
+  const el = targetTextEl();
+  if(el && userRecord) userRecord.targetSchools = TARGET_ANALYSIS.filter(e => e.resolved && !e.duplicate).map(e => e.name);
+  const box = document.getElementById('target-matches');
+  if(box){
+    const needs = TARGET_ANALYSIS.filter(e => !e.resolved).length;
+    box.innerHTML = TARGET_ANALYSIS.length
+      ? `<div class="sm-list">${TARGET_ANALYSIS.map((e, i) => targetRowHtml(e, i)).join('')}</div>${needs ? `<p class="sm-note">${needs === 1 ? '1 school needs' : needs + ' schools need'} a decision before you save.</p>` : ''}`
+      : '';
+    TARGET_ANALYSIS.forEach((e, i) => {
+      const input = document.getElementById('tfix-' + i);
+      if(!input) return;
+      setupAutocomplete('tfix-' + i);
+      input.addEventListener('change', () => { if(UNIS.includes(input.value)) resolveTargetEntry(i, input.value); });
+    });
+  }
+  autosizeTextarea(el);
 }
-function renderTargetSchoolChips(){
-  const el = document.getElementById('target-school-chips');
+function targetRowHtml(e, i){
+  const link = (label, onclick, cls) => `<button type="button" class="sm-link${cls ? ' ' + cls : ''}" onclick="${onclick}">${label}</button>`;
+  const remove = () => link('Remove', `removeTargetEntry(${i})`, 'sm-remove');
+  const fixKey = e.raw;
+  const searchBox = `<div class="autocomplete-wrap sm-search"><input type="text" id="tfix-${i}" placeholder="Search for the school&hellip;" autocomplete="off" aria-label="Search for the school you meant"><div class="autocomplete-list" id="tfix-${i}-list"></div></div>`;
+  if(e.resolved && e.duplicate) return `<div class="sm-row sm-muted"><span class="sm-main">${esc(e.name)} <span class="sm-aside">is listed twice and counted once</span></span>${remove()}</div>`;
+  if(e.resolved) return `<div class="sm-row sm-ok"><span class="sm-main">${uniLogo(e.name)}<span class="sm-name">${esc(e.name)}</span></span>${remove()}</div>`;
+  if(e.status === 'fuzzy') return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main"><s class="sm-typed" aria-label="You typed ${esc(e.raw)}">${esc(e.raw)}</s> ${esc(e.name)}?</span>
+      <span class="sm-actions">${link('Yes', `resolveTargetEntry(${i}, '${jsArg(e.name)}')`, 'sm-confirm')}${link('Pick another', `toggleTargetFix('${jsArg(fixKey)}')`)}${remove()}</span>
+      ${TARGET_FIX_OPEN.has(fixKey) ? searchBox : ''}</div>`;
+  if(e.status === 'ambiguous') return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main">Which ${esc(e.raw)}?
+        <span class="sm-choices">${e.candidates.map(c => link(esc(c), `resolveTargetEntry(${i}, '${jsArg(c)}')`, 'sm-choice')).join('<span class="sm-or">or</span>')}<span class="sm-or">or</span>${link('another school', `toggleTargetFix('${jsArg(fixKey)}')`)}</span>
+      </span>${remove()}
+      ${TARGET_FIX_OPEN.has(fixKey) ? searchBox : ''}</div>`;
+  return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">?</span>
+    <span class="sm-main">${esc(e.raw)} <span class="sm-aside">isn&rsquo;t in our list. Search for it, or remove it.</span></span>
+    ${remove()}${searchBox}</div>`;
+}
+function toggleTargetFix(key){
+  if(TARGET_FIX_OPEN.has(key)) TARGET_FIX_OPEN.delete(key); else TARGET_FIX_OPEN.add(key);
+  renderTargetMatches();
+}
+function resolveTargetEntry(i, name){
+  const el = targetTextEl();
+  const e = TARGET_ANALYSIS[i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderTargetMatches(); return; }
+  TARGET_FIX_OPEN.delete(e.raw);
+  el.value = el.value.slice(0, e.start) + name + el.value.slice(e.end);
+  renderTargetMatches();
+}
+function removeTargetEntry(i){
+  const el = targetTextEl();
+  const e = TARGET_ANALYSIS[i];
+  if(!el || !e || el.value.slice(e.start, e.end) !== e.raw){ renderTargetMatches(); return; }
+  el.value = removeTextRange(el.value, e.start, e.end);
+  TARGET_FIX_OPEN.delete(e.raw);
+  renderTargetMatches();
+}
+function wireTargetBox(){
+  const el = targetTextEl();
   if(!el) return;
-  el.innerHTML = userRecord.targetSchools.map(s=>`
-    <div class="chip"><span>${uniLogo(s)}${esc(s)}</span><button onclick="removeTargetSchool('${jsArg(s)}')" aria-label="Remove">&times;</button></div>
-  `).join('') || '<p style="color:var(--ink-faint);font-size:13px;">No target schools yet.</p>';
+  el.value = (userRecord && userRecord.targetSchools || []).join('\n');
+  let timer = null;
+  el.addEventListener('input', () => { autosizeTextarea(el); clearTimeout(timer); timer = setTimeout(renderTargetMatches, 450); });
+  el.addEventListener('paste', () => { clearTimeout(timer); setTimeout(renderTargetMatches, 0); });
+  el.addEventListener('blur', () => { clearTimeout(timer); if(TARGET_LAST_TEXT !== el.value) renderTargetMatches(); });
+  renderTargetMatches();
 }
 
 function setApplicantType(type){
@@ -3791,7 +3868,7 @@ let editingProgressId = null;
 
 function addProgressCard(){
   const n = userRecord.progressList.length + 1;
-  const card = { id: 'progress-'+Date.now(), name: 'Progress '+n, gpa:'', sat:'', act:'', major:'', ecs:[] };
+  const card = { id: 'progress-'+Date.now(), name: 'Progress '+n, gpa:'', sat:'', act:'', major:'', ecs:[], ecsText:'' };
   userRecord.progressList.push(card);
   editingProgressId = card.id;
   renderProgressEditor();
@@ -3812,36 +3889,15 @@ function updateProgressField(id, field, val){
   if(p) p[field] = val;
   if(field==='name') renderProgressEditorSelect();
 }
-function addProgressEcRow(pid){
-  const p = userRecord.progressList.find(x=>x.id===pid);
-  if(!p) return;
-  p.ecs.push({name:'', role:'', description:''});
-  renderProgressEcRowsFor(pid);
-}
-function removeProgressEcRow(pid, i){
-  const p = userRecord.progressList.find(x=>x.id===pid);
-  if(!p) return;
-  p.ecs.splice(i,1);
-  renderProgressEcRowsFor(pid);
-}
-function updateProgressEc(pid, i, field, val){
-  const p = userRecord.progressList.find(x=>x.id===pid);
-  if(p) p.ecs[i][field] = val;
-}
+// Each progress snapshot's activities are one free-text box (ecsText),
+// the same as the "Share your result" form. Old structured entries (ecs)
+// are kept and saved back unchanged.
 function renderProgressEcRowsFor(pid){
-  const el = document.getElementById('progress-ec-list-'+pid);
-  if(!el) return;
+  const el = document.getElementById('progress-ecs-text-' + pid);
   const p = userRecord.progressList.find(x=>x.id===pid);
-  if(!p) return;
-  el.innerHTML = p.ecs.map((e,i)=>`
-    <div class="ec-row-block">
-      <div class="ec-row">
-        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${esc(e.name)}" oninput="updateProgressEc('${jsArg(pid)}',${i},'name',this.value)">
-        <button class="small" onclick="removeProgressEcRow('${jsArg(pid)}',${i})">Remove</button>
-      </div>
-      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateProgressEc('${jsArg(pid)}',${i},'description',this.value)">${esc(e.description)}</textarea>
-    </div>
-  `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
+  if(!el || !p) return;
+  el.value = p.ecsText || '';
+  autosizeTextarea(el);
 }
 
 function renderProgressEditorSelect(){
@@ -3887,9 +3943,9 @@ function renderProgressCardEditor(){
         <input type="text" placeholder="e.g. Computer Science" value="${esc(p.major)}" oninput="updateProgressField('${jsArg(p.id)}','major',this.value)">
       </div>
       <div class="field">
-        <label>Extracurriculars</label>
-        <div id="progress-ec-list-${p.id}"></div>
-        <button class="small" style="margin-top:10px;" onclick="addProgressEcRow('${jsArg(p.id)}')">+ Add activity</button>
+        <label for="progress-ecs-text-${esc(p.id)}">Extracurriculars</label>
+        <textarea id="progress-ecs-text-${esc(p.id)}" class="freetext-input progress-ecs-text" rows="3" maxlength="5000" placeholder="Volunteer EMT&#10;Varsity Track &amp; Cross Country — 4 years&#10;President of Chess Club" oninput="updateProgressField('${jsArg(p.id)}','ecsText',this.value); autosizeTextarea(this)"></textarea>
+        <div class="hint">One per line, bullet points or paragraphs all work. You can paste from a document.</div>
       </div>
       <div class="cta-row" style="justify-content:flex-start;margin-top:6px;">
         <button class="primary" onclick="saveProgress()">Save this progress</button>
@@ -3907,6 +3963,16 @@ function renderProgressEditor(){
 async function saveProgress(){
   const { data: { user } } = await supabaseClient.auth.getUser();
   if(!user) return;
+  if(targetTextEl()){
+    renderTargetMatches();
+    const unresolved = TARGET_ANALYSIS.filter(e => !e.resolved).length;
+    if(unresolved){
+      alert(unresolved === 1 ? 'One target school needs a decision before saving.' : unresolved + ' target schools need a decision before saving.');
+      const first = document.querySelector('#target-matches .sm-flag');
+      if(first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
 
   const activeIdx = userRecord.progressList.findIndex(p => p.id === userRecord.activeProgressId);
 
@@ -3920,14 +3986,16 @@ async function saveProgress(){
     sat: p.sat || null,
     act: p.act || null,
     major: p.major || null,
-    ecs: p.ecs || []
+    ecs: p.ecs || [],
+    ecs_text: (p.ecsText || '').trim()
   }));
   const { data: inserted, error } = await supabaseClient.from('progress_snapshots').insert(rowsToInsert).select();
   if(error){ alert('Could not save progress: ' + error.message); return; }
 
   userRecord.progressList = inserted.map(r => ({
     id: r.id, name: r.name, gpa: r.gpa==null?'':String(r.gpa), sat: r.sat==null?'':String(r.sat),
-    act: r.act==null?'':String(r.act), major: r.major || '', ecs: r.ecs || []
+    act: r.act==null?'':String(r.act), major: r.major || '', ecs: r.ecs || [],
+    ecsText: (r.ecs_text === undefined || r.ecs_text === null) ? legacyItemsToText(r.ecs) : r.ecs_text
   }));
   userRecord.activeProgressId = userRecord.progressList[activeIdx >= 0 ? activeIdx : 0]?.id;
   editingProgressId = userRecord.activeProgressId;
@@ -4000,15 +4068,12 @@ function renderMyResult(){
     </div>
 
     <div class="field">
-      <label>Target schools</label>
-      <div class="adder-row">
-        <div class="autocomplete-wrap">
-          <input type="text" id="target-school-input" placeholder="Search a university&hellip;" autocomplete="off">
-          <div class="autocomplete-list" id="target-school-input-list"></div>
-        </div>
-        <button onclick="addTargetSchool()">Add</button>
+      <label for="target-text">Target schools</label>
+      <div class="match-scope">
+        <textarea id="target-text" class="school-text" rows="2" placeholder="e.g. UCLA, Berkeley, UMich"></textarea>
+        <div class="hint">Type or paste your schools, separated by commas or new lines. Abbreviations like UCLA, UMich or MIT work.</div>
+        <div class="school-matches" id="target-matches" aria-live="polite"></div>
       </div>
-      <div class="chip-row" id="target-school-chips"></div>
     </div>
 
     <hr class="divider">
@@ -4069,13 +4134,12 @@ function renderMyResult(){
   const transferBtn = document.getElementById('progress-type-transfer');
   if(freshBtn) freshBtn.classList.toggle('on', userRecord.applicantType==='freshman');
   if(transferBtn) transferBtn.classList.toggle('on', userRecord.applicantType==='transfer');
-  renderTargetSchoolChips();
   renderProgressEditor();
   if(PREDICTIONS_ENABLED){
     populatePredictProgressSelect();
     renderPredictBattery();
   }
-  setupAutocomplete('target-school-input');
+  wireTargetBox();
   if(isAdmin) refreshAdminBannerCount();
 }
 
