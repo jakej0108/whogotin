@@ -41,7 +41,7 @@ export async function onRequest(context) {
     ? `Accepted to ${accepted.slice(0, 3).join(', ')}${accepted.length > 3 ? ` +${accepted.length - 3} more` : ''}`
     : `${rows.length} college admission result${rows.length === 1 ? '' : 's'}`;
   const title = `${resultSummary} | Who Got In`;
-  const stats = [rep.gpa != null ? `GPA ${rep.gpa}` : '', rep.major || '', rep.sat ? `SAT ${rep.sat}` : '', rep.act ? `ACT ${rep.act}` : ''].filter(Boolean);
+  const stats = [rep.gpa != null ? `GPA ${formatGpa(rep.gpa)}` : '', rep.major || '', rep.sat ? `SAT ${rep.sat}` : '', rep.act ? `ACT ${rep.act}` : ''].filter(Boolean);
   const description = `${stats.join(' · ')}${stats.length ? '. ' : ''}See this applicant's self-reported college admission results.`;
   const canonicalUrl = `${requestUrl.origin}/submission/${shortId}`;
 
@@ -54,6 +54,14 @@ export async function onRequest(context) {
     .on('meta[name="twitter:title"]', new MetaElement(title))
     .on('meta[name="twitter:description"]', new MetaElement(description))
     .transform(indexResponse);
+}
+
+// Same as the site: 4 -> "4.0", 3.95 -> "3.95".
+function formatGpa(v){
+  const n = Number(v);
+  if(!isFinite(n)) return String(v);
+  const decimals = (String(v).split('.')[1] || '').length;
+  return n.toFixed(Math.min(Math.max(1, decimals), 3));
 }
 
 class TextElement {

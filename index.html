@@ -336,6 +336,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .ec-display-role{font-weight:400;color:var(--ink-soft);font-size:14px;}
   .ec-display-desc{font-size:15px;color:var(--ink);margin-top:5px;padding-left:16px;position:relative;line-height:1.5;}
   .ec-display-desc::before{content:'\2013';position:absolute;left:0;}
+  .essay-text{white-space:pre-line;line-height:1.55;}
   .ec-display-plain{font-size:15.5px;color:var(--ink);line-height:1.5;}
   /* Profile stats: large figures on a ruled line */
   .stat-row{display:flex;flex-wrap:wrap;margin:6px 0 22px;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);}
@@ -771,13 +772,13 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         </div>
       </div>
 
-      <!-- 7. Application essay -->
+      <!-- 7. Essay & LOR -->
       <div class="form-section">
-        <h3 class="form-section-title">Application essay <span class="opt">(optional)</span></h3>
+        <h3 class="form-section-title">Essay &amp; LOR <span class="opt">(optional)</span></h3>
         <div class="field">
-          <label for="essay-input" class="sr-only">Application essay</label>
-          <textarea id="essay-input" rows="3" placeholder="What was your application essay about?"></textarea>
-          <div class="hint">Share your essay topic, approach, or a brief summary.</div>
+          <label for="essay-input" class="sr-only">Essay and letters of recommendation</label>
+          <textarea id="essay-input" rows="3" placeholder="What was your essay about? Who wrote your letters of recommendation?"></textarea>
+          <div class="hint">Share your essay topic or approach, and anything about your letters of recommendation (LOR).</div>
         </div>
       </div>
 
@@ -1064,6 +1065,16 @@ function apExamsHtml(exams){
   }).join('')}</ol>`;
 }
 
+// GPAs are stored as numbers, so 4.0 comes back as 4. Show at least one
+// decimal place: 4 -> "4.0", 3.9 -> "3.9", 3.95 -> "3.95".
+function formatGpa(v){
+  if(v === null || v === undefined || v === '') return '';
+  const n = Number(v);
+  if(!isFinite(n)) return String(v);
+  const decimals = (String(v).split('.')[1] || '').length;
+  return n.toFixed(Math.min(Math.max(1, decimals), 3));
+}
+
 function rowToProfile(row){
   return {
     id: row.id,
@@ -1075,8 +1086,8 @@ function rowToProfile(row){
     transferFrom: row.transfer_from,
     major: row.major,
     classYear: row.class_year || null,
-    gpa: (row.gpa===null||row.gpa===undefined) ? '' : String(row.gpa),
-    weightedGpa: (row.weighted_gpa===null||row.weighted_gpa===undefined) ? '' : String(row.weighted_gpa),
+    gpa: formatGpa(row.gpa),
+    weightedGpa: formatGpa(row.weighted_gpa),
     sat: row.sat,
     act: row.act,
     highSchool: row.high_school,
@@ -1652,6 +1663,8 @@ function renderGroupExpanded(group){
     ${waitlisted.length ? `<div class="hc-section"><div class="hc-section-title" style="color:var(--waitlisted);">Waitlisted</div>${schoolListHtml(waitlisted)}</div>` : ''}
     <hr class="divider" style="margin:12px 0;">
     ${statsHtml(rep)}
+    ${rep.highSchool ? `<div class="field"><label>High school</label><div>${esc(rep.highSchool)}</div></div>` : ''}
+    ${rep.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(rep.essay)}</div></div>` : ''}
     ${hasEcs(rep) ? `<div class="field"><label>Extracurriculars</label>${ecsDisplayHtml(rep)}</div>` : ''}
     ${hasAwards(rep) ? `<div class="field"><label>Awards &amp; honors</label>${awardsDisplayHtml(rep)}</div>` : ''}
     ${rep.apExams && rep.apExams.length ? `<div class="field">
@@ -2004,7 +2017,7 @@ function renderProfilePage(id){
     <hr class="divider">
     ${statsHtml(p)}
     ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsDisplayHtml(p)}
@@ -4193,7 +4206,7 @@ function openProfileObj(id){
     <hr class="divider">
     ${statsHtml(p)}
     ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
+    ${p.essay ? `<div class="field"><label>Essay &amp; LOR</label><div class="essay-text">${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
       ${ecsDisplayHtml(p)}
