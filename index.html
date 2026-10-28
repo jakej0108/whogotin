@@ -429,43 +429,39 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .freetext-box p{margin:6px 0;}
   .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
   .freetext-box li{margin:3px 0;}
-  /* University results: match list under each paste box */
+  /* University results: matches are written under each box like ledger
+     lines; anything that needs a decision gets a red proofreader's mark. */
   #page-upload textarea.school-text{min-height:84px;}
   #page-upload .school-matches:empty{display:none;}
-  #page-upload .school-matches{margin-top:8px;}
-  #page-upload .sm-summary{font-size:13px;color:var(--ink-soft);margin:0 0 6px;}
-  #page-upload .sm-needs{color:var(--waitlisted);font-weight:600;}
-  #page-upload .sm-list{display:flex;flex-direction:column;gap:6px;}
-  #page-upload .sm-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:7px 8px 7px 10px;border:1.5px solid var(--rule);border-radius:8px;background:var(--paper-2);font-size:14.5px;}
-  #page-upload .sm-ok{background:#fbfdfb;}
-  #page-upload .sm-warn{border-color:#E7C98F;background:#FFF9EE;}
-  #page-upload .sm-err{border-color:#E9B4B0;background:#FFF6F5;}
-  #page-upload .sm-muted{color:var(--ink-soft);}
-  #page-upload .sm-icon{flex:none;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
-  #page-upload .sm-ok .sm-icon{background:var(--accepted-bg);color:var(--accepted);}
-  #page-upload .sm-warn .sm-icon{background:var(--waitlisted-bg);color:var(--waitlisted);}
-  #page-upload .sm-err .sm-icon{background:var(--rejected-bg);color:var(--rejected);}
-  #page-upload .sm-main{flex:1 1 220px;min-width:0;line-height:1.35;}
-  #page-upload .sm-name{font-weight:600;}
-  #page-upload .sm-typed{color:var(--ink-soft);font-size:13px;}
-  #page-upload .sm-row input.sm-major{flex:0 1 200px;width:auto;height:34px;font-size:14px;padding:0 10px;}
-  #page-upload .sm-row select.sm-type{flex:0 0 150px;width:150px;height:34px;font-size:13.5px;padding:0 28px 0 10px;}
-  #page-upload .sm-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  #page-upload .sm-list{margin-top:6px;border-top:1px solid var(--rule);}
+  #page-upload .sm-row{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;min-height:38px;padding:4px 0 4px 22px;border-bottom:1px solid var(--rule);font-size:15px;line-height:1.35;}
+  #page-upload .sm-mark{position:absolute;left:2px;top:7px;font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:var(--accent);}
+  #page-upload .sm-main{flex:1 1 240px;min-width:0;display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
+  #page-upload .sm-main .uni-logo{width:24px;height:24px;font-size:8px;margin:0;}
+  #page-upload .sm-name{font-weight:500;}
+  #page-upload .sm-aside{color:var(--ink-soft);}
+  #page-upload .sm-muted .sm-main{color:var(--ink-soft);}
+  #page-upload .sm-typed{color:var(--ink-faint);text-decoration-color:var(--accent);text-decoration-thickness:1.5px;}
+  #page-upload .sm-row input.sm-major{flex:0 1 190px;width:auto;height:28px;font-size:14px;padding:0 2px;border:none;border-bottom:1px dashed var(--ink-faint);border-radius:0;background:transparent;}
+  #page-upload .sm-row input.sm-major:focus{border-bottom:1.5px solid var(--accent);}
+  #page-upload .field .sm-ed{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+  #page-upload .sm-ed input{width:15px;height:15px;margin:0;accent-color:var(--accent);}
+  #page-upload .sm-actions{display:inline-flex;align-items:center;gap:14px;}
+  #page-upload .sm-choices{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;}
+  #page-upload .sm-or{color:var(--ink-faint);font-size:14px;}
+  #page-upload .sm-row button.sm-link{min-height:0;height:auto;padding:2px 0;border:none;border-radius:0;background:none;font-family:'IBM Plex Sans',sans-serif;font-size:14px;letter-spacing:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;cursor:pointer;}
+  #page-upload .sm-row button.sm-link:hover{background:none;text-decoration-thickness:2px;}
+  #page-upload .sm-row button.sm-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  #page-upload .sm-row button.sm-confirm{font-weight:600;}
+  #page-upload .sm-row button.sm-remove{color:var(--ink-soft);text-decoration-color:var(--ink-faint);}
+  #page-upload .sm-note{margin:6px 0 0;font-size:13.5px;color:var(--accent);}
+  #page-upload .sm-search{flex:1 1 100%;margin:2px 0 4px;}
+  #page-upload .sm-search input{height:38px;font-size:15px;}
   #page-upload .sm-break{display:none;}
-  #page-upload .sm-row button.sm-btn{min-height:32px;height:32px;padding:0 12px;font-size:13px;}
-  #page-upload .sm-row button.sm-remove{padding:0 10px;}
-  #page-upload .sm-row button.sm-confirm{background:var(--accent);border-color:var(--accent);color:#fff;}
-  #page-upload .sm-choices{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:6px;padding-left:32px;}
-  #page-upload .sm-row button.sm-choice{font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;}
-  #page-upload .sm-search{flex:1 1 100%;padding-left:32px;}
-  #page-upload .sm-search input{height:40px;font-size:15px;}
   @media (max-width:600px){
-    #page-upload .sm-main{flex:1 1 0;}
     #page-upload .sm-break{display:block;flex-basis:100%;height:0;}
-    #page-upload .sm-actions-wide{flex-basis:100%;padding-left:32px;}
-    #page-upload .sm-row input.sm-major{flex:1 1 0;min-width:0;width:auto;}
-    #page-upload .sm-row select.sm-type{flex:0 0 136px;width:136px;}
-    #page-upload .sm-choices, #page-upload .sm-search{padding-left:0;}
+    #page-upload .sm-row input.sm-major{flex:1 1 0;min-width:0;}
+    #page-upload .sm-main{flex-basis:100%;}
   }
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
@@ -2550,10 +2546,9 @@ function renderSchoolMatches(){
     if(!box) continue;
     const entries = SCHOOL_ANALYSIS[kind];
     if(!entries.length){ box.innerHTML = ''; continue; }
-    const okCount = entries.filter(e => e.resolved && !e.duplicate && !e.conflictWith).length;
     const needs = entries.filter(e => !e.resolved || e.conflictWith).length;
     const rows = entries.map((e, i) => schoolRowHtml(kind, e, i)).join('');
-    box.innerHTML = `<div class="sm-summary">${okCount} matched${needs ? ` &middot; <span class="sm-needs">${needs} need${needs === 1 ? 's' : ''} your attention</span>` : ''}</div><div class="sm-list">${rows}</div>`;
+    box.innerHTML = `<div class="sm-list">${rows}</div>${needs ? `<p class="sm-note">${needs === 1 ? '1 school needs' : needs + ' schools need'} a decision before you submit.</p>` : ''}`;
     // Search boxes for entries being fixed.
     entries.forEach((e, i) => {
       const id = `fix-${kind}-${i}`;
@@ -2568,59 +2563,49 @@ function renderSchoolMatches(){
 }
 
 function schoolRowHtml(kind, e, i){
-  const typed = `<span class="sm-typed">You typed &ldquo;${esc(e.raw)}&rdquo;</span>`;
-  const removeBtn = (label) => `<button class="sm-btn sm-remove" onclick="removeSchoolEntry('${kind}', ${i})" aria-label="Remove ${esc(e.raw)}">${label || '&times;'}</button>`;
   const fixKey = kind + ':' + e.raw;
-  const searchBox = `<div class="autocomplete-wrap sm-search"><input type="text" id="fix-${kind}-${i}" placeholder="Search for the right school&hellip;" autocomplete="off"><div class="autocomplete-list" id="fix-${kind}-${i}-list"></div></div>`;
+  const link = (label, onclick, cls) => `<button type="button" class="sm-link${cls ? ' ' + cls : ''}" onclick="${onclick}">${label}</button>`;
+  const remove = (label) => link(label || 'Remove', `removeSchoolEntry('${kind}', ${i})`, 'sm-remove');
+  const searchBox = `<div class="autocomplete-wrap sm-search"><input type="text" id="fix-${kind}-${i}" placeholder="Search for the school&hellip;" autocomplete="off" aria-label="Search for the school you meant"><div class="autocomplete-list" id="fix-${kind}-${i}-list"></div></div>`;
 
   if(e.resolved && e.duplicate){
-    return `<div class="sm-row sm-muted"><span class="sm-icon">&#8226;</span><span class="sm-main"><span class="sm-name">${esc(e.name)}</span> <span class="sm-typed">listed twice &mdash; the extra one is ignored</span></span>${removeBtn()}</div>`;
+    return `<div class="sm-row sm-muted"><span class="sm-main">${esc(e.name)} <span class="sm-aside">is listed twice and counted once</span></span>${remove()}</div>`;
   }
   if(e.resolved && e.conflictWith){
     const other = e.conflictWith.map(k => SCHOOL_KIND_LABEL[k]).join(' and ');
-    return `<div class="sm-row sm-err"><span class="sm-icon">!</span><span class="sm-main"><span class="sm-name">${esc(e.name)}</span> <span class="sm-typed">is also under ${other}. Keep it in the list with your final decision.</span></span>${removeBtn('Remove from ' + SCHOOL_KIND_LABEL[kind])}</div>`;
+    return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">!</span>
+      <span class="sm-main">${esc(e.name)} is also under ${other}. Keep it under your final decision.</span>
+      ${remove('Remove from ' + SCHOOL_KIND_LABEL[kind])}</div>`;
   }
   if(e.resolved){
     const s = schoolSetting(e.name);
-    // Only show what they typed when it isn't already part of the official
-    // name ("UMich" -> University of Michigan, but not "Columbia").
-    const showTyped = !uniNormalize(e.name).includes(uniNormalize(e.raw));
     return `<div class="sm-row sm-ok">
-      <span class="sm-icon">&#10003;</span>
-      <span class="sm-main"><span class="sm-name">${esc(e.name)}</span>${showTyped ? ' ' + typed : ''}</span>
+      <span class="sm-main">${uniLogo(e.name)}<span class="sm-name">${esc(e.name)}</span></span>
       <span class="sm-break"></span>
-      <input type="text" class="sm-major" placeholder="Major" value="${esc(s.major)}" oninput="setSchoolSetting('${jsArg(e.name)}','major',this.value)" aria-label="Major at ${esc(e.name)} (leave blank to use your admitted major)" title="Only needed if it differs from your admitted major">
-      ${kind === 'accepted' ? `<select class="sm-type" onchange="setSchoolSetting('${jsArg(e.name)}','decisionType',this.value)" aria-label="Decision type">
-        <option ${s.decisionType !== 'Early Decision' ? 'selected' : ''}>Regular</option>
-        <option ${s.decisionType === 'Early Decision' ? 'selected' : ''}>Early Decision</option>
-      </select>` : ''}
-      ${removeBtn()}
+      <input type="text" class="sm-major" placeholder="Major, if different" value="${esc(s.major)}" oninput="setSchoolSetting('${jsArg(e.name)}','major',this.value)" aria-label="Major at ${esc(e.name)}, only if it differs from your admitted major">
+      ${kind === 'accepted' ? `<label class="sm-ed"><input type="checkbox" ${s.decisionType === 'Early Decision' ? 'checked' : ''} onchange="setSchoolSetting('${jsArg(e.name)}','decisionType',this.checked ? 'Early Decision' : 'Regular')"> Early decision</label>` : ''}
+      ${remove()}
     </div>`;
   }
   if(e.status === 'fuzzy'){
-    return `<div class="sm-row sm-warn"><span class="sm-icon">?</span>
-      <span class="sm-main">Did you mean <span class="sm-name">${esc(e.name)}</span>? ${typed}</span>
-      <span class="sm-actions sm-actions-wide">
-        <button class="sm-btn sm-confirm" onclick="resolveSchoolEntry('${kind}', ${i}, '${jsArg(e.name)}')">Yes</button>
-        <button class="sm-btn" onclick="toggleSchoolFix('${jsArg(fixKey)}')">No, search</button>
-        ${removeBtn()}
-      </span>
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main"><s class="sm-typed" aria-label="You typed ${esc(e.raw)}">${esc(e.raw)}</s> ${esc(e.name)}?</span>
+      <span class="sm-actions">${link('Yes', `resolveSchoolEntry('${kind}', ${i}, '${jsArg(e.name)}')`, 'sm-confirm')}${link('Pick another', `toggleSchoolFix('${jsArg(fixKey)}')`)}${remove()}</span>
       ${SCHOOL_FIX_OPEN.has(fixKey) ? searchBox : ''}
     </div>`;
   }
   if(e.status === 'ambiguous'){
-    return `<div class="sm-row sm-warn"><span class="sm-icon">?</span>
-      <span class="sm-main">&ldquo;${esc(e.raw)}&rdquo; could be more than one school. Which one?</span>
-      <span class="sm-actions">${removeBtn()}</span>
-      <div class="sm-choices">${e.candidates.map(c => `<button class="sm-btn sm-choice" onclick="resolveSchoolEntry('${kind}', ${i}, '${jsArg(c)}')">${esc(c)}</button>`).join('')}
-        <button class="sm-btn" onclick="toggleSchoolFix('${jsArg(fixKey)}')">Something else&hellip;</button></div>
+    return `<div class="sm-row sm-flag sm-warn"><span class="sm-mark" aria-hidden="true">?</span>
+      <span class="sm-main">Which ${esc(e.raw)}?
+        <span class="sm-choices">${e.candidates.map(c => link(esc(c), `resolveSchoolEntry('${kind}', ${i}, '${jsArg(c)}')`, 'sm-choice')).join('<span class="sm-or">or</span>')}<span class="sm-or">or</span>${link('another school', `toggleSchoolFix('${jsArg(fixKey)}')`)}</span>
+      </span>
+      ${remove()}
       ${SCHOOL_FIX_OPEN.has(fixKey) ? searchBox : ''}
     </div>`;
   }
-  // not found
-  return `<div class="sm-row sm-err"><span class="sm-icon">!</span>
-    <span class="sm-main">Couldn&rsquo;t find &ldquo;${esc(e.raw)}&rdquo;. Search for it, or remove it if it isn&rsquo;t listed yet.</span>
-    <span class="sm-actions">${removeBtn('Remove')}</span>
+  return `<div class="sm-row sm-flag sm-err"><span class="sm-mark" aria-hidden="true">?</span>
+    <span class="sm-main">${esc(e.raw)} <span class="sm-aside">isn&rsquo;t in our list. Search for it, or remove it.</span></span>
+    ${remove()}
     ${searchBox}
   </div>`;
 }
