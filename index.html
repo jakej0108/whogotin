@@ -760,7 +760,8 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
         <p class="section-hint">Share academic honors, competition awards, and other achievements.</p>
         <div class="field">
           <label for="awards-text-input" class="sr-only">Honors and awards</label>
-          <textarea id="awards-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad State Medalist&#10;AP Scholar with Distinction"></textarea>
+          <textarea id="awards-text-input" class="freetext-input" rows="3" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad: state medalist in Chemistry Lab&#10;AP Scholar with Distinction"></textarea>
+          <div class="hint">One award per line. Details after a colon are optional.</div>
         </div>
       </div>
 
@@ -1533,7 +1534,7 @@ function awardsHtml(awards){
   `).join('')}</div>`;
 }
 
-// Free-text ECs / awards are shown exactly as written: escaped, one line per
+// Free-text ECs are shown exactly as written: escaped, one line per
 // paragraph, and lines starting with -, * or a bullet character shown as a
 // bulleted list. Nothing is rewritten or summarized.
 // (A smarter "Title: details" layout was tried and reverted for now; see
@@ -1555,12 +1556,37 @@ function freeTextHtml(text){
   flush();
   return out.length ? '<div class="freetext-box">' + out.join('') + '</div>' : '';
 }
+// Free-text awards, laid out like the old structured entries without
+// changing a word: each line is one entry. "Title: details" or
+// "Title — details" shows the title in bold with the details under it;
+// indented sub-bullets attach to the entry above. Everything is escaped.
+function entryListHtml(text){
+  const BULLET = /^[-*\u2022\u2023\u25AA\u25CF\u25E6\u00B7\u2013]\s*/;
+  const entries = [];
+  for(const raw of String(text || '').replace(/\r\n?/g, '\n').split('\n')){
+    if(!raw.trim()) continue;
+    const indented = /^\s{2,}|^\t/.test(raw) && BULLET.test(raw.trim());
+    const line = raw.trim().replace(BULLET, '').trim();
+    if(!line) continue;
+    if(indented && entries.length){ entries[entries.length - 1].details.push(line); continue; }
+    let title = line, detail = '';
+    const m = line.match(/^(.{2,80}?)(?::\s+|\s+[\u2014\u2013-]\s+)(.+)$/);
+    if(m){ title = m[1].trim(); detail = m[2].trim(); }
+    entries.push({ title, details: detail ? [detail] : [], long: !m && line.length > 90 });
+  }
+  if(!entries.length) return '';
+  return `<div class="ec-display-box">${entries.map(e => `
+    <div class="ec-display-row">
+      <div class="${e.long ? 'ec-display-plain' : 'ec-display-title'}">${esc(e.title)}</div>
+      ${e.details.map(d => `<div class="ec-display-desc">${esc(d)}</div>`).join('')}
+    </div>`).join('')}</div>`;
+}
 const NONE_ADDED_HTML = '<p style="color:var(--ink-faint);font-size:13px;">None added.</p>';
 function usesFreeText(v){ return v !== null && v !== undefined; }
 function hasEcs(p){ return usesFreeText(p.ecsText) ? p.ecsText.trim() !== '' : !!(p.ecs && p.ecs.length); }
 function hasAwards(p){ return usesFreeText(p.awardsText) ? p.awardsText.trim() !== '' : !!(p.awards && p.awards.length); }
 function ecsDisplayHtml(p){ return usesFreeText(p.ecsText) ? (freeTextHtml(p.ecsText) || NONE_ADDED_HTML) : ecsHtml(p.ecs); }
-function awardsDisplayHtml(p){ return usesFreeText(p.awardsText) ? (freeTextHtml(p.awardsText) || NONE_ADDED_HTML) : awardsHtml(p.awards); }
+function awardsDisplayHtml(p){ return usesFreeText(p.awardsText) ? (entryListHtml(p.awardsText) || NONE_ADDED_HTML) : awardsHtml(p.awards); }
 // Turns old structured entries into text, used to prefill the new textarea
 // when someone edits a submission saved before the free-text fields existed.
 function legacyItemsToText(items){
