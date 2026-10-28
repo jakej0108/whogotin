@@ -16,6 +16,8 @@
 -- Runs as the calling user (security invoker), so the existing RLS policies
 -- on profiles still decide what they may insert/update/delete.
 --
+-- Requires the ecs_text / awards_text columns from sql/freetext_ecs_awards.sql.
+--
 -- Install: paste this whole file into Supabase -> SQL Editor -> Run.
 -- Safe to run again; it replaces the previous version of the function.
 
@@ -79,7 +81,7 @@ begin
       insert into profiles (
         owner_id, submission_id, university, status, decision_type, major,
         transfer, transfer_from, class_year, gpa, weighted_gpa, sat, act, high_school, essay,
-        verified, verification_path, ecs, ap_exams, awards
+        verified, verification_path, ecs, ap_exams, awards, ecs_text, awards_text
       ) values (
         v_uid, v_sub, v_row.university, v_row.status,
         coalesce(nullif(v_row.decision_type, ''), 'Regular'), v_row.major,
@@ -87,7 +89,7 @@ begin
         v_row.weighted_gpa, v_row.sat, v_row.act, v_row.high_school, v_row.essay,
         coalesce(v_row.verified, false), v_row.verification_path,
         coalesce(v_row.ecs, '[]'::jsonb), coalesce(v_row.ap_exams, '[]'::jsonb),
-        coalesce(v_row.awards, '[]'::jsonb)
+        coalesce(v_row.awards, '[]'::jsonb), v_row.ecs_text, v_row.awards_text
       )
       returning id into v_id;
     else
@@ -109,7 +111,9 @@ begin
         verification_path = v_row.verification_path,
         ecs               = coalesce(v_row.ecs, '[]'::jsonb),
         ap_exams          = coalesce(v_row.ap_exams, '[]'::jsonb),
-        awards            = coalesce(v_row.awards, '[]'::jsonb)
+        awards            = coalesce(v_row.awards, '[]'::jsonb),
+        ecs_text          = v_row.ecs_text,
+        awards_text       = v_row.awards_text
       where id = v_id;
     end if;
 

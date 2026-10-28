@@ -424,6 +424,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   #page-upload input.ec-desc-input{font-size:15px;}
   #page-upload .form-submit{display:flex;justify-content:flex-end;margin-top:28px;padding-top:20px;border-top:1.5px solid var(--rule);}
   #page-upload .form-submit button{min-height:46px;font-size:15px;padding:0 24px;}
+  #page-upload textarea.freetext-input{min-height:150px;}
+  .freetext-box{border:1.5px solid var(--rule);border-radius:8px;padding:12px 18px;background:var(--paper-2);font-size:15.5px;line-height:1.55;color:var(--ink);overflow-wrap:anywhere;}
+  .freetext-box p{margin:6px 0;}
+  .freetext-box ul.freetext-list{margin:6px 0;padding-left:22px;}
+  .freetext-box li{margin:3px 0;}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
   @media (max-width:600px){
     #page-upload .form-title{font-size:24px;}
@@ -700,20 +705,21 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <!-- 4. Extracurricular activities -->
       <div class="form-section">
         <h3 class="form-section-title">Extracurricular activities <span class="opt">(optional)</span></h3>
-        <p class="section-hint">Your activities, leadership roles, volunteering, work experience and projects.</p>
+        <p class="section-hint">List your extracurricular activities, leadership roles, volunteering, work experience, and projects. You can write them however you like.</p>
         <div class="field">
-          <div id="ec-list"></div>
-          <button class="small add-row-btn" onclick="addEcRow()">+ Add activity</button>
+          <label for="ecs-text-input" class="sr-only">Extracurricular activities</label>
+          <textarea id="ecs-text-input" class="freetext-input" rows="8" maxlength="5000" placeholder="Volunteer EMT&#10;Hospital Volunteer&#10;Varsity Track &amp; Cross Country — 4 years&#10;Founded a business with $15K in revenue&#10;President of Chess Club"></textarea>
+          <div class="hint">One per line, bullet points or paragraphs all work. You can paste from a document.</div>
         </div>
       </div>
 
       <!-- 5. Honors & awards -->
       <div class="form-section">
         <h3 class="form-section-title">Honors &amp; awards <span class="opt">(optional)</span></h3>
-        <p class="section-hint">Academic honors, competition awards and other achievements.</p>
+        <p class="section-hint">Share academic honors, competition awards, and other achievements.</p>
         <div class="field">
-          <div id="award-list"></div>
-          <button class="small add-row-btn" onclick="addAwardRow()">+ Add award</button>
+          <label for="awards-text-input" class="sr-only">Honors and awards</label>
+          <textarea id="awards-text-input" class="freetext-input" rows="6" maxlength="5000" placeholder="National Merit Finalist&#10;Science Olympiad State Medalist&#10;AP Scholar with Distinction"></textarea>
         </div>
       </div>
 
@@ -1023,7 +1029,11 @@ function rowToProfile(row){
     createdAt: row.created_at || null,
     ecs: row.ecs || [],
     apExams: row.ap_exams || [],
-    awards: row.awards || []
+    awards: row.awards || [],
+    // Free-text versions (null = this submission predates them, so the old
+    // structured ecs/awards arrays are shown instead; '' = cleared on purpose).
+    ecsText: (row.ecs_text === undefined) ? null : row.ecs_text,
+    awardsText: (row.awards_text === undefined) ? null : row.awards_text
   };
 }
 
@@ -1449,6 +1459,41 @@ function awardsHtml(awards){
   `).join('')}</div>`;
 }
 
+// Free-text ECs / awards are shown exactly as written: escaped, one line per
+// paragraph, and lines starting with -, * or a bullet character shown as a
+// bulleted list. Nothing is rewritten or summarized.
+function freeTextHtml(text){
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let items = null;
+  const flush = () => {
+    if(items){ out.push('<ul class="freetext-list">' + items.join('') + '</ul>'); items = null; }
+  };
+  for(const raw of lines){
+    const line = raw.trim();
+    if(!line){ flush(); continue; }
+    const bullet = line.match(/^[-*•‣▪●◦]\s*(.+)$/);
+    if(bullet){ (items = items || []).push('<li>' + esc(bullet[1]) + '</li>'); }
+    else { flush(); out.push('<p>' + esc(line) + '</p>'); }
+  }
+  flush();
+  return out.length ? '<div class="freetext-box">' + out.join('') + '</div>' : '';
+}
+const NONE_ADDED_HTML = '<p style="color:var(--ink-faint);font-size:13px;">None added.</p>';
+function usesFreeText(v){ return v !== null && v !== undefined; }
+function hasEcs(p){ return usesFreeText(p.ecsText) ? p.ecsText.trim() !== '' : !!(p.ecs && p.ecs.length); }
+function hasAwards(p){ return usesFreeText(p.awardsText) ? p.awardsText.trim() !== '' : !!(p.awards && p.awards.length); }
+function ecsDisplayHtml(p){ return usesFreeText(p.ecsText) ? (freeTextHtml(p.ecsText) || NONE_ADDED_HTML) : ecsHtml(p.ecs); }
+function awardsDisplayHtml(p){ return usesFreeText(p.awardsText) ? (freeTextHtml(p.awardsText) || NONE_ADDED_HTML) : awardsHtml(p.awards); }
+// Turns old structured entries into text, used to prefill the new textarea
+// when someone edits a submission saved before the free-text fields existed.
+function legacyItemsToText(items){
+  return (items || []).filter(x => x && x.name).map(x => {
+    const extra = x.role || x.level;
+    return '- ' + x.name + (extra ? ' (' + extra + ')' : '') + (x.description ? ' — ' + x.description : '');
+  }).join('\n');
+}
+
 function stampHtml(status, decisionType, big){
   const label = status==='accepted' ? 'Accepted' : status==='waitlisted' ? 'Waitlisted' : 'Rejected';
   const sub = (status==='accepted' && decisionType) ? ' &middot; '+esc(decisionType) : '';
@@ -1546,8 +1591,8 @@ function renderGroupExpanded(group){
       ${rep.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.sat)}</div></div>` : ''}
       ${rep.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.act)}</div></div>` : ''}
     </div>
-    ${rep.ecs && rep.ecs.length ? `<div class="field"><label>Extracurriculars</label>${ecsHtml(rep.ecs)}</div>` : ''}
-    ${rep.awards && rep.awards.length ? `<div class="field"><label>Awards &amp; honors</label>${awardsHtml(rep.awards)}</div>` : ''}
+    ${hasEcs(rep) ? `<div class="field"><label>Extracurriculars</label>${ecsDisplayHtml(rep)}</div>` : ''}
+    ${hasAwards(rep) ? `<div class="field"><label>Awards &amp; honors</label>${awardsDisplayHtml(rep)}</div>` : ''}
     ${rep.apExams && rep.apExams.length ? `<div class="field">
       <label>AP exams</label>
       <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
@@ -1906,7 +1951,7 @@ function renderProfilePage(id){
     ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
-      ${ecsHtml(p.ecs)}
+      ${ecsDisplayHtml(p)}
     </div>
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
@@ -1914,9 +1959,9 @@ function renderProfilePage(id){
         ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
       </div>
     </div>` : ''}
-    ${p.awards && p.awards.length ? `<div class="field">
+    ${hasAwards(p) ? `<div class="field">
       <label>Awards &amp; honors</label>
-      ${awardsHtml(p.awards)}
+      ${awardsDisplayHtml(p)}
     </div>` : ''}
   `;
   goPage('profile');
@@ -2057,7 +2102,7 @@ window.addEventListener('popstate', async ()=>{
 });
 
 /* ---------------- Upload wizard ---------------- */
-let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[]};
+let draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
 function setTransfer(val){
   draft.transfer = val;
@@ -2114,30 +2159,12 @@ function renderChips(kind){
   `).join('');
 }
 
-function addEcRow(){
-  draft.ecs.push({name:'', role:'', description:''});
-  renderEcRows();
-}
-function removeEcRow(i){
-  draft.ecs.splice(i,1);
-  renderEcRows();
-}
-function updateEc(i, field, val){
-  draft.ecs[i][field]=val;
-}
+// Extracurriculars are one free-text box (draft.ecsText). draft.ecs keeps any
+// old structured entries untouched so they're saved back unchanged.
 function renderEcRows(){
-  const el = document.getElementById('ec-list');
-  el.innerHTML = draft.ecs.map((e,i)=>`
-    <div class="ec-row-block">
-      <div class="ec-row">
-        <input type="text" placeholder="Activity, e.g. Varsity Soccer" value="${esc(e.name)}" oninput="updateEc(${i},'name',this.value)">
-        <button class="small" onclick="removeEcRow(${i})">Remove</button>
-      </div>
-      <textarea class="ec-desc-input" placeholder="What did you do? (optional — e.g. Team Captain, ran weekly practices)" oninput="updateEc(${i},'description',this.value)">${esc(e.description)}</textarea>
-    </div>
-  `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No activities added yet.</p>`;
+  const el = document.getElementById('ecs-text-input');
+  if(el) el.value = draft.ecsText || '';
 }
-if(draft.ecs.length===0) draft.ecs.push({name:'',role:'',description:''});
 
 // Same repeatable-row pattern as extracurriculars: subject is free text
 // (profanity-filtered like Major), score is optional since scores aren't
@@ -2177,37 +2204,10 @@ function renderApRows(){
   });
 }
 
-// Same repeatable-row pattern as extracurriculars/AP exams. Level is a
-// small fixed dropdown (not free text) since "how big a deal is this
-// award" is naturally a short, closed list — everything else is free text.
-function addAwardRow(){
-  draft.awards.push({name:'', level:'', description:''});
-  renderAwardRows();
-}
-function removeAwardRow(i){
-  draft.awards.splice(i,1);
-  renderAwardRows();
-}
-function updateAward(i, field, val){
-  draft.awards[i][field] = val;
-}
-const AWARD_LEVELS = ['School','Regional/State','National','International'];
+// Honors & awards: one free-text box (draft.awardsText), same as ECs.
 function renderAwardRows(){
-  const el = document.getElementById('award-list');
-  if(!el) return;
-  el.innerHTML = draft.awards.map((a,i)=>`
-    <div class="ec-row-block">
-      <div class="ec-row">
-        <input type="text" placeholder="Award name, e.g. National Merit Scholar" value="${esc(a.name)}" oninput="updateAward(${i},'name',this.value)">
-        <select onchange="updateAward(${i},'level',this.value)">
-          <option value="" ${!a.level?'selected':''}>Level (optional)</option>
-          ${AWARD_LEVELS.map(l=>`<option value="${l}" ${a.level===l?'selected':''}>${l}</option>`).join('')}
-        </select>
-        <button class="small" onclick="removeAwardRow(${i})">Remove</button>
-      </div>
-      <input type="text" class="ec-desc-input" placeholder="Details (optional)" value="${esc(a.description)}" oninput="updateAward(${i},'description',this.value)">
-    </div>
-  `).join('') || `<p style="color:var(--ink-faint);font-size:13px;">No awards added yet.</p>`;
+  const el = document.getElementById('awards-text-input');
+  if(el) el.value = draft.awardsText || '';
 }
 
 // Covers people submitting a result from a few years back (a current
@@ -2278,9 +2278,12 @@ function loadDraftFromExisting(rows){
     classYear: rep.classYear ? String(rep.classYear) : '',
     essay: rep.essay || '',
     verified: !!rep.verified,
-    ecs: (rep.ecs && rep.ecs.length) ? rep.ecs.map(e=>({name:e.name||'', role:e.role||'', description:e.description||''})) : [{name:'',role:'',description:''}],
+    ecs: rep.ecs || [],
     apExams: (rep.apExams||[]).map(a=>({name:a.name||'', score: (a.score!==null && a.score!==undefined) ? String(a.score) : ''})),
-    awards: (rep.awards||[]).map(a=>({name:a.name||'', level:a.level||'', description:a.description||''}))
+    awards: rep.awards || [],
+    // Prefill from the free-text field, or from old structured entries.
+    ecsText: usesFreeText(rep.ecsText) ? rep.ecsText : legacyItemsToText(rep.ecs),
+    awardsText: usesFreeText(rep.awardsText) ? rep.awardsText : legacyItemsToText(rep.awards)
   };
 
   const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
@@ -2305,7 +2308,7 @@ function loadDraftFromExisting(rows){
 }
 
 function resetSubmitForm(){
-  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[{name:'',role:'',description:''}], apExams:[], awards:[]};
+  draft = {transfer:false, transferFrom:'', accepted:[], waitlisted:[], rejected:[], highSchool:'', gpa:'', weightedGpa:'', sat:'', act:'', major:'', classYear:'', essay:'', verified:false, ecs:[], apExams:[], awards:[], ecsText:'', awardsText:''};
 
   const gpaInput = document.getElementById('gpa-input'); if(gpaInput) gpaInput.value = '';
   const weightedGpaInput = document.getElementById('weighted-gpa-input'); if(weightedGpaInput) weightedGpaInput.value = '';
@@ -2362,6 +2365,12 @@ async function submitResult(){
   draft.sat = document.getElementById('sat-input').value.trim();
   draft.act = document.getElementById('act-input').value.trim();
   draft.essay = document.getElementById('essay-input').value.trim();
+  draft.ecsText = (document.getElementById('ecs-text-input')?.value || '').trim();
+  draft.awardsText = (document.getElementById('awards-text-input')?.value || '').trim();
+  if(draft.ecsText.length > 5000 || draft.awardsText.length > 5000){
+    alert('Extracurricular activities and honors & awards can each be up to 5,000 characters.');
+    return;
+  }
   draft.major = majorVal;
   draft.classYear = classYearVal;
   if(draft.transfer) draft.transferFrom = document.getElementById('transfer-from-input').value.trim();
@@ -2403,9 +2412,9 @@ async function submitResult(){
     [draft.highSchool, 'High school'],
     [draft.essay, 'Essay summary'],
     [draft.transfer ? draft.transferFrom : '', 'Transferring from'],
-    ...draft.ecs.flatMap(e => [[e.name,'Extracurricular activity'], [e.role,'Extracurricular role'], [e.description,'Extracurricular description']]),
+    [draft.ecsText, 'Extracurricular activities'],
     ...draft.apExams.map(a => [a.name, 'AP exam subject']),
-    ...draft.awards.flatMap(a => [[a.name,'Award name'], [a.description,'Award description']]),
+    [draft.awardsText, 'Honors & awards'],
     ...allSchools.map(s => [s.major, 'Major for '+s.name])
   ];
   for(const [val, label] of freeTextChecks){
@@ -2465,9 +2474,13 @@ async function submitResult(){
     essay: draft.essay,
     verified: !!file || keepPriorVerification,
     verification_path: priorVerificationPath,
-    ecs: draft.ecs.filter(e=>e.name),
+    // Old structured entries are passed back unchanged; the free-text
+    // fields are what new and edited submissions use.
+    ecs: (draft.ecs || []).filter(e=>e && e.name),
+    ecs_text: draft.ecsText,
+    awards_text: draft.awardsText,
     ap_exams: draft.apExams.filter(a=>a.name).map(a=>({ name: a.name, score: a.score ? Number(a.score) : null })),
-    awards: draft.awards.filter(a=>a.name).map(a=>({ name: a.name, level: a.level || '', description: a.description || '' }))
+    awards: (draft.awards || []).filter(a=>a && a.name)
   };
   // Fields that differ per school. Each school can have its own major
   // (people don't always apply undecided-vs-declared, or the same major,
@@ -3267,7 +3280,7 @@ function openProfileObj(id){
     ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
-      ${ecsHtml(p.ecs)}
+      ${ecsDisplayHtml(p)}
     </div>
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
@@ -3275,9 +3288,9 @@ function openProfileObj(id){
         ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
       </div>
     </div>` : ''}
-    ${p.awards && p.awards.length ? `<div class="field">
+    ${hasAwards(p) ? `<div class="field">
       <label>Awards &amp; honors</label>
-      ${awardsHtml(p.awards)}
+      ${awardsDisplayHtml(p)}
     </div>` : ''}
   `;
 }
