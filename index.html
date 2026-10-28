@@ -336,6 +336,27 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .ec-display-role{font-weight:400;color:var(--ink-soft);font-size:14px;}
   .ec-display-desc{font-size:15px;color:var(--ink);margin-top:5px;padding-left:16px;position:relative;line-height:1.5;}
   .ec-display-desc::before{content:'\2013';position:absolute;left:0;}
+  /* Profile stats: large figures on a ruled line */
+  .stat-row{display:flex;flex-wrap:wrap;margin:6px 0 22px;border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);}
+  .stat{flex:0 1 auto;min-width:110px;padding:12px 28px 12px 0;}
+  .stat + .stat{padding-left:28px;border-left:1px solid var(--rule);}
+  .stat-num{font-family:'Fraunces',serif;font-size:36px;font-weight:600;line-height:1.05;color:var(--ink);font-variant-numeric:lining-nums tabular-nums;}
+  .stat-label{margin-top:4px;font-size:13px;color:var(--ink-soft);}
+  /* AP exams: score stamp + subject */
+  .ap-list{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));column-gap:28px;}
+  .ap-item{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px dashed var(--rule);font-size:15.5px;color:var(--ink);}
+  .ap-score{flex:none;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:2px solid currentColor;border-radius:6px;font-family:'Fraunces',serif;font-weight:700;font-size:18px;line-height:1;}
+  .ap-high{color:var(--accepted);background:var(--accepted-bg);}
+  .ap-mid{color:var(--waitlisted);background:var(--waitlisted-bg);}
+  .ap-low{color:var(--rejected);background:var(--rejected-bg);}
+  .ap-none{color:var(--ink-faint);border-style:dashed;}
+  /* Home cards: the major is the headline under the decisions */
+  .hc-major{margin:12px 0 2px;font-family:'Fraunces',serif;font-size:19px;font-weight:600;line-height:1.25;color:var(--ink);}
+  @media (max-width:600px){
+    .stat{min-width:0;padding-right:18px;}
+    .stat + .stat{padding-left:18px;}
+    .stat-num{font-size:30px;}
+  }
   /* Profile page specifically reads small/light by default (same .field
      label style used everywhere) — bumped just here per feedback that the
      whole result page felt too light and small. */
@@ -1020,6 +1041,29 @@ function gpaTypeLabel(p){
   if(!p || (p.weightedGpa === '' || p.weightedGpa === null || p.weightedGpa === undefined)) return '';
   return ' &middot; Weighted ' + esc(p.weightedGpa);
 }
+// Test scores as large figures on a ruled line (profile + submission pages).
+function statsHtml(p){
+  const stat = (num, label) => `<div class="stat"><div class="stat-num">${esc(num)}</div><div class="stat-label">${label}</div></div>`;
+  const hasW = !(p.weightedGpa === '' || p.weightedGpa === null || p.weightedGpa === undefined);
+  return `<div class="stat-row">
+    ${stat(p.gpa, hasW ? 'Unweighted GPA' : 'GPA')}
+    ${hasW ? stat(p.weightedGpa, 'Weighted GPA') : ''}
+    ${p.sat ? stat(p.sat, 'SAT') : ''}
+    ${p.act ? stat(p.act, 'ACT') : ''}
+  </div>`;
+}
+// AP exams as a compact list: the score in a stamp (green 4–5, amber 3,
+// red 1–2, dash when not reported), highest scores first.
+function apExamsHtml(exams){
+  const list = (exams || []).filter(a => a && a.name).map((a, i) => ({ a, i, n: Number(a.score) || 0 }));
+  list.sort((x, y) => (y.n - x.n) || (x.i - y.i));
+  return `<ul class="ap-list">${list.map(({ a, n }) => {
+    const tone = n >= 4 ? 'ap-high' : n === 3 ? 'ap-mid' : n >= 1 ? 'ap-low' : 'ap-none';
+    const name = String(a.name).replace(/^AP\s+/i, '');
+    return `<li class="ap-item"><span class="ap-score ${tone}" aria-label="${n ? 'Score ' + n : 'Score not reported'}">${n ? n : '&ndash;'}</span><span class="ap-name">${esc(name)}</span></li>`;
+  }).join('')}</ul>`;
+}
+
 function rowToProfile(row){
   return {
     id: row.id,
@@ -1602,18 +1646,12 @@ function renderGroupExpanded(group){
     ${rejected.length ? `<div class="hc-section"><div class="hc-section-title" style="color:var(--rejected);">Rejected</div>${schoolListHtml(rejected)}</div>` : ''}
     ${waitlisted.length ? `<div class="hc-section"><div class="hc-section-title" style="color:var(--waitlisted);">Waitlisted</div>${schoolListHtml(waitlisted)}</div>` : ''}
     <hr class="divider" style="margin:12px 0;">
-    <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.gpa)}${gpaTypeLabel(rep)}</div></div>
-      ${rep.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.sat)}</div></div>` : ''}
-      ${rep.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:16px;">${esc(rep.act)}</div></div>` : ''}
-    </div>
+    ${statsHtml(rep)}
     ${hasEcs(rep) ? `<div class="field"><label>Extracurriculars</label>${ecsDisplayHtml(rep)}</div>` : ''}
     ${hasAwards(rep) ? `<div class="field"><label>Awards &amp; honors</label>${awardsDisplayHtml(rep)}</div>` : ''}
     ${rep.apExams && rep.apExams.length ? `<div class="field">
       <label>AP exams</label>
-      <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
-        ${rep.apExams.map(a=>`<div class="idx-card" style="cursor:default;padding:10px;"><h3 style="font-size:13px;margin:0 0 4px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
-      </div>
+      ${apExamsHtml(rep.apExams)}
     </div>` : ''}
   `;
 }
@@ -1640,7 +1678,8 @@ function groupCardHtml(group){
         ${statusSummaryLine('Rejected', rejectedNames)}
         ${statusSummaryLine('Waitlisted', waitlistedNames)}
       </div>
-      <div class="meta" style="font-size:15px;">${esc(topMajor)} &middot; GPA <b>${esc(rep.gpa)}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+esc(rep.classYear)+'</b>' : ''}</div>
+      ${topMajor ? `<div class="hc-major">${esc(topMajor)}</div>` : ''}
+      <div class="meta" style="font-size:15px;">GPA <b>${esc(rep.gpa)}${gpaTypeLabel(rep)}</b>${rep.classYear ? ' &middot; Enrolling <b>'+esc(rep.classYear)+'</b>' : ''}</div>
       <div style="margin:6px 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         ${rep.verified ? `<span class="stamp stamp-accepted" style="font-size:9.5px;padding:3px 8px;">&#10003; Verified</span>` : `<span class="verified-badge" style="color:var(--ink-faint);">Unverified</span>`}
         ${typeBadgeHtml(rep)}
@@ -1958,12 +1997,8 @@ function renderProfilePage(id){
       ${stampHtml(p.status, p.decisionType, true)}
     </div>
     <hr class="divider">
-    <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.gpa)}${gpaTypeLabel(p)}</div></div>
-      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.sat)}</div></div>` : ''}
-      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.act)}</div></div>` : ''}
-      ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    </div>
+    ${statsHtml(p)}
+    ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
     ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
@@ -1971,9 +2006,7 @@ function renderProfilePage(id){
     </div>
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
-      <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
-        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
-      </div>
+      ${apExamsHtml(p.apExams)}
     </div>` : ''}
     ${hasAwards(p) ? `<div class="field">
       <label>Awards &amp; honors</label>
@@ -3819,12 +3852,8 @@ function openProfileObj(id){
       ${stampHtml(p.status, p.decisionType, true)}
     </div>
     <hr class="divider">
-    <div class="row">
-      <div class="field"><label>GPA</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.gpa)}${gpaTypeLabel(p)}</div></div>
-      ${p.sat ? `<div class="field"><label>SAT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.sat)}</div></div>` : ''}
-      ${p.act ? `<div class="field"><label>ACT</label><div style="font-family:'IBM Plex Mono',monospace;font-size:18px;">${esc(p.act)}</div></div>` : ''}
-      ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
-    </div>
+    ${statsHtml(p)}
+    ${p.highSchool ? `<div class="field"><label>High school</label><div>${esc(p.highSchool)}</div></div>` : ''}
     ${p.essay ? `<div class="field"><label>Essay topic</label><div>${esc(p.essay)}</div></div>` : ''}
     <div class="field">
       <label>Extracurriculars</label>
@@ -3832,9 +3861,7 @@ function openProfileObj(id){
     </div>
     ${p.apExams && p.apExams.length ? `<div class="field">
       <label>AP exams</label>
-      <div class="card-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
-        ${p.apExams.map(a=>`<div class="idx-card" style="cursor:default;"><h3 style="font-size:14px;">${esc(a.name)}</h3>${a.score ? `<div class="meta">Score: ${esc(a.score)}</div>` : `<div class="meta" style="color:var(--ink-faint);">Score pending</div>`}</div>`).join('')}
-      </div>
+      ${apExamsHtml(p.apExams)}
     </div>` : ''}
     ${hasAwards(p) ? `<div class="field">
       <label>Awards &amp; honors</label>
