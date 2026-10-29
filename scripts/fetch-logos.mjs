@@ -29,7 +29,7 @@ import sharp from 'sharp';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOGO_DIR = path.join(ROOT, 'logos');
 const SIZE = 128;               // saved logo size (px)
-const MIN_SOURCE = 64;          // smaller icons are skipped (stamps show at most 80 device px)
+const MIN_SOURCE = 48;          // smaller icons are skipped (stamps show at 52-80 device px)
 const TIMEOUT_MS = 15000;
 const CONCURRENCY = 6;
 // Many university sites block requests that don't look like a browser, so
