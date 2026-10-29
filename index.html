@@ -235,6 +235,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     vertical-align:middle;margin-right:8px;
   }
   .uni-logo-lg{width:40px;height:40px;font-size:14px;}
+  /* Logos are square site icons, so they sit in a rounded square (a circle
+     would clip their corners); the initials stamp stays round. */
+  .uni-logo-has-img{position:relative;overflow:hidden;background:#fff;border:1px solid var(--rule);border-radius:6px;}
+  .uni-logo-lg.uni-logo-has-img{border-radius:9px;}
+  .uni-logo-has-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;}
   .idx-card .meta{font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;line-height:1.5;}
   #home-recent .idx-card .meta{font-size:15px;}
   .idx-card .meta b{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600;}
@@ -883,6 +888,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   </main>
   <footer style="text-align:center;padding:24px 20px;color:var(--ink-faint);font-size:12.5px;">
     <span onclick="goPage('privacy')" style="cursor:pointer;text-decoration:underline;">Privacy</span>
+    <div style="margin-top:6px;">Not affiliated with any university. School names and logos are trademarks of their respective owners.</div>
   </footer>
 </div>
 
@@ -983,6 +989,20 @@ function slugify(text){
 
 let SLUG_TO_UNI = {};
 
+// University logos: logos/<domain>.png files fetched once from each school's
+// own website (scripts/fetch-logos.mjs). logos/manifest.json lists which
+// domains have one; every other school shows its initials.
+const LOGO_DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+let LOGO_DOMAINS = new Set();
+async function loadLogoManifest(){
+  try {
+    const res = await fetch('/logos/manifest.json', { cache: 'no-cache' });
+    if(!res.ok) return;
+    const list = await res.json();
+    if(Array.isArray(list)) LOGO_DOMAINS = new Set(list.filter(d => typeof d === 'string' && LOGO_DOMAIN_RE.test(d)));
+  } catch(e){ /* no logos: initials everywhere */ }
+}
+
 async function loadUniversities(){
   const { data, error } = await supabaseClient.from('universities').select('*').order('name');
   if(error){ console.error('Failed to load universities', error); return; }
@@ -991,6 +1011,7 @@ async function loadUniversities(){
   SLUG_TO_UNI = {};
   data.forEach(u => {
     const info = { loc: u.location, type: u.type, accept: u.acceptance_rate };
+    if(u.domain && LOGO_DOMAIN_RE.test(u.domain)) info.domain = u.domain;
     if(u.rank !== null) info.rank = u.rank;
     if(u.tuition_in_state !== null) info.tuitionIn = u.tuition_in_state;
     if(u.tuition_out_state !== null) info.tuitionOut = u.tuition_out_state;
@@ -1490,6 +1511,13 @@ function uniLogo(name, big){
   const shrink = initials.length > 3
     ? (big ? ' style="font-size:11px;letter-spacing:-0.3px;"' : ' style="font-size:7.5px;letter-spacing:-0.3px;"')
     : '';
+  const info = UNI_INFO[name];
+  const domain = info && info.domain;
+  if(domain && LOGO_DOMAINS.has(domain)){
+    // The initials sit underneath; the logo covers them once it loads, and
+    // removes itself if it fails, so the initials always show as a fallback.
+    return `<span class="uni-logo uni-logo-has-img${big?' uni-logo-lg':''}"${shrink}>${esc(initials)}<img src="/logos/${domain}.png" alt="" loading="lazy" decoding="async" onerror="this.parentNode.classList.remove('uni-logo-has-img');this.remove()"></span>`;
+  }
   return `<span class="uni-logo${big?' uni-logo-lg':''}"${shrink}>${esc(initials)}</span>`;
 }
 
@@ -4480,7 +4508,7 @@ function renderPredictBattery(){
     const predictBtn = document.getElementById('get-prediction-btn');
     if(predictBtn) predictBtn.style.display = 'none';
   }
-  await Promise.all([loadUniversities(), loadUniversityProfileCounts()]);
+  await Promise.all([loadUniversities(), loadUniversityProfileCounts(), loadLogoManifest()]);
   renderSchoolMatches();
   const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname);
   if(!isTargetedRoute && window.location.pathname === '/') await loadRecentProfiles();
