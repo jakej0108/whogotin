@@ -29,10 +29,16 @@ import sharp from 'sharp';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOGO_DIR = path.join(ROOT, 'logos');
 const SIZE = 128;               // saved logo size (px)
-const MIN_SOURCE = 96;          // smaller icons are skipped
+const MIN_SOURCE = 64;          // smaller icons are skipped (stamps show at most 80 device px)
 const TIMEOUT_MS = 15000;
 const CONCURRENCY = 6;
-const UA = 'Mozilla/5.0 (compatible; WhoGotInLogoFetcher/1.0; +https://whogotin.com)';
+// Many university sites block requests that don't look like a browser, so
+// send the same headers a desktop Chrome would.
+const BROWSER_HEADERS = {
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+  'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+  'accept-language': 'en-US,en;q=0.9',
+};
 const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
 
 // Public values; the same ones the website itself uses.
@@ -54,7 +60,7 @@ async function fetchWithTimeout(url, opts = {}){
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
-    return await fetch(url, { redirect: 'follow', ...opts, signal: ctrl.signal, headers: { 'user-agent': UA, ...(opts.headers || {}) } });
+    return await fetch(url, { redirect: 'follow', ...opts, signal: ctrl.signal, headers: { ...BROWSER_HEADERS, ...(opts.headers || {}) } });
   } finally { clearTimeout(t); }
 }
 
@@ -64,6 +70,14 @@ async function loadSchools(file){
   const res = await fetchWithTimeout(url, { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${SUPABASE_KEY}` } });
   if(!res.ok) throw new Error(`Could not load universities from Supabase: HTTP ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+// Last resort: Google's favicon service, fetched once like everything else.
+// Google crawls school sites itself, so this works for sites that block us.
+// Returns 404 when it has nothing. LOGO_TEST_FALLBACK overrides it in tests.
+export function fallbackIconUrl(domain){
+  if(process.env.LOGO_TEST_FALLBACK) return process.env.LOGO_TEST_FALLBACK.replace('{domain}', domain);
+  return `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent('https://www.' + domain + '/')}&size=256`;
 }
 
 // Homepages to try for a domain. LOGO_TEST_MAP ({"domain": "http://127.0.0.1:port/"})
@@ -104,16 +118,66 @@ export function iconCandidates(html, pageUrl){
   return out.filter(c => !seen.has(c.url) && seen.add(c.url));
 }
 
+// .ico files hold several sizes. Returns the largest one as something sharp
+// can read: the embedded PNG, or raw RGBA decoded from a 24/32-bit bitmap.
+export function largestFromIco(buf){
+  if(buf.length < 6 || buf.readUInt16LE(0) !== 0 || buf.readUInt16LE(2) !== 1) return null;
+  const count = buf.readUInt16LE(4);
+  let best = null;
+  for(let i = 0; i < count; i++){
+    const o = 6 + i * 16;
+    if(o + 16 > buf.length) break;
+    const w = buf[o] || 256, size = buf.readUInt32LE(o + 8), off = buf.readUInt32LE(o + 12);
+    if(off + size > buf.length || size < 8) continue;
+    if(!best || w > best.w) best = { w, data: buf.subarray(off, off + size) };
+  }
+  if(!best) return null;
+  const d = best.data;
+  if(d.readUInt32BE(0) === 0x89504e47) return { input: d };                 // PNG inside
+  const hdr = d.readUInt32LE(0), w = d.readInt32LE(4), h = Math.abs(d.readInt32LE(8)) / 2, bpp = d.readUInt16LE(14);
+  if(hdr < 40 || w <= 0 || h <= 0 || w > 512 || h > 512 || (bpp !== 32 && bpp !== 24)) return null;
+  const stride = Math.ceil((w * bpp / 8) / 4) * 4, maskStride = Math.ceil(w / 32) * 4;
+  const px = d.subarray(hdr), mask = px.subarray(stride * h);
+  const out = Buffer.alloc(w * h * 4);
+  for(let y = 0; y < h; y++){
+    const row = h - 1 - y;                                                  // bitmaps are stored bottom-up
+    for(let x = 0; x < w; x++){
+      const s = row * stride + x * (bpp / 8), t = (y * w + x) * 4;
+      if(s + 2 >= px.length) return null;
+      out[t] = px[s + 2]; out[t + 1] = px[s + 1]; out[t + 2] = px[s];
+      if(bpp === 32) out[t + 3] = px[s + 3];
+      else {
+        const m = mask[row * maskStride + (x >> 3)];
+        out[t + 3] = (m === undefined || !((m >> (7 - (x & 7))) & 1)) ? 255 : 0;
+      }
+    }
+  }
+  if(bpp === 32 && !out.some((v, i) => i % 4 === 3 && v)) for(let i = 3; i < out.length; i += 4) out[i] = 255;  // no alpha used
+  return { input: out, raw: { width: w, height: h, channels: 4 } };
+}
+
 // Downloads an image and returns a 128x128 PNG buffer, or throws.
 export async function toLogoPng(buf, isSvg){
+  const ico = (!isSvg && buf.length > 6 && buf.readUInt16LE(0) === 0 && buf.readUInt16LE(2) === 1) ? largestFromIco(buf) : null;
+  if(ico){
+    const png = await sharp(ico.input, ico.raw ? { raw: ico.raw } : {}).png().toBuffer();
+    return toLogoPng(png, false);
+  }
   const img = sharp(buf, isSvg ? { density: 300 } : {});
   const meta = await img.metadata();
   const w = meta.width || 0, h = meta.height || 0;
   if(!isSvg && meta.format !== 'svg' && Math.min(w, h) < MIN_SOURCE) throw new Error(`too small (${w}x${h})`);
-  return sharp(buf, isSvg || meta.format === 'svg' ? { density: 300 } : {})
+  const out = await sharp(buf, isSvg || meta.format === 'svg' ? { density: 300 } : {})
     .resize(SIZE, SIZE, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png({ compressionLevel: 9 })
     .toBuffer();
+  // The site shows logos on white: reject ones that would be (nearly) invisible there.
+  const onWhite = await sharp(out).flatten({ background: '#ffffff' }).png().toBuffer();   // stats() reads its input, so render first
+  const st = await sharp(onWhite).stats();
+  const spread = Math.max(...st.channels.slice(0, 3).map(c => c.stdev));
+  const minLum = Math.min(...st.channels.slice(0, 3).map(c => c.min));
+  if(spread < 6 || minLum > 225) throw new Error('blank on a white background');
+  return out;
 }
 
 async function download(url){
@@ -126,33 +190,47 @@ async function download(url){
   return { buf, type: (res.headers.get('content-type') || '').toLowerCase() };
 }
 
-// Returns { ok: true, png, source } or { ok: false, reason }.
+const errText = e => e.name === 'AbortError' ? 'timeout' : (e.cause && e.cause.code) || e.message;
+
+// Returns { ok: true, png, source } or { ok: false, reason, tried }.
 export async function fetchLogo(domain){
   const tried = [];
+  let homepage = null;            // how the homepage request went (for the report)
   for(const page of siteUrls(domain)){
     let html = '', finalUrl = page;
     try {
       const res = await fetchWithTimeout(page);
       finalUrl = res.url || page;
-      if(res.ok) html = (await res.text()).slice(0, 2e6);
-      else tried.push(`${page} → HTTP ${res.status}`);
-    } catch(e){ tried.push(`${page} → ${e.name === 'AbortError' ? 'timeout' : e.message}`); continue; }
+      if(res.ok){ html = (await res.text()).slice(0, 2e6); homepage = 'ok'; }
+      else { tried.push(`${page} → HTTP ${res.status}`); homepage = homepage || `homepage blocked (HTTP ${res.status})`; }
+    } catch(e){ tried.push(`${page} → ${errText(e)}`); homepage = homepage || `homepage unreachable (${errText(e)})`; continue; }
     const cands = iconCandidates(html, finalUrl);
-    for(const p of ['/apple-touch-icon.png', '/apple-touch-icon-precomposed.png']){
+    for(const p of ['/apple-touch-icon.png', '/apple-touch-icon-precomposed.png', '/favicon.ico']){
       cands.push({ url: new URL(p, finalUrl).href, score: 0, isSvg: false });
     }
     for(const c of cands){
       try {
         const { buf, type } = await download(c.url);
-        if(type.includes('icon') || /\.ico(\?|$)/i.test(c.url)) throw new Error('.ico not supported');
         const png = await toLogoPng(buf, c.isSvg || type.includes('svg'));
         return { ok: true, png, source: c.url };
-      } catch(e){ tried.push(`${c.url} → ${e.name === 'AbortError' ? 'timeout' : e.message}`); }
+      } catch(e){ tried.push(`${c.url} → ${errText(e)}`); }
     }
     if(html) break;   // the page loaded; another homepage URL won't have different icons
   }
-  const tooSmall = tried.some(t => t.includes('too small'));
-  return { ok: false, reason: tooSmall ? 'only small icons found' : 'no usable icon found', tried };
+  // Last resort: Google's copy of the site icon.
+  const fb = fallbackIconUrl(domain);
+  try {
+    const { buf, type } = await download(fb);
+    const png = await toLogoPng(buf, type.includes('svg'));
+    return { ok: true, png, source: 'Google favicon service' };
+  } catch(e){ tried.push(`Google favicon service → ${errText(e)}`); }
+
+  const reason = tried.some(t => t.includes('blank on a white'))
+    ? 'logo is white or blank (invisible on white)'
+    : tried.some(t => t.includes('too small'))
+      ? 'only small icons found'
+      : homepage && homepage !== 'ok' ? homepage : 'no usable icon on the homepage';
+  return { ok: false, reason, tried };
 }
 
 async function existingLogos(){
@@ -236,8 +314,9 @@ async function main(){
     `![Logo review sheet](${sheetUrl})`,
     ``,
     missing.length ? `### No logo (${missing.length})\n` + missing.map(d => `- ${label(d)} — \`${d}\`${(failed.find(f => f.domain === d) || {}).reason ? ': ' + failed.find(f => f.domain === d).reason : ''}`).join('\n') : '',
+    failed.length ? `\n<details><summary>What was tried for each school without a logo</summary>\n\n` + failed.sort((a, b) => a.domain.localeCompare(b.domain)).map(f => `**${f.domain}**\n` + f.tried.slice(0, 8).map(t => `- ${t.replace(/[<>]/g, '')}`).join('\n')).join('\n\n') + `\n\n</details>` : '',
     ``,
-    `Logos come from each school's own website (its high-resolution site icon) and are trademarks of their respective owners.`,
+    `Logos come from each school's own website (its high-resolution site icon), or Google's copy of it when the site can't be reached, and are trademarks of their respective owners.`,
     ``,
     `_Generated by \`scripts/fetch-logos.mjs\`._`,
   ].join('\n');
