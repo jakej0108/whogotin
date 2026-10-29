@@ -1,0 +1,53 @@
+# Fetches university logos from each school's own website and opens a pull
+# request with the new images in logos/ plus a review sheet.
+#
+# Run it from GitHub: Actions tab -> "Fetch university logos" -> Run workflow.
+# Run it again after adding schools (with their domain) to the universities
+# table. Requires: Settings -> Actions -> General -> "Allow GitHub Actions to
+# create and approve pull requests".
+name: Fetch university logos
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Re-download logos that already exist
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: fetch-logos
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install script dependencies
+        run: npm install --prefix scripts --no-audit --no-fund
+
+      - name: Fetch logos
+        env:
+          LOGO_BRANCH: logos/update
+        run: node scripts/fetch-logos.mjs --report "$RUNNER_TEMP/logo-report.md" ${{ inputs.force && '--force' || '' }}
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: logos/update
+          delete-branch: true
+          add-paths: logos/**
+          commit-message: Update university logos
+          title: Update university logos
+          body-path: ${{ runner.temp }}/logo-report.md

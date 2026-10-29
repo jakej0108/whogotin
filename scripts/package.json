@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "description": "Helper scripts for whogotin.com (not part of the website).",
+  "type": "module",
+  "dependencies": {
+    "sharp": "0.33.5"
+  }
+}
