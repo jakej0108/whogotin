@@ -1703,7 +1703,8 @@ function setLoginStep(step, opts){
   document.getElementById('login-password-rule').textContent = step === 'reset'
     ? `At least ${MIN_PASSWORD} characters.`
     : loginCopy === LOGIN_COPY.login ? '' : `New here? Use at least ${MIN_PASSWORD} characters.`;
-  document.getElementById('login-forgot-btn').style.display = isForm ? '' : 'none';
+  const signupOnly = loginCopy === LOGIN_COPY.signup || loginCopy === LOGIN_COPY.post;
+  document.getElementById('login-forgot-btn').style.display = (isForm && !signupOnly) ? '' : 'none';
   pwInput.autocomplete = step === 'reset' ? 'new-password' : 'current-password';
   document.getElementById('login-fineprint').style.display = isForm ? '' : 'none';
   if(isForm || step === 'reset'){
