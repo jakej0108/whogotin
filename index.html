@@ -4607,12 +4607,12 @@ function setSavedTab(t){ savedTab = t; renderMyResult(); }
 
 function accountSettingsHtml(){
   return `
-    <h2 class="section-title" style="font-size:18px;">Email &amp; notifications</h2>
-    <div id="account-email-settings"><p class="section-sub">Loading&hellip;</p></div>
-    <hr class="divider">
-    <h2 class="section-title" style="font-size:18px;">Session</h2>
-    <p class="section-sub">Signed in as <b>${esc(currentUser)}</b> on this device.</p>
+    <h2 class="section-title" style="font-size:18px;">Account</h2>
+    <div id="account-login-info"><p class="section-sub">Signed in as <b>${esc(currentUser)}</b> on this device.</p></div>
     <button class="ghost" onclick="logout()">Log out</button>
+    <hr class="divider">
+    <h2 class="section-title" style="font-size:18px;">Email notifications</h2>
+    <div id="account-email-settings"><p class="section-sub">Loading&hellip;</p></div>
     <hr class="divider">
     <div class="danger-zone">
       <h2 class="section-title" style="font-size:18px;color:#b3312c;">Delete account</h2>
@@ -5565,7 +5565,7 @@ const EMAIL_PREF_ROWS = [
 ];
 function emailPrefsRowsHtml(prefs, idPrefix){
   return `
-    <label class="check-row"><input type="checkbox" checked disabled> <span><b>Account emails</b><br><span class="hint-inline">Sign-in links and email confirmation. Always on.</span></span></label>
+    <label class="check-row"><input type="checkbox" checked disabled> <span><b>Account emails</b><br><span class="hint-inline">Confirmations and other account emails. Always on.</span></span></label>
     ${EMAIL_PREF_ROWS.map(([k, label, hint]) => `
       <label class="check-row"><input type="checkbox" id="${idPrefix}${k}" ${prefs[k] === false ? '' : 'checked'}>
         <span><b>${label}</b><br><span class="hint-inline">${hint}</span></span></label>`).join('')}`;
@@ -5618,47 +5618,47 @@ async function deleteEmailByToken(){
 }
 
 /* ---------------- Email: My Account section ---------------- */
+// Notifications always go to the email the account logs in with (Google or
+// email + password), so there's nothing to add, change or delete here.
+// To stop emails, untick the boxes.
 async function renderAccountEmailSettings(){
   const el = document.getElementById('account-email-settings');
   if(!el) return;
-  const [contact, handleRes] = await Promise.all([loadMyContact(), supabaseClient.rpc('get_my_handle')]);
+  const [{ data: { user } }, handleRes] = await Promise.all([
+    supabaseClient.auth.getUser(), supabaseClient.rpc('get_my_handle')
+  ]);
   myHandle = handleRes.data || null;
+  const loginEmail = user && user.email ? user.email.toLowerCase() : '';
+  const viaGoogle = !!(user && ((user.identities || []).some(i => i.provider === 'google')
+    || (user.app_metadata && user.app_metadata.provider === 'google')));
+
+  const info = document.getElementById('account-login-info');
+  if(info && loginEmail){
+    info.innerHTML = `<p class="section-sub">${viaGoogle ? 'Logged in with Google as' : 'Logged in as'} <b>${esc(loginEmail)}</b>.</p>`;
+  }
+
+  let contact = await loadMyContact();
+  // Older accounts may have a different notification email saved, or none
+  // (from the old Change / Delete buttons). Point it back at the login email.
+  // set_my_email marks it confirmed straight away because it matches the
+  // account's confirmed login email, so no email is sent.
+  if(loginEmail && (!contact || contact.email !== loginEmail)){
+    const { error } = await supabaseClient.rpc('set_my_email', { p_email: loginEmail });
+    if(error) console.error('set login email', error);
+    else contact = await loadMyContact();
+  }
   const prefs = (contact && contact.prefs) || {};
-  const email = contact && contact.email;
   el.innerHTML = `
-    <div class="field">
-      <label for="acct-email">Email</label>
-      <div style="display:flex;gap:8px;max-width:420px;">
-        <input type="email" id="acct-email" value="${esc(email || '')}" placeholder="you@example.com" style="flex:1;">
-        <button class="small" onclick="saveAccountEmail()">${email ? 'Change' : 'Add'}</button>
-      </div>
-      <div class="hint" id="acct-email-msg">${!email ? 'No email saved, so we won\'t email you.'
-        : contact.verified_at ? '&#10003; Confirmed' : 'Waiting for you to click the confirmation link. Press Change to send it again.'}</div>
-    </div>
+    <p class="section-sub">We send these to <b>${esc(loginEmail || 'your login email')}</b>.</p>
     <div class="email-prefs">${emailPrefsRowsHtml(prefs, 'ap-')}</div>
     <div class="cta-row" style="justify-content:flex-start;margin-top:8px;">
       <button class="small" onclick="saveAccountEmailPrefs()">Save email settings</button>
-      ${email ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteAccountEmail()">Delete my email</button>` : ''}
     </div>
     <p class="section-sub" id="acct-prefs-msg" style="margin-top:8px;"></p>`;
-}
-async function saveAccountEmail(){
-  const v = document.getElementById('acct-email').value;
-  const msg = document.getElementById('acct-email-msg');
-  const { data, error } = await supabaseClient.rpc('set_my_email', { p_email: v });
-  if(error){ msg.textContent = error.message; msg.style.color = '#b3312c'; return; }
-  msg.style.color = 'var(--accepted)';
-  msg.textContent = data === 'sent' ? `We sent a confirmation link to ${v.trim()}.` : '✓ Confirmed';
 }
 async function saveAccountEmailPrefs(){
   const { error } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: readEmailPrefs('ap-') });
   document.getElementById('acct-prefs-msg').textContent = error ? ('Could not save: ' + error.message) : 'Saved.';
-}
-async function deleteAccountEmail(){
-  if(!confirm('Delete your email address from Who Got In? You won\'t get any more emails, but your account stays.')) return;
-  const { error } = await supabaseClient.rpc('delete_my_email');
-  if(error){ alert(error.message); return; }
-  renderAccountEmailSettings();
 }
 
 // Bell on a saved school: on = included in the new-results digest.
