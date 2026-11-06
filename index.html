@@ -116,6 +116,12 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .modal-card input[type=email]:focus, .modal-card input[type=password]:focus{border-color:var(--ink-soft);}
   .modal-card button.ghost{border-width:1px;border-color:#E5CCCC;}
   .modal-card button.ghost:hover{border-color:var(--ink-soft);}
+  .ep-waitlist{margin:0 0 16px;font-size:13.5px;line-height:1.45;color:var(--ink-soft);}
+  .ep-waitlist b{color:var(--ink);font-weight:600;}
+  .ep-waitlist-tag{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.6px;
+    text-transform:uppercase;color:var(--accent);margin-bottom:2px;
+  }
   .brand-mark{
     width:68px;height:68px;
     flex-shrink:0;
@@ -5765,7 +5771,11 @@ async function openEmailPrompt(opts){
     emailPromptMode = 'signup';
     el.innerHTML = `
       <p style="font-size:16px;font-weight:600;margin:0 0 4px;">Sign up to reply to comments on your result</p>
-      <p class="section-sub" style="margin:0 0 14px;">We'll email you when someone comments${waitlisted.length ? `, and when the waitlist moves at <b style="color:var(--ink);font-weight:600;">${schoolNameList(waitlisted, waitlisted.length > 2)}</b>` : ''}.</p>
+      <p class="section-sub" style="margin:0 0 ${waitlisted.length ? 12 : 14}px;">We'll email you when someone comments.</p>
+      ${waitlisted.length ? `<div class="ep-waitlist">
+        <span class="ep-waitlist-tag">Waitlist alerts</span>
+        Know when the waitlist moves at <b>${schoolNameList(waitlisted, waitlisted.length > 2)}</b>.
+      </div>` : ''}
       ${waitlisted.length > 2 ? `<div id="ep-school-list" class="ep-school-list" style="display:none;margin:-6px 0 12px 0;">
         ${waitlisted.map((n, i) => `<label class="check-row"><input type="checkbox" class="ep-school" data-i="${i}" checked> ${esc(n)}</label>`).join('')}
       </div>` : ''}
