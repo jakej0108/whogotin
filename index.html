@@ -1701,6 +1701,15 @@ function resumeAfterLogin(){
 async function doResumeAfterLogin(){
   const { data: { user } } = await supabaseClient.auth.getUser();
   if(user && !user.is_anonymous){
+    // A guest who upgraded in place (sign-up prompt) keeps the same id, so
+    // their submission is already linked; the claim below is a no-op then.
+    if(lsGet('wgi_upgrade')){
+      // Confirmed somewhere else (e.g. on their phone): this tab's token still
+      // says "guest", and the database checks that flag, so get a fresh one.
+      const { error: refreshErr } = await supabaseClient.auth.refreshSession();
+      if(refreshErr) console.error('refresh after upgrade', refreshErr);
+    }
+    lsDel('wgi_upgrade');
     await claimGuestSubmissions();
     const { error } = await supabaseClient.rpc('sync_my_auth_email');
     if(error) console.error('sync email', error);
@@ -5461,7 +5470,57 @@ async function loadMyContact(){
   return data;
 }
 
+const GOOGLE_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 48 48" style="flex-shrink:0;"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 34.7 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.6C41.5 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>';
+
 let emailPromptSchools = [];
+let pendingSignupEmail = '';
+let emailPromptMode = 'prefs'; // 'signup' for guests, 'prefs' for signed-in accounts
+
+// Prefs from the guest sign-up prompt: replies on, waitlist on, minus any
+// waitlisted schools unchecked in the "N more" list.
+function signupPromptPrefs(){
+  const prefs = { replies: true };
+  if(emailPromptSchools.length){
+    prefs.waitlist = true;
+    const boxes = document.querySelectorAll('.ep-school');
+    prefs.waitlist_off = boxes.length ? emailPromptSchools.filter((n, i) => !boxes[i].checked) : [];
+  }
+  return prefs;
+}
+
+// Guest -> real account with Google. linkIdentity keeps the same user id, so
+// the submission (owner_id = this guest) is already theirs after the redirect.
+async function signupWithGoogleFromPrompt(){
+  const msg = document.getElementById('ep-msg');
+  const { error: prefErr } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: signupPromptPrefs() });
+  if(prefErr) console.error('signup prefs', prefErr);
+  await ensureClaimToken(); // fallback if this Google account already has a Who Got In account
+  lsSet('wgi_upgrade', 'google');
+  const { error } = await supabaseClient.auth.linkIdentity({
+    provider: 'google',
+    options: { redirectTo: loginRedirectUrl() }
+  });
+  if(error){
+    // e.g. manual linking turned off: fall back to a normal Google sign-in;
+    // the claim token then moves the submission to that account.
+    console.error('linkIdentity', error);
+    lsDel('wgi_upgrade');
+    loginWithGoogle();
+    if(msg) msg.style.display = 'none';
+  }
+}
+
+// The email/Google is already used by another account: sign in to that one
+// instead. The claim token (made in ensureClaimToken) moves this guest's
+// submission over after sign-in.
+async function signInExistingFromPrompt(email){
+  await ensureClaimToken();
+  closeEmailPrompt();
+  openLoginModal('default');
+  const input = document.getElementById('modal-email-input');
+  if(input && email) input.value = email;
+}
+
 async function openEmailPrompt(opts){
   const waitlisted = opts.waitlisted || [];
   const contact = await loadMyContact();
@@ -5469,10 +5528,46 @@ async function openEmailPrompt(opts){
   const muted = new Set(prefs.waitlist_off || []);
   const hasVerified = !!(contact && contact.email && contact.verified_at);
   // Already set up the way this would set it: don't ask again.
-  if(hasVerified && prefs.replies !== false && (!waitlisted.length || (prefs.waitlist !== false && waitlisted.every(n => !muted.has(n))))) return;
+  if(!isAnonymousUser && hasVerified && prefs.replies !== false && (!waitlisted.length || (prefs.waitlist !== false && waitlisted.every(n => !muted.has(n))))) return;
 
   emailPromptSchools = waitlisted;
   const el = document.getElementById('email-prompt-body');
+  document.getElementById('email-prompt-title').textContent = opts.isEdit ? 'Your result has been updated' : 'Your result is live';
+  const saveBtn = document.getElementById('ep-save');
+  saveBtn.disabled = false;
+  saveBtn.style.display = '';
+  document.getElementById('ep-skip').textContent = 'No thanks';
+
+  // Guests: this prompt is the sign-up. Confirming upgrades the guest
+  // (anonymous) account in place, so the result stays theirs and they can
+  // reply to comments right away.
+  if(isAnonymousUser){
+    emailPromptMode = 'signup';
+    el.innerHTML = `
+      <p style="font-size:16px;font-weight:600;margin:0 0 4px;">Sign up to reply to comments on your result</p>
+      <p class="section-sub" style="margin:0 0 14px;">Get notified when someone comments${waitlisted.length ? ` and when the waitlist moves at ${schoolNameList(waitlisted, waitlisted.length > 2)}` : ''}.</p>
+      ${waitlisted.length > 2 ? `<div id="ep-school-list" class="ep-school-list" style="display:none;margin:-6px 0 12px 0;">
+        ${waitlisted.map((n, i) => `<label class="check-row"><input type="checkbox" class="ep-school" data-i="${i}" checked> ${esc(n)}</label>`).join('')}
+      </div>` : ''}
+      <button class="ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;" onclick="signupWithGoogleFromPrompt()">
+        ${GOOGLE_ICON_SVG}
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;color:var(--ink-faint);font-size:12px;">
+        <div style="flex:1;height:1px;background:var(--rule);"></div>or<div style="flex:1;height:1px;background:var(--rule);"></div>
+      </div>
+      <div class="field" style="margin:0;">
+        <label for="ep-email">Email</label>
+        <input type="email" id="ep-email" autocomplete="email" placeholder="you@example.com" style="width:100%;" onkeydown="if(event.key==='Enter') saveEmailPrompt()">
+        <div class="hint">No password needed. Turn notifications off anytime.</div>
+      </div>
+      <p id="ep-msg" style="font-size:12.5px;margin:10px 0 0;display:none;"></p>`;
+    saveBtn.textContent = 'Sign up';
+    document.getElementById('email-prompt').classList.add('open');
+    return;
+  }
+
+  emailPromptMode = 'prefs';
   el.innerHTML = `
     <label class="check-row"><input type="checkbox" id="ep-replies" checked> Get an email when someone comments on your result.</label>
     ${waitlisted.length ? `
@@ -5489,11 +5584,7 @@ async function openEmailPrompt(opts){
            <div class="hint">We'll send one email to confirm it. Change or turn these off anytime.</div>
          </div>`}
     <p id="ep-msg" style="font-size:12.5px;margin:10px 0 0;display:none;"></p>`;
-  document.getElementById('email-prompt-title').textContent = opts.isEdit ? 'Your result has been updated' : 'Your result is live';
-  const saveBtn = document.getElementById('ep-save');
-  saveBtn.disabled = false; saveBtn.textContent = 'Save';
-  saveBtn.style.display = '';
-  document.getElementById('ep-skip').textContent = 'No thanks';
+  saveBtn.textContent = 'Save';
   document.getElementById('email-prompt').classList.add('open');
 }
 function toggleWaitlistChecklist(){
@@ -5502,9 +5593,48 @@ function toggleWaitlistChecklist(){
 }
 function closeEmailPrompt(){ const m = document.getElementById('email-prompt'); if(m) m.classList.remove('open'); }
 
+// Guest -> real account with email. updateUser on the anonymous session sends
+// a confirmation link; clicking it (on any device) turns this same user into
+// a real account, so the submission stays linked with nothing to move.
+async function signupWithEmailFromPrompt(msg, showMsg){
+  const email = (document.getElementById('ep-email')?.value || '').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ showMsg('Enter your email address.'); return; }
+
+  const btn = document.getElementById('ep-save');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  const { error: prefErr } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: signupPromptPrefs() });
+  if(prefErr) console.error('signup prefs', prefErr);
+  await ensureClaimToken(); // only used if this email turns out to have an account already
+
+  const { error } = await supabaseClient.auth.updateUser(
+    { email, data: { username: email.split('@')[0] } },
+    { emailRedirectTo: loginRedirectUrl() }
+  );
+  btn.disabled = false; btn.textContent = 'Sign up';
+
+  if(error){
+    pendingSignupEmail = email;
+    if(error.code === 'email_exists' || /already (been )?registered|already exists/i.test(error.message || '')){
+      msg.innerHTML = `You already have an account with ${esc(email)}. <button class="comment-link" onclick="signInExistingFromPrompt(pendingSignupEmail)">Sign in</button> and we'll add this result to it.`;
+      msg.style.color = '#b3312c';
+      msg.style.display = 'block';
+      return;
+    }
+    showMsg(error.message);
+    return;
+  }
+
+  lsSet('wgi_upgrade', 'email');
+  showMsg(`Almost done: tap the link we sent to ${email} to finish signing up.`, true);
+  btn.style.display = 'none';
+  document.getElementById('ep-skip').textContent = 'Close';
+}
+
 async function saveEmailPrompt(){
   const msg = document.getElementById('ep-msg');
   const showMsg = (text, ok) => { msg.textContent = text; msg.style.color = ok ? 'var(--accepted)' : '#b3312c'; msg.style.display = 'block'; };
+  if(emailPromptMode === 'signup') return signupWithEmailFromPrompt(msg, showMsg);
   const replies = document.getElementById('ep-replies').checked;
   const wl = document.getElementById('ep-waitlist');
   const prefs = { replies };
@@ -5724,7 +5854,9 @@ async function toggleSchoolNotify(name, ev){
   supabaseClient.auth.onAuthStateChange((event) => {
     // Supabase warns against awaiting other Supabase calls inside this
     // callback (it can deadlock the auth lock), so run the work after it.
-    if(event === 'SIGNED_IN'){
+    // USER_UPDATED: a guest confirmed their sign-up email or linked Google
+    // (same user, now a real account).
+    if(event === 'SIGNED_IN' || event === 'USER_UPDATED'){
       setTimeout(resumeAfterLogin, 0);
     } else if(event === 'SIGNED_OUT'){
       currentUser = null;
@@ -5739,15 +5871,31 @@ async function toggleSchoolNotify(name, ev){
   // A Google or magic-link return can finish signing in before the listener
   // above exists. If something is waiting (a draft to post, a guest result
   // to claim), resume now; resumeAfterLogin() is safe to run twice.
-  if(currentUser && !isAnonymousUser && (lsGet('wgi_modalIntent') || lsGet('wgi_claim_token'))){
+  if(currentUser && !isAnonymousUser && (lsGet('wgi_modalIntent') || lsGet('wgi_claim_token') || lsGet('wgi_upgrade'))){
     resumeAfterLogin();
   }
+
+  // Guest signed up from the prompt and confirmed in another tab or device:
+  // when they come back to this tab, pick up the upgraded account.
+  document.addEventListener('visibilitychange', async () => {
+    if(document.visibilityState !== 'visible' || !lsGet('wgi_upgrade') || !isAnonymousUser) return;
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if(user && !user.is_anonymous) resumeAfterLogin();
+  });
 
   // An expired or already-used sign-in link comes back as #error_description=...
   const authError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
   if(authError){
     history.replaceState(history.state, '', window.location.pathname + window.location.search);
-    alert('Sign-in didn\'t work: ' + authError + '. Try again and we\'ll send a fresh link.');
+    const upgrade = lsGet('wgi_upgrade');
+    lsDel('wgi_upgrade');
+    if(upgrade === 'google' && /already|exists|linked/i.test(authError)){
+      // That Google account already has a Who Got In account: sign in to it.
+      // The claim token moves this guest's submission over afterwards.
+      if(confirm('That Google account already has a Who Got In account. Sign in to it and add this result?')) loginWithGoogle();
+    } else {
+      alert('Sign-in didn\'t work: ' + authError + '. Try again and we\'ll send a fresh link.');
+    }
   }
 })();
 </script>
