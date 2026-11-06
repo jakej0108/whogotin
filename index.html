@@ -31,8 +31,8 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     --paper:#FFFFFF;
     --paper-2:#FFFFFF;
     --ink:#291313;
-    --ink-soft:#7A6363;
-    --ink-faint:#B69C9C;
+    --ink-soft:#5E4848;
+    --ink-faint:#8E7373;
     --rule:#F0DADA;
     --folder:#FBE2E2;
     --folder-dark:#F3BEBE;
@@ -108,8 +108,19 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   }
   .modal-close:hover{color:var(--ink);}
   .modal-card input[type=email], .modal-card input[type=password]{
-    padding:14px 14px;
+    padding:12px 14px;
     font-size:16px;
+    border-width:1px;
+    border-color:#E5CCCC;
+  }
+  .modal-card input[type=email]:focus, .modal-card input[type=password]:focus{border-color:var(--ink-soft);}
+  .modal-card button.ghost{border-width:1px;border-color:#E5CCCC;}
+  .modal-card button.ghost:hover{border-color:var(--ink-soft);}
+  .ep-waitlist{margin:0 0 16px;padding:12px 14px;border:1px solid #E5CCCC;border-radius:8px;font-size:15px;line-height:1.45;color:var(--ink-soft);}
+  .ep-waitlist b{color:var(--ink);font-weight:600;}
+  .ep-waitlist-tag{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.6px;
+    text-transform:uppercase;color:var(--accent);margin-bottom:2px;
   }
   .brand-mark{
     width:68px;height:68px;
@@ -1047,7 +1058,15 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     </div>
     <div class="field" id="login-email-field" style="margin-bottom:8px;">
       <label for="modal-email-input">Email</label>
-      <input type="email" id="modal-email-input" placeholder="you@example.com" autocomplete="email" style="width:100%;" onkeydown="if(event.key==='Enter') loginSubmit()">
+      <input type="email" id="modal-email-input" placeholder="you@example.com" autocomplete="email" style="width:100%;" onkeydown="if(event.key==='Enter') document.getElementById('modal-password-input').focus()">
+    </div>
+    <div class="field" id="login-password-field" style="margin-bottom:8px;">
+      <label for="modal-password-input" id="login-password-label">Password</label>
+      <input type="password" id="modal-password-input" autocomplete="current-password" style="width:100%;" onkeydown="if(event.key==='Enter') loginSubmit()">
+      <div class="hint" id="login-password-hint" style="display:flex;justify-content:space-between;gap:8px;">
+        <span id="login-password-rule">New here? Use at least 8 characters.</span>
+        <button class="comment-link" id="login-forgot-btn" style="white-space:nowrap;margin-left:auto;" onclick="sendPasswordReset()">Forgot password?</button>
+      </div>
     </div>
     <p class="section-sub" id="login-email-shown" style="display:none;margin:0 0 10px;"></p>
     <div id="login-step-body"></div>
@@ -1549,8 +1568,8 @@ function updateProfileBtn(activePage){
       </div>`;
   } else {
     area.innerHTML = `
-      <button class="auth-login" onclick="openLoginModal()">Log In</button>
-      <button class="auth-signup" onclick="openLoginModal()">Sign Up</button>
+      <button class="auth-login" onclick="openLoginModal('login')">Log In</button>
+      <button class="auth-signup" onclick="openLoginModal('signup')">Sign Up</button>
     `;
   }
 }
@@ -1609,40 +1628,44 @@ function goToPrediction(){
   }, 100);
 }
 
-// Sign-in is Google, or email + password. One modal for everything, and it
-// asks for the email first: auth_email_status() (sql/password_auth.sql)
-// says whether that email logs in with a password, uses Google, or is new,
-// so nobody has to pick between "log in" and "sign up".
+// Sign-in is Google, or email + password. One form for both logging in and
+// signing up: on submit, auth_email_status() (sql/password_auth.sql) says
+// whether the email has a password account (log in), uses Google, or is new
+// (sign up), so nobody has to pick the right button.
 // openLoginModal('post') is the "write first, sign up at Post" version shown
 // when someone who isn't signed in presses Post.
 const LOGIN_COPY = {
-  default: { title: 'Log in or sign up', sub: 'Free. Save results, comment, and follow your schools.' },
-  post:    { title: 'Almost there — create a free account to post.', sub: 'Your draft is saved.' }
+  default: { title: 'Log in or sign up', sub: 'Free. Save results, comment, and follow your schools.', btn: 'Continue' },
+  login:   { title: 'Log in', sub: 'Welcome back.', btn: 'Log in' },
+  signup:  { title: 'Sign up', sub: 'Free. Save results, comment, and follow your schools.', btn: 'Sign up' },
+  post:    { title: 'Almost there — create a free account to post.', sub: 'Your draft is saved.', btn: 'Sign up' }
 };
 const MIN_PASSWORD = 8;
 
-// 'email' | 'password' | 'signup' | 'google' | 'no_password' | 'sent' | 'reset'
-let loginStep = 'email';
+// 'form' | 'google' | 'no_password' | 'sent' | 'reset'
+let loginStep = 'form';
 let loginEmail = '';
 let loginSentResend = null; // what "Resend" does on the 'sent' step
+let loginCopy = LOGIN_COPY.default;
 
 function openLoginModal(mode, email){
   const overlay = document.getElementById('login-modal');
   if(!overlay) return;
-  const copy = LOGIN_COPY[mode] || LOGIN_COPY.default;
-  document.getElementById('login-modal-title').textContent = copy.title;
-  document.getElementById('login-modal-sub').textContent = copy.sub;
+  loginCopy = LOGIN_COPY[mode] || LOGIN_COPY.default;
+  document.getElementById('login-modal-title').textContent = loginCopy.title;
+  document.getElementById('login-modal-sub').textContent = loginCopy.sub;
   document.getElementById('login-modal-sub').style.display = '';
   const emailInput = document.getElementById('modal-email-input');
   if(emailInput) emailInput.value = email || '';
-  setLoginStep('email');
+  document.getElementById('modal-password-input').value = '';
+  setLoginStep('form');
   overlay.classList.add('open');
-  if(emailInput) setTimeout(()=>emailInput.focus(), 50);
+  const focusEl = email ? document.getElementById('modal-password-input') : emailInput;
+  if(focusEl) setTimeout(()=>focusEl.focus(), 50);
   // A guest (anonymous session from submitting a result) is about to become
   // a different user. Get a claim token now, while still the guest, so their
   // submission can move to the new account after sign-in.
   ensureClaimToken();
-  if(email) loginContinue();
 }
 
 function loginMsg(text, ok, html){
@@ -1660,23 +1683,10 @@ function setLoginStep(step, opts){
   const body = document.getElementById('login-step-body');
   const btn = document.getElementById('login-submit-btn');
   const shown = document.getElementById('login-email-shown');
-  const pw = (id, label, autocomplete, hint) => `
-    <div class="field" style="margin-bottom:8px;">
-      <label for="${id}">${label}</label>
-      <input type="password" id="${id}" autocomplete="${autocomplete}" minlength="${MIN_PASSWORD}" style="width:100%;" onkeydown="if(event.key==='Enter') loginSubmit()">
-      ${hint ? `<div class="hint">${hint}</div>` : ''}
-    </div>`;
-  let html = '', label = 'Continue';
-  if(step === 'password'){
-    html = pw('modal-password-input', 'Password', 'current-password')
-      + `<p style="margin:0 0 6px;font-size:12.5px;"><button class="comment-link" onclick="sendPasswordReset()">Forgot password?</button></p>`;
-    label = 'Log in';
-  } else if(step === 'signup'){
-    html = (opts.unconfirmed ? `<p class="section-sub" style="margin:0 0 10px;">You started signing up before but didn't confirm your email. Choose a password and we'll send a new link.</p>`
-                             : `<p class="section-sub" style="margin:0 0 10px;">New here? Create a password to sign up.</p>`)
-      + pw('modal-password-input', 'Create a password', 'new-password', `At least ${MIN_PASSWORD} characters.`);
-    label = 'Sign up';
-  } else if(step === 'google'){
+  const pwField = document.getElementById('login-password-field');
+  const pwInput = document.getElementById('modal-password-input');
+  let html = '', label = loginCopy.btn;
+  if(step === 'google'){
     html = `<p class="section-sub" style="margin:0 0 10px;">This email uses Google. Continue with Google to log in.</p>`;
     label = 'Continue with Google';
   } else if(step === 'no_password'){
@@ -1686,33 +1696,46 @@ function setLoginStep(step, opts){
     html = `<p class="section-sub" style="margin:0 0 10px;">${opts.text}</p>`;
     label = 'Resend email';
   } else if(step === 'reset'){
-    html = pw('modal-password-input', 'New password', 'new-password', `At least ${MIN_PASSWORD} characters.`);
     label = 'Save password';
   }
   body.innerHTML = html;
   btn.disabled = false;
   btn.textContent = label;
-  // Email box only on the first step; afterwards show it with a Change link.
-  document.getElementById('login-email-field').style.display = step === 'email' ? '' : 'none';
-  document.getElementById('login-google-block').style.display = step === 'email' ? '' : 'none';
-  document.getElementById('login-fineprint').style.display = (step === 'email' || step === 'signup') ? '' : 'none';
-  if(step === 'email' || step === 'reset'){
+  const isForm = step === 'form';
+  document.getElementById('login-email-field').style.display = isForm ? '' : 'none';
+  document.getElementById('login-google-block').style.display = isForm ? '' : 'none';
+  pwField.style.display = (isForm || step === 'reset') ? '' : 'none';
+  document.getElementById('login-password-label').textContent = step === 'reset' ? 'New password' : 'Password';
+  document.getElementById('login-password-rule').textContent = step === 'reset'
+    ? `At least ${MIN_PASSWORD} characters.`
+    : loginCopy === LOGIN_COPY.login ? '' : `New here? Use at least ${MIN_PASSWORD} characters.`;
+  const signupOnly = loginCopy === LOGIN_COPY.signup || loginCopy === LOGIN_COPY.post;
+  document.getElementById('login-forgot-btn').style.display = (isForm && !signupOnly) ? '' : 'none';
+  pwInput.autocomplete = step === 'reset' ? 'new-password' : 'current-password';
+  document.getElementById('login-fineprint').style.display = isForm ? '' : 'none';
+  if(isForm || step === 'reset'){
     shown.style.display = 'none';
   } else {
-    shown.innerHTML = `<b>${esc(loginEmail)}</b> · <button class="comment-link" onclick="setLoginStep('email')">Use a different email</button>`;
+    shown.innerHTML = `<b>${esc(loginEmail)}</b> · <button class="comment-link" onclick="setLoginStep('form')">Use a different email</button>`;
     shown.style.display = '';
   }
   if(step === 'reset'){
+    pwInput.value = '';
     document.getElementById('login-modal-title').textContent = 'Choose a new password';
     document.getElementById('login-modal-sub').style.display = 'none';
+    setTimeout(()=>pwInput.focus(), 50);
   }
   loginMsg('');
-  const pwInput = document.getElementById('modal-password-input');
-  if(pwInput) setTimeout(()=>pwInput.focus(), 50);
 }
 
 function loginPassword(){
   return (document.getElementById('modal-password-input')?.value) || '';
+}
+function readLoginEmail(){
+  const email = document.getElementById('modal-email-input').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return '';
+  loginEmail = email;
+  return email;
 }
 
 async function loginSubmit(){
@@ -1722,9 +1745,7 @@ async function loginSubmit(){
   if(step === 'google') return loginWithGoogle();
   btn.disabled = true;
   try {
-    if(step === 'email') await loginContinue();
-    else if(step === 'password') await loginWithPassword();
-    else if(step === 'signup') await signupWithPassword();
+    if(step === 'form') await loginOrSignup();
     else if(step === 'no_password') await sendPasswordReset();
     else if(step === 'sent' && loginSentResend) await loginSentResend();
     else if(step === 'reset') await saveNewPassword();
@@ -1733,17 +1754,17 @@ async function loginSubmit(){
   }
 }
 
-async function loginContinue(){
-  const email = document.getElementById('modal-email-input').value.trim().toLowerCase();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ loginMsg('Enter your email address.'); return; }
-  loginEmail = email;
-  const { data, error } = await supabaseClient.rpc('auth_email_status', { p_email: email });
+// One button for both: log in if the email has a password account, sign up
+// if it's new.
+async function loginOrSignup(){
+  if(!readLoginEmail()){ loginMsg('Enter your email address.'); return; }
+  if(!loginPassword()){ loginMsg('Enter a password.'); return; }
+  const { data, error } = await supabaseClient.rpc('auth_email_status', { p_email: loginEmail });
   if(error){ loginMsg(error.message); return; }
-  if(data === 'password') setLoginStep('password');
+  if(data === 'password') await loginWithPassword();
   else if(data === 'google') setLoginStep('google');
   else if(data === 'no_password') setLoginStep('no_password');
-  else if(data === 'unconfirmed') setLoginStep('signup', { unconfirmed: true });
-  else if(data === 'new') setLoginStep('signup');
+  else if(data === 'new' || data === 'unconfirmed') await signupWithPassword();
   else loginMsg('Enter your email address.');
 }
 
@@ -1769,7 +1790,7 @@ async function loginWithPassword(){
     return;
   }
   if(error.code === 'invalid_credentials' || /invalid login credentials/i.test(error.message || '')){
-    loginMsg('Wrong password. Try again, or use Forgot password above.');
+    loginMsg('Wrong password. Try again, or use Forgot password.');
     return;
   }
   loginMsg(error.message);
@@ -1787,8 +1808,7 @@ async function signupWithPassword(){
   });
   if(error){
     if(error.code === 'user_already_exists' || /already registered/i.test(error.message || '')){
-      setLoginStep('password');
-      loginMsg('You already have an account. Log in instead.');
+      loginMsg('That email already has an account. Check your password, or use Forgot password.');
       return;
     }
     loginMsg(error.message);
@@ -1812,6 +1832,7 @@ async function resendSignupEmail(){
 }
 
 async function sendPasswordReset(){
+  if(loginStep === 'form' && !readLoginEmail()){ loginMsg('Enter your email first, then tap Forgot password.'); return; }
   if(!loginEmail) return;
   const { error } = await supabaseClient.auth.resetPasswordForEmail(loginEmail, {
     redirectTo: loginRedirectUrl() + '?reset=1'
@@ -1837,7 +1858,7 @@ async function saveNewPassword(){
   if(password.length < MIN_PASSWORD){ loginMsg(`Use at least ${MIN_PASSWORD} characters.`); return; }
   const { error } = await supabaseClient.auth.updateUser({ password });
   if(error){ loginMsg(error.message); return; }
-  loginStep = 'email';
+  loginStep = 'form';
   closeLoginModal();
   resumeAfterLogin();
   alert('Password saved. You\'re logged in.');
@@ -3866,7 +3887,22 @@ function resetSubmitForm(){
   renderAwardRows();
 }
 
+// Safety net: if anything throws partway through, never leave the button
+// stuck on "Submitting…".
 async function submitResult(){
+  try {
+    await submitResultInner();
+  } catch(err){
+    console.error('submit failed', err);
+    const btn = document.getElementById('submit-result-btn');
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = (currentUser && !isAnonymousUser && userRecord && userRecord.profiles.length) ? 'Save changes' : 'Submit to the ledger';
+    }
+    alert('Something went wrong while submitting. Your result may already be saved: check My Results before trying again.');
+  }
+}
+async function submitResultInner(){
   // Known before we even touch auth — used just to keep the submit
   // button's label correct if validation bails out early below.
   const willBeEditing = !!(currentUser && !isAnonymousUser && userRecord && userRecord.profiles.length);
@@ -3991,7 +4027,10 @@ async function submitResult(){
   // real owner_id (needed for RLS + so a "your own result" delete/edit
   // path exists later) without ever showing a login screen. This needs
   // Anonymous Sign-ins turned on in Supabase: Authentication -> Providers.
-  let { data: { user } } = await supabaseClient.auth.getUser();
+  // getSession reads the saved session locally (getUser would wait on a
+  // network round trip before anything is saved).
+  let { data: { session } } = await supabaseClient.auth.getSession();
+  let user = session && session.user;
   if(!user){
     const { data: anonData, error: anonError } = await supabaseClient.auth.signInAnonymously();
     if(anonError){
@@ -4000,7 +4039,12 @@ async function submitResult(){
       return;
     }
     user = anonData.user;
+    // Set the guest state here. (The SIGNED_IN listener skips guest
+    // sessions, so nothing reloads the account in the middle of this save.)
+    currentUser = 'Guest';
+    isAnonymousUser = true;
   }
+  if(!userRecord) userRecord = normalizeUserRecord({ profiles: [] });
 
   // Real (non-anonymous) accounts get exactly one editable submission —
   // if they already have one, this save replaces it instead of adding a
@@ -5727,7 +5771,11 @@ async function openEmailPrompt(opts){
     emailPromptMode = 'signup';
     el.innerHTML = `
       <p style="font-size:16px;font-weight:600;margin:0 0 4px;">Sign up to reply to comments on your result</p>
-      <p class="section-sub" style="margin:0 0 14px;">Get notified when someone comments${waitlisted.length ? ` and when the waitlist moves at ${schoolNameList(waitlisted, waitlisted.length > 2)}` : ''}.</p>
+      <p class="section-sub" style="margin:0 0 ${waitlisted.length ? 12 : 14}px;">We'll email you when someone comments.</p>
+      ${waitlisted.length ? `<div class="ep-waitlist">
+        <span class="ep-waitlist-tag">Waitlist alerts</span>
+        Know when the waitlist moves at <b>${schoolNameList(waitlisted, waitlisted.length > 2)}</b>.
+      </div>` : ''}
       ${waitlisted.length > 2 ? `<div id="ep-school-list" class="ep-school-list" style="display:none;margin:-6px 0 12px 0;">
         ${waitlisted.map((n, i) => `<label class="check-row"><input type="checkbox" class="ep-school" data-i="${i}" checked> ${esc(n)}</label>`).join('')}
       </div>` : ''}
@@ -6069,13 +6117,18 @@ async function toggleSchoolNotify(name, ev){
   // by the onAuthReady() call already made before this listener is attached,
   // so it won't double-fire for that case (Supabase reports it as
   // INITIAL_SESSION, not SIGNED_IN).
-  supabaseClient.auth.onAuthStateChange((event) => {
+  supabaseClient.auth.onAuthStateChange((event, session) => {
     // Supabase warns against awaiting other Supabase calls inside this
     // callback (it can deadlock the auth lock), so run the work after it.
     // USER_UPDATED: a guest confirmed their sign-up email or linked Google
     // (same user, now a real account).
     if(event === 'PASSWORD_RECOVERY'){
       setTimeout(openPasswordReset, 0);
+    } else if(event === 'SIGNED_IN' && session && session.user && session.user.is_anonymous){
+      // A guest session is only ever started by submitResult(), which sets
+      // things up itself. Reloading the account here raced the save: the
+      // submit could finish first, find no account data and stop with the
+      // button stuck on "Submitting…" (the result was saved anyway).
     } else if(event === 'SIGNED_IN' || event === 'USER_UPDATED'){
       setTimeout(resumeAfterLogin, 0);
     } else if(event === 'SIGNED_OUT'){
