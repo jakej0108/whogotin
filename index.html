@@ -561,6 +561,10 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .idx-card{position:relative;}
   .bell-btn{position:absolute;top:10px;right:10px;border:1.5px solid var(--rule);background:var(--paper-2);border-radius:6px;padding:3px 7px;font-size:14px;line-height:1;cursor:pointer;min-height:0;opacity:.55;}
   .bell-btn.on{opacity:1;border-color:var(--ink);}
+  .save-school-wrap{display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px;}
+  .save-school-wrap .save-btn{margin-top:0;}
+  .school-notify-toggle{margin:0;align-items:center;gap:7px;font-size:13px;line-height:1;color:var(--ink-soft);cursor:pointer;}
+  .school-notify-toggle input{margin:0;}
 
   /* Real links. Cards, nav tabs and the brand are <a href> so right-click,
      Cmd/Ctrl+click, middle-click and bookmarks all work; the router in
@@ -4306,9 +4310,20 @@ async function toggleSave(id, scope){
 function isSchoolSaved(name){
   return !!(currentUser && userRecord && userRecord.savedSchools && userRecord.savedSchools.includes(name));
 }
+// Save button on a school page. Once saved, a checkbox next to it turns the
+// new-results email for this school on or off (same setting as the bell on
+// My Account > Saved).
 function saveSchoolButtonHtml(name){
   const saved = isSchoolSaved(name);
-  return `<button id="save-school-btn" class="save-btn small ${saved?'primary':'ghost'}" onclick="toggleSchoolSaved('${jsArg(name)}')">${saved ? '&#9733; School saved' : '&#9734; Save school'}</button>`;
+  const notifyOn = saved && userRecord.savedSchoolNotify && userRecord.savedSchoolNotify[name] !== false;
+  return `<span id="save-school-wrap" class="save-school-wrap">
+    <button id="save-school-btn" class="save-btn small ${saved?'primary':'ghost'}" onclick="toggleSchoolSaved('${jsArg(name)}')">${saved ? '&#9733; School saved' : '&#9734; Save school'}</button>
+    ${saved ? `<label class="check-row school-notify-toggle"><input type="checkbox" ${notifyOn ? 'checked' : ''} onchange="toggleSchoolNotify('${jsArg(name)}')"> Email me new results here</label>` : ''}
+  </span>`;
+}
+function refreshSchoolSaveButton(name){
+  const wrap = document.getElementById('save-school-wrap');
+  if(wrap) wrap.outerHTML = saveSchoolButtonHtml(name);
 }
 async function toggleSchoolSaved(name){
   if(!currentUser || isAnonymousUser || !userRecord){
@@ -4330,8 +4345,7 @@ async function toggleSchoolSaved(name){
     const { error } = await supabaseClient.from('saved_schools').insert({ user_id: user.id, university: name });
     if(error) console.error('save school', error);
   }
-  const btn = document.getElementById('save-school-btn');
-  if(btn) btn.outerHTML = saveSchoolButtonHtml(name);
+  refreshSchoolSaveButton(name);
   if(document.querySelector('.page.active')?.id === 'page-myresult') renderMyResult();
 }
 
@@ -6057,17 +6071,22 @@ async function saveAccountEmailPrefs(){
   document.getElementById('acct-prefs-msg').textContent = error ? ('Could not save: ' + error.message) : 'Saved.';
 }
 
-// Bell on a saved school: on = included in the new-results digest.
+// Bell on a saved school (My Account > Saved) or the checkbox on the school
+// page: on = included in the new-results digest.
 async function toggleSchoolNotify(name, ev){
   if(ev) ev.stopPropagation();
   if(!userRecord) return;
+  const rerender = () => {
+    if(document.querySelector('.page.active')?.id === 'page-myresult') renderMyResult();
+    refreshSchoolSaveButton(name);
+  };
   const notify = !(userRecord.savedSchoolNotify[name] !== false);
   userRecord.savedSchoolNotify[name] = notify;
-  renderMyResult();
+  rerender();
   const { error } = await supabaseClient.rpc('set_school_notify', { p_university: name, p_notify: notify });
   if(error){
     userRecord.savedSchoolNotify[name] = !notify;
-    renderMyResult();
+    rerender();
     alert('Could not update: ' + error.message);
   }
 }
