@@ -38,12 +38,18 @@ with JWT verification off (also set in `supabase/config.toml`).
 4. **Schedule.** Save the same `CRON_SECRET` in Vault, then run `sql/email_cron.sql`.
    The steps are at the top of that file.
 
-## Supabase Auth settings (for magic-link sign-in)
+## Supabase Auth settings (Google + email/password sign-in)
 
-- Authentication → Providers → Email: enabled. "Confirm email" can stay on.
+- Run `sql/password_auth.sql` (after `sql/email_backbone.sql`).
+- Authentication → Providers → Email: enabled, "Confirm email" on.
+- Authentication → Sign In / Providers: "Allow manual linking" on (guests
+  who sign up with Google keep the same account).
 - Authentication → URL Configuration → Redirect URLs: add
   `https://whogotin.com/**`. Add `http://localhost:*/**` too if you test locally.
-- Authentication → Emails → Magic Link: optionally edit the template. Supabase
-  sends sign-in emails itself; they don't go through `email_outbox`.
-- For real volume, set Authentication → SMTP Settings to Resend's SMTP
-  (`smtp.resend.com`) so sign-in links come from your domain too.
+- Authentication → Emails → SMTP Settings: Resend SMTP (`smtp.resend.com`,
+  port 465, user `resend`, password = a Resend API key). Without it Supabase
+  only emails your own team, so nobody else can confirm a sign-up.
+- Authentication → Rate Limits: raise the emails-per-hour limit.
+- Authentication → Emails → Templates: "Confirm signup" and "Reset password"
+  (the reset email is also how old magic-link accounts set a first password).
+  These are sent by Supabase, not through `email_outbox`.
