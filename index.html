@@ -504,6 +504,56 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .match-scope .hint{margin-top:5px;}
   textarea.progress-ecs-text{width:100%;font-size:15px;line-height:1.5;min-height:96px;overflow-y:hidden;}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+  /* Comments */
+  .comments{margin-top:4px;}
+  .comments-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .comments-head select{width:auto;padding:6px 10px;font-size:13px;}
+  .comment-kind{font-size:13px;color:var(--ink-soft);margin:0 0 8px;}
+  textarea.comment-input{font-size:15px;line-height:1.5;padding:10px 12px;border-radius:7px;min-height:64px;}
+  .comment-form-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+  .comment-form-row > span:last-child{display:flex;gap:8px;margin-left:auto;}
+  .comment-posting-as{font-size:12px;color:var(--ink-faint);}
+  #comment-composer-top{margin-bottom:22px;}
+  .comment-thread{margin-top:14px;}
+  .comment-children{margin-left:14px;padding-left:12px;border-left:2px solid var(--rule);}
+  .comment{padding:2px 0;border-radius:6px;}
+  .comment-new{animation:comment-flash 2s ease-out;}
+  @keyframes comment-flash{from{background:var(--folder);}to{background:transparent;}}
+  .comment-flagged{background:var(--rejected-bg);padding:6px 8px;}
+  .comment-meta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:12px;color:var(--ink-faint);}
+  .comment-handle{font-weight:600;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .comment-op{background:var(--freshman-bg);color:var(--freshman);font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;letter-spacing:.4px;}
+  .comment-body{font-size:14.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 2px;}
+  .comment-mention{color:var(--freshman);font-weight:500;}
+  .comment-gone{font-size:13px;color:var(--ink-faint);font-style:italic;}
+  .comment-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:2px;}
+  .comment-votes{display:inline-flex;align-items:center;gap:4px;}
+  .vote-btn{border:none;background:none;padding:2px 4px;font-size:11px;color:var(--ink-faint);cursor:pointer;min-height:0;line-height:1;}
+  .vote-btn:hover:not(:disabled){color:var(--ink);}
+  .vote-btn.on{color:var(--accent);}
+  .vote-btn:disabled{cursor:default;opacity:.5;}
+  .vote-score{font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:var(--ink-soft);min-width:14px;text-align:center;}
+  .comment-link{border:none;background:none;padding:2px 0;font-size:12.5px;color:var(--ink-soft);cursor:pointer;text-decoration:underline;text-underline-offset:2px;min-height:0;}
+  .comment-link:hover{color:var(--ink);background:none;}
+  .vote-btn:hover{background:none;}
+  .comment-reply-box{margin:8px 0 4px;}
+  .comment-empty{margin:4px 0 0;}
+  .rules-list{margin:0;padding-left:20px;font-size:14px;line-height:1.55;}
+  .rules-list li{margin-bottom:8px;}
+  /* Sign-in + email */
+  .login-fineprint{font-size:11.5px;color:var(--ink-faint);margin:12px 0 0;line-height:1.45;}
+  .check-row{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45;margin:8px 0;cursor:pointer;}
+  .check-row input{margin-top:3px;flex-shrink:0;width:auto;}
+  .ep-school-list{margin:0 0 0 26px;}
+  .hint-inline{font-size:12px;color:var(--ink-faint);}
+  .email-prefs{max-width:480px;margin:6px 0 10px;}
+  .idx-card{position:relative;}
+  .bell-btn{position:absolute;top:10px;right:10px;border:1.5px solid var(--rule);background:var(--paper-2);border-radius:6px;padding:3px 7px;font-size:14px;line-height:1;cursor:pointer;min-height:0;opacity:.55;}
+  .bell-btn.on{opacity:1;border-color:var(--ink);}
+  a.btn-link{display:inline-block;text-decoration:none;border:2px solid var(--ink);color:var(--ink);padding:9px 16px;border-radius:6px;font-size:14px;}
+  a.btn-link.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  a.btn-link.small{padding:5px 10px;font-size:11.5px;}
+  a.btn-link.ghost{border-color:var(--rule);color:var(--ink-soft);}
   @media (max-width:600px){
     #page-upload .form-title{font-size:24px;}
     #page-upload .form-section-title{font-size:19px;}
@@ -846,6 +896,15 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <h2 class="section-title">Moderation</h2>
       <p class="section-sub">Open reports on submitted results. Dismiss if it's nothing, or delete the result if the report's right.</p>
       <div id="admin-content"></div>
+      <hr class="divider">
+      <h2 class="section-title" style="font-size:18px;">Comments</h2>
+      <p class="section-sub">Comments with open reports, or hidden after 3 reports. Restore puts it back and clears the reports.</p>
+      <div id="admin-comments-content"></div>
+    </section>
+
+    <!-- ============ EMAIL (verify link + preferences / unsubscribe) ============ -->
+    <section class="page" id="page-email">
+      <div id="email-content"></div>
     </section>
 
     <!-- ============ PRIVACY POLICY ============ -->
@@ -905,18 +964,38 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <div style="flex:1;height:1px;background:var(--rule);"></div>or<div style="flex:1;height:1px;background:var(--rule);"></div>
     </div>
     <div class="field" style="margin-bottom:8px;">
-      <label>Email</label>
-      <input type="email" id="modal-email-input" placeholder="you@example.com" style="width:100%;" onkeydown="if(event.key==='Enter') document.getElementById('modal-password-input').focus()">
-    </div>
-    <div class="field" style="margin-bottom:8px;">
-      <label>Password</label>
-      <input type="password" id="modal-password-input" placeholder="At least 6 characters" style="width:100%;" onkeydown="if(event.key==='Enter') submitModalLogin()">
+      <label for="modal-email-input">Email</label>
+      <input type="email" id="modal-email-input" placeholder="you@example.com" autocomplete="email" style="width:100%;" onkeydown="if(event.key==='Enter') submitModalLogin()">
     </div>
     <p id="login-modal-error" style="color:#b3312c;font-size:12.5px;display:none;margin-bottom:6px;"></p>
-    <div class="cta-row" style="justify-content:space-between;align-items:center;margin-top:10px;">
-      <button class="ghost small" id="login-mode-toggle" onclick="toggleLoginMode()">New here? Create an account</button>
-      <button class="primary" id="login-submit-btn" onclick="submitModalLogin()">Log in</button>
+    <button class="primary" id="login-submit-btn" style="width:100%;margin-top:6px;" onclick="submitModalLogin()">Email me a sign-in link</button>
+    <p class="login-fineprint">No password needed. We'll email you about replies, new results at your schools, and occasional updates. Change this anytime.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="email-prompt" onclick="if(event.target===this) closeEmailPrompt()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeEmailPrompt()" aria-label="Close">&times;</button>
+    <h2 class="section-title" style="margin-bottom:12px;" id="email-prompt-title">Your result is live</h2>
+    <div id="email-prompt-body"></div>
+    <div class="cta-row" style="justify-content:flex-end;margin-top:16px;">
+      <button class="ghost small" id="ep-skip" onclick="closeEmailPrompt()">No thanks</button>
+      <button class="primary" id="ep-save" onclick="saveEmailPrompt()">Save</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="rules-modal" onclick="if(event.target===this) closeRulesModal()">
+  <div class="modal-card" style="max-width:460px;">
+    <button class="modal-close" onclick="closeRulesModal()" aria-label="Close">&times;</button>
+    <h2 class="section-title" style="margin-bottom:12px;">Community rules</h2>
+    <ol class="rules-list">
+      <li><b>Be respectful.</b> No insults, mocking stats, or &ldquo;you'll never get in.&rdquo;</li>
+      <li><b>No fake results or stats.</b></li>
+      <li><b>No personal info.</b> No names, emails, schools, or anything that could identify someone &mdash; including yourself.</li>
+      <li><b>Stay on topic.</b> No spam or self-promo (essay services, paid consulting, referral links).</li>
+      <li><b>Report, don't fight.</b></li>
+    </ol>
   </div>
 </div>
 
@@ -1302,7 +1381,7 @@ function goPage(name){
     return;
   }
   if(document.title === 'Privacy | Who Got In') document.title = 'Who Got In';
-  if(name!=='profile' && name!=='submission' && name!=='university' && (window.location.pathname!=='/' || window.location.hash)){
+  if(name!=='profile' && name!=='submission' && name!=='university' && name!=='email' && (window.location.pathname!=='/' || window.location.hash)){
     history.replaceState(null, '', '/');
   }
 }
@@ -1337,31 +1416,32 @@ function goToPrediction(){
   }, 100);
 }
 
-let loginMode = 'signin'; // 'signin' | 'signup'
+// Sign-in is Google or an emailed magic link: no passwords. One modal for
+// everything; openLoginModal('post') is the "write first, sign up at Post"
+// version shown when someone who isn't signed in presses Post.
+const LOGIN_COPY = {
+  default: { title: 'Log in or sign up', sub: 'Free. Save results, comment, and follow your schools.' },
+  post:    { title: 'Almost there — create a free account to post.', sub: 'Your draft is saved.' }
+};
 
-function toggleLoginMode(){
-  loginMode = loginMode === 'signin' ? 'signup' : 'signin';
-  document.getElementById('login-modal-title').textContent = loginMode === 'signup' ? 'Create Account' : 'Log In';
-  document.getElementById('login-modal-sub').textContent = loginMode === 'signup'
-    ? 'Sign up with your email to save your progress and shared results.'
-    : 'Log in to save your progress and shared results.';
-  document.getElementById('login-mode-toggle').textContent = loginMode === 'signup' ? 'Already have an account? Log in' : 'New here? Create an account';
-  document.getElementById('login-submit-btn').textContent = loginMode === 'signup' ? 'Create account' : 'Log in';
-  const errEl = document.getElementById('login-modal-error');
-  errEl.style.display = 'none';
-}
-
-function openLoginModal(){
+function openLoginModal(mode){
   const overlay = document.getElementById('login-modal');
   if(!overlay) return;
+  const copy = LOGIN_COPY[mode] || LOGIN_COPY.default;
+  document.getElementById('login-modal-title').textContent = copy.title;
+  document.getElementById('login-modal-sub').textContent = copy.sub;
   const emailInput = document.getElementById('modal-email-input');
-  const passInput = document.getElementById('modal-password-input');
   if(emailInput) emailInput.value = '';
-  if(passInput) passInput.value = '';
   const errEl = document.getElementById('login-modal-error');
   if(errEl) errEl.style.display = 'none';
+  const submitBtn = document.getElementById('login-submit-btn');
+  if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Email me a sign-in link'; }
   overlay.classList.add('open');
   if(emailInput) setTimeout(()=>emailInput.focus(), 50);
+  // A guest (anonymous session from submitting a result) is about to become
+  // a different user. Get a claim token now, while still the guest, so their
+  // submission can move to the new account after sign-in.
+  ensureClaimToken();
 }
 function closeLoginModal(){
   const overlay = document.getElementById('login-modal');
@@ -1373,8 +1453,44 @@ function cancelLoginModal(){
   closeLoginModal();
 }
 document.addEventListener('keydown', (e)=>{
-  if(e.key==='Escape') cancelLoginModal();
+  if(e.key==='Escape'){ cancelLoginModal(); closeEmailPrompt(); closeRulesModal(); }
 });
+
+// localStorage can throw (private mode, blocked storage): never let that
+// break sign-in or posting.
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+
+async function ensureClaimToken(){
+  if(lsGet('wgi_claim_token')) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if(!session || !session.user || !session.user.is_anonymous) return;
+  const { data, error } = await supabaseClient.rpc('create_claim_token');
+  if(error){ console.error('claim token', error); return; }
+  if(data) lsSet('wgi_claim_token', data);
+}
+
+// After signing in: move the guest's submissions to this account (so they
+// show up under My Results and the OP badge works on their comments).
+async function claimGuestSubmissions(){
+  const token = lsGet('wgi_claim_token');
+  if(!token) return 0;
+  const { data, error } = await supabaseClient.rpc('claim_anonymous_account', { p_token: token });
+  if(error){ console.error('claim guest submissions', error); return 0; }
+  lsDel('wgi_claim_token');
+  return data || 0;
+}
+
+// Both sign-in methods can leave this page (Google redirects; a magic link
+// may open in a new tab), so whatever the person was doing is kept in
+// localStorage and picked up by resumeAfterLogin().
+function persistModalIntent(){
+  if(!modalIntent) return;
+  lsSet('wgi_modalIntent', modalIntent);
+  if(modalIntentPayload) lsSet('wgi_modalIntentPayload', modalIntentPayload);
+  else lsDel('wgi_modalIntentPayload');
+}
 
 async function onAuthReady(){
   const { data: { user } } = await supabaseClient.auth.getUser();
@@ -1390,70 +1506,80 @@ async function onAuthReady(){
   userRecord = await loadUserRecord();
 }
 
-// Runs once after ANY successful login — password or Google — since Google
-// sign-in leaves the page and comes back (via supabaseClient.auth.onAuthStateChange
-// below), so this can't just be inline code after an awaited function call
-// the way the old password-only flow was.
-async function resumeAfterLogin(){
+// Runs after any successful sign-in (Google, magic link, or another tab
+// signing in). Can run twice for one sign-in (this tab and the magic-link
+// tab), so everything in here is safe to repeat.
+let resumeRunning = null;
+function resumeAfterLogin(){
+  if(!resumeRunning) resumeRunning = doResumeAfterLogin().finally(()=>{ resumeRunning = null; });
+  return resumeRunning;
+}
+async function doResumeAfterLogin(){
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if(user && !user.is_anonymous){
+    await claimGuestSubmissions();
+    const { error } = await supabaseClient.rpc('sync_my_auth_email');
+    if(error) console.error('sync email', error);
+  }
   await onAuthReady();
+  if(!user || user.is_anonymous){ updateProfileBtn(); return; }
   closeLoginModal();
   updateProfileBtn();
 
-  // modalIntent normally lives in memory, but a Google login navigates away
-  // from the page entirely, so we also stash it in localStorage right before
-  // redirecting and restore it here in case memory was wiped.
   if(!modalIntent){
-    const storedIntent = localStorage.getItem('wgi_modalIntent');
+    const storedIntent = lsGet('wgi_modalIntent');
     if(storedIntent){
       modalIntent = storedIntent;
-      modalIntentPayload = localStorage.getItem('wgi_modalIntentPayload');
+      modalIntentPayload = lsGet('wgi_modalIntentPayload');
     }
   }
-  localStorage.removeItem('wgi_modalIntent');
-  localStorage.removeItem('wgi_modalIntentPayload');
+  lsDel('wgi_modalIntent');
+  lsDel('wgi_modalIntentPayload');
 
-  if(modalIntent === 'prediction'){
-    modalIntent = null;
+  const intent = modalIntent, payload = modalIntentPayload;
+  modalIntent = null;
+  modalIntentPayload = null;
+
+  if(intent === 'prediction'){
     goToPrediction();
-  } else if(modalIntent === 'save'){
+  } else if(intent === 'save'){
     // Payload is "id::scope" for this one intent (see toggleSave's
     // login-prompt branch) so the resumed save still lands with the right
     // scope ('single' vs 'group') instead of always defaulting to single.
-    const [pendingId, pendingScope] = String(modalIntentPayload || '').split('::');
-    modalIntent = null;
-    modalIntentPayload = null;
+    const [pendingId, pendingScope] = String(payload || '').split('::');
     await toggleSave(pendingId, pendingScope || 'single');
-  } else if(modalIntent === 'like'){
-    const pendingId = modalIntentPayload;
-    modalIntent = null;
-    modalIntentPayload = null;
-    await toggleLike(pendingId);
-  } else if(modalIntent === 'saveSchool'){
-    const pendingName = modalIntentPayload;
-    modalIntent = null;
-    modalIntentPayload = null;
-    await toggleSchoolSaved(pendingName);
-  } else if(modalIntent === 'report'){
-    const pendingId = modalIntentPayload;
-    modalIntent = null;
-    modalIntentPayload = null;
-    await reportProfile(pendingId);
-  } else if(modalIntent === 'submit'){
-    modalIntent = null;
+  } else if(intent === 'like'){
+    await toggleLike(payload);
+  } else if(intent === 'saveSchool'){
+    await toggleSchoolSaved(payload);
+  } else if(intent === 'report'){
+    await reportProfile(payload);
+  } else if(intent === 'submit'){
     await submitResult();
+  } else if(intent === 'comment'){
+    await postPendingComment(payload);
+  } else if(intent === 'commentVote'){
+    const [id, value] = String(payload || '').split('::');
+    await voteComment(id, Number(value));
+  } else if(intent === 'commentReport'){
+    await reportComment(payload);
   } else if(document.querySelector('.page.active')?.id === 'page-myresult'){
     renderMyResult();
+  } else if(document.querySelector('.page.active')?.id === 'page-submission' && currentCommentParent){
+    loadComments();
   }
 }
 
+function loginRedirectUrl(){
+  return window.location.origin + window.location.pathname;
+}
+
 async function loginWithGoogle(){
-  if(modalIntent){
-    localStorage.setItem('wgi_modalIntent', modalIntent);
-    if(modalIntentPayload) localStorage.setItem('wgi_modalIntentPayload', modalIntentPayload);
-  }
+  persistModalIntent();
+  await ensureClaimToken();
   const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.href.split('#')[0].split('?')[0] }
+    options: { redirectTo: loginRedirectUrl() }
   });
   if(error){
     const errEl = document.getElementById('login-modal-error');
@@ -1466,38 +1592,38 @@ async function loginWithGoogle(){
 
 async function submitModalLogin(){
   const email = document.getElementById('modal-email-input').value.trim();
-  const password = document.getElementById('modal-password-input').value;
   const errEl = document.getElementById('login-modal-error');
   errEl.style.color = '#b3312c';
   errEl.style.display = 'none';
-  if(!email || !password){ errEl.textContent = 'Enter an email and password.'; errEl.style.display = 'block'; return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent = 'Enter your email address.'; errEl.style.display = 'block'; return; }
 
   const submitBtn = document.getElementById('login-submit-btn');
   submitBtn.disabled = true;
-  submitBtn.textContent = loginMode === 'signup' ? 'Creating account…' : 'Logging in…';
+  submitBtn.textContent = 'Sending…';
+  persistModalIntent();
+  await ensureClaimToken();
 
-  const result = loginMode === 'signup'
-    ? await supabaseClient.auth.signUp({ email, password, options: { data: { username: email.split('@')[0] } } })
-    : await supabaseClient.auth.signInWithPassword({ email, password });
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: loginRedirectUrl(),
+      shouldCreateUser: true,
+      data: { username: email.split('@')[0] }
+    }
+  });
 
   submitBtn.disabled = false;
-  submitBtn.textContent = loginMode === 'signup' ? 'Create account' : 'Log in';
-
-  if(result.error){
-    errEl.textContent = result.error.message;
+  submitBtn.textContent = 'Resend link';
+  if(error){
+    errEl.textContent = error.message;
     errEl.style.display = 'block';
     return;
   }
-  if(loginMode === 'signup' && result.data.user && !result.data.session){
-    errEl.style.color = 'var(--accepted)';
-    errEl.textContent = 'Check your email to confirm your account, then log in.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  // Successful password sign-in/sign-up fires a SIGNED_IN auth event, which
-  // the listener in the init block picks up and calls resumeAfterLogin() —
-  // same code path Google sign-in uses, so both stay in sync.
+  errEl.style.color = 'var(--accepted)';
+  errEl.textContent = `Check your inbox: we sent a sign-in link to ${email}. Open it on this device${lsGet('wgi_modalIntent') === 'comment' ? ' — your draft stays saved' : ''}.`;
+  errEl.style.display = 'block';
+  // The SIGNED_IN event (this tab, or the tab the link opens) runs
+  // resumeAfterLogin().
 }
 
 const LOGO_OVERRIDES = {
@@ -2172,8 +2298,11 @@ function renderSubmissionPage(groupKey){
     </div>
     <hr class="divider">
     ${renderGroupExpanded(group)}
+    <hr class="divider">
+    ${commentsShellHtml()}
   `;
   goPage('submission');
+  mountComments('submission', groupKey);
   return true;
 }
 
@@ -2231,6 +2360,14 @@ async function routeFromLocation(){
     return id ? renderProfilePage(id) : false;
   }
   if(/^\/privacy\/?$/i.test(path)){ goPage('privacy'); return true; }
+  if(/^\/email\/verify\/?$/i.test(path)){
+    await renderEmailVerifyPage(new URLSearchParams(window.location.search).get('token'));
+    return true;
+  }
+  if(/^\/email\/preferences\/?$/i.test(path)){
+    await renderEmailPrefsPage(new URLSearchParams(window.location.search).get('t'));
+    return true;
+  }
   const profileHash = window.location.hash.match(/^#profile\/(.+)$/);
   if(profileHash) return renderProfilePage(profileHash[1]);
   const submissionHash = window.location.hash.match(/^#submission\/(.+)$/);
@@ -2244,7 +2381,7 @@ async function routeFromLocation(){
   const singleSegMatch = path.match(/^\/([a-z0-9-]+)\/?$/i);
   if(singleSegMatch){
     const slug = singleSegMatch[1].toLowerCase();
-    if(slug !== 'school' && slug !== 'submission'){
+    if(slug !== 'school' && slug !== 'submission' && slug !== 'email'){
       const uniName = SLUG_TO_UNI[slug];
       if(uniName){ await loadUniversityProfiles(uniName, true); return renderUniversityPage(uniName); }
     }
@@ -3586,9 +3723,15 @@ async function submitResult(){
   }
 
   if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = isEditingExisting ? 'Save changes' : 'Submit to the ledger'; }
-  alert(isEditingExisting ? 'Your result has been updated.' : 'Your result has been added to the ledger and saved to your account.');
+  // Guests: keep a claim token so this result moves to their account if
+  // they sign up later.
+  if(!isRealAccount) ensureClaimToken();
   resetSubmitForm();
   goPage('myresult');
+  openEmailPrompt({
+    isEdit: isEditingExisting,
+    waitlisted: newProfiles.filter(p => p.status === 'waitlisted').map(p => p.university)
+  });
 }
 
 /* ---------------- Login + storage ---------------- */
@@ -3606,6 +3749,7 @@ function normalizeUserRecord(rec){
   if(!rec.savedScope) rec.savedScope = {};
   if(!rec.liked) rec.liked = [];
   if(!rec.savedSchools) rec.savedSchools = [];
+  if(!rec.savedSchoolNotify) rec.savedSchoolNotify = {};
   if(!rec.applicantType) rec.applicantType = 'freshman';
   if(!rec.targetSchools){
     rec.targetSchools = (rec.progress && rec.progress.schools) || (rec.goals && rec.goals.schools) || [];
@@ -3638,7 +3782,7 @@ async function loadUserRecord(){
     supabaseClient.from('profiles').select('*').eq('owner_id', user.id),
     supabaseClient.from('saved_profiles').select('profile_id, save_scope').eq('user_id', user.id),
     supabaseClient.from('profile_likes').select('profile_id').eq('user_id', user.id),
-    supabaseClient.from('saved_schools').select('university').eq('user_id', user.id),
+    supabaseClient.from('saved_schools').select('university, notify').eq('user_id', user.id),
     supabaseClient.from('progress_snapshots').select('*').eq('user_id', user.id).order('created_at'),
     supabaseClient.from('user_settings').select('*').eq('user_id', user.id).maybeSingle()
   ]);
@@ -3656,6 +3800,8 @@ async function loadUserRecord(){
     savedScope: Object.fromEntries((savedRes.data || []).map(r => [String(r.profile_id), r.save_scope || 'single'])),
     liked: (likedRes.data || []).map(r => String(r.profile_id)),
     savedSchools: (savedSchoolsRes.data || []).map(r => r.university),
+    // notify column comes from sql/email_backbone.sql; missing = on.
+    savedSchoolNotify: Object.fromEntries((savedSchoolsRes.data || []).map(r => [r.university, r.notify !== false])),
     applicantType: (settingsRes.data && settingsRes.data.applicant_type) || 'freshman',
     targetSchools: (settingsRes.data && settingsRes.data.target_schools) || [],
     progressList: (progressRes.data || []).map(r => ({
@@ -4139,13 +4285,19 @@ function renderMyResult(){
       : `<p class="section-sub">You haven't shared a result yet.</p><button class="primary" onclick="goPage('upload')">Share your result</button>`}
     <hr class="divider">
     <h2 class="section-title" style="font-size:18px;">Saved schools</h2>
-    <p class="section-sub">Universities you've bookmarked, separate from any specific result.</p>
-    ${savedSchools.length ? `<div class="card-grid">${savedSchools.map(name=>`
+    <p class="section-sub">Universities you've bookmarked. With the bell on, they're in your new-results email.</p>
+    ${savedSchools.length ? `<div class="card-grid">${savedSchools.map(name=>{
+        const on = userRecord.savedSchoolNotify[name] !== false;
+        return `
         <div class="idx-card" onclick="openUniversity('${jsArg(name)}')">
+          <button class="bell-btn${on ? ' on' : ''}" aria-pressed="${on}" title="${on ? 'Emails on for this school' : 'Emails off for this school'}" aria-label="New-results email for ${esc(name)}" onclick="toggleSchoolNotify('${jsArg(name)}', event)">${on ? '&#128276;' : '&#128277;'}</button>
           <h3>${uniLogo(name)}${esc(name)}</h3>
           ${uniFactsHtml(name, true)}
-        </div>`).join('')}</div>`
+        </div>`;}).join('')}</div>`
       : `<p class="section-sub">No saved schools yet. Bookmark one from its university page.</p>`}
+    <hr class="divider">
+    <h2 class="section-title" style="font-size:18px;">Email &amp; notifications</h2>
+    <div id="account-email-settings"><p class="section-sub">Loading&hellip;</p></div>
     <hr class="divider">
     <h2 class="section-title" style="font-size:18px;">Saved profiles</h2>
     <p class="section-sub">Results you've bookmarked to come back to.</p>
@@ -4181,6 +4333,7 @@ function renderMyResult(){
     renderPredictBattery();
   }
   wireTargetBox();
+  renderAccountEmailSettings();
   if(isAdmin) refreshAdminBannerCount();
 }
 
@@ -4199,6 +4352,7 @@ async function renderAdmin(){
     el.innerHTML = `<p class="section-sub">This page isn't available.</p>`;
     return;
   }
+  renderAdminComments();
   el.innerHTML = `<p class="section-sub">Loading open reports&hellip;</p>`;
 
   // profiles(*) pulls in the reported result itself via the profile_id
@@ -4511,6 +4665,651 @@ function renderPredictBattery(){
   renderCollegeRecommendations(gpa, transfer);
 }
 
+/* ---------------- Comments ----------------
+   Threaded comments on a submission (/submission/<id>). All reads and
+   writes go through RPCs in sql/comments.sql; the browser gets handles and
+   an is_op flag, never anyone's user id. All comments for a parent load in
+   one call and the tree is built here. */
+let currentCommentParent = null; // { type: 'submission', id: <submission uuid> }
+let COMMENTS = [];
+let commentSort = lsGet('wgi_comment_sort') || 'top';
+let commentReplyOpen = null;   // comment id whose reply box is open
+let commentEditing = null;     // comment id being edited
+let myHandle;                  // undefined = not loaded yet
+const COMMENT_EDIT_MS = 10 * 60 * 1000;
+const COMMENT_COLLAPSE_SCORE = -5;
+const COMMENT_MAX_DEPTH = 3;
+const commentsShownAnyway = new Set();
+
+function commentsShellHtml(){
+  return `
+    <section class="comments" id="comments">
+      <div class="comments-head">
+        <h2 class="section-title" style="font-size:18px;margin:0;" id="comments-title">Comments</h2>
+        <select id="comment-sort" aria-label="Sort comments" onchange="setCommentSort(this.value)">
+          <option value="top">Top</option><option value="new">Newest</option><option value="old">Oldest</option>
+        </select>
+      </div>
+      <div id="comment-composer-top"></div>
+      <div id="comment-list"><p class="section-sub">Loading comments&hellip;</p></div>
+    </section>`;
+}
+
+function mountComments(parentType, parentId){
+  currentCommentParent = { type: parentType, id: String(parentId) };
+  commentReplyOpen = null;
+  commentEditing = null;
+  commentsShownAnyway.clear();
+  const sortEl = document.getElementById('comment-sort');
+  if(sortEl) sortEl.value = commentSort;
+  renderCommentComposer(null);
+  loadComments();
+}
+
+async function loadComments(){
+  if(!currentCommentParent) return;
+  const parent = currentCommentParent;
+  if(currentUser && !isAnonymousUser && myHandle === undefined){
+    const { data } = await supabaseClient.rpc('get_my_handle');
+    myHandle = data || null;
+  }
+  const { data, error } = await supabaseClient.rpc('get_comments', { p_parent_type: parent.type, p_parent_id: parent.id });
+  if(currentCommentParent !== parent) return; // navigated away meanwhile
+  const list = document.getElementById('comment-list');
+  if(error){
+    console.error('load comments', error);
+    if(list) list.innerHTML = `<p class="section-sub">Comments couldn't load right now.</p>`;
+    return;
+  }
+  COMMENTS = data || [];
+  renderComments();
+  if(window.location.hash === '#comments'){
+    const el = document.getElementById('comments');
+    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function setCommentSort(v){
+  commentSort = ['top', 'new', 'old'].includes(v) ? v : 'top';
+  lsSet('wgi_comment_sort', commentSort);
+  renderComments();
+}
+
+function timeAgo(iso){
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if(s < 60) return 'just now';
+  if(s < 3600) return Math.floor(s / 60) + 'm ago';
+  if(s < 86400) return Math.floor(s / 3600) + 'h ago';
+  if(s < 86400 * 30) return Math.floor(s / 86400) + 'd ago';
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function sortComments(arr){
+  const byTime = (a, b) => new Date(a.created_at) - new Date(b.created_at);
+  if(commentSort === 'new') return arr.sort((a, b) => byTime(b, a));
+  if(commentSort === 'old') return arr.sort(byTime);
+  return arr.sort((a, b) => (b.score - a.score) || byTime(a, b));
+}
+
+// Builds the tree, dropping deleted/removed placeholders that have nothing
+// visible under them.
+function buildCommentTree(){
+  const byId = new Map(COMMENTS.map(c => [c.id, Object.assign({}, c, { children: [] })]));
+  const roots = [];
+  byId.forEach(c => {
+    const parent = c.reply_to_comment_id && byId.get(c.reply_to_comment_id);
+    if(parent) parent.children.push(c); else roots.push(c);
+  });
+  const prune = list => list.filter(c => {
+    c.children = prune(c.children);
+    return c.status === 'ok' || c.children.length > 0;
+  });
+  return { roots: sortComments(prune(roots)), byId };
+}
+
+function renderComments(){
+  const list = document.getElementById('comment-list');
+  if(!list) return;
+  const { roots, byId } = buildCommentTree();
+  const visible = COMMENTS.filter(c => c.status === 'ok').length;
+  const title = document.getElementById('comments-title');
+  if(title) title.textContent = visible ? `Comments (${visible})` : 'Comments';
+  if(!roots.length){
+    list.innerHTML = `<p class="section-sub comment-empty">No comments yet. Be the first to say congrats or ask a question.</p>`;
+    return;
+  }
+  list.innerHTML = roots.map(c => commentNodeHtml(c, 1, byId)).join('');
+  restoreCommentDrafts();
+}
+
+// Levels 1-3 nest. Anything deeper is shown at level 3, oldest first, with
+// "@handle" so it's clear who it answers.
+function commentNodeHtml(c, depth, byId){
+  let kids;
+  if(depth < COMMENT_MAX_DEPTH){
+    kids = sortComments(c.children).map(k => commentNodeHtml(k, depth + 1, byId)).join('');
+  } else {
+    const flat = [];
+    const walk = n => n.children.forEach(k => { flat.push(k); walk(k); });
+    walk(c);
+    flat.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    // Same indent as this comment: siblings, not children.
+    const same = flat.map(k => `<div class="comment-thread depth-${depth}">${commentItemHtml(k, depth, byId, true)}</div>`).join('');
+    return `<div class="comment-thread depth-${depth}">${commentItemHtml(c, depth, byId, false)}</div>${same}`;
+  }
+  return `<div class="comment-thread depth-${depth}">${commentItemHtml(c, depth, byId, false)}${kids ? `<div class="comment-children">${kids}</div>` : ''}</div>`;
+}
+
+function commentItemHtml(c, depth, byId, flattened){
+  if(c.status !== 'ok'){
+    return `<div class="comment comment-gone" id="c-${esc(c.id)}"><span>${c.status === 'deleted' ? '[deleted]' : '[removed]'}</span></div>`;
+  }
+  const replyTo = flattened && c.reply_to_comment_id ? byId.get(c.reply_to_comment_id) : null;
+  const mention = replyTo && replyTo.status === 'ok' && replyTo.handle ? `<span class="comment-mention">@${esc(replyTo.handle)}</span> ` : '';
+  const canEdit = c.is_mine && (Date.now() - new Date(c.created_at).getTime()) < COMMENT_EDIT_MS;
+  const collapsed = c.score <= COMMENT_COLLAPSE_SCORE && !commentsShownAnyway.has(c.id) && !c.is_mine;
+  const loggedIn = currentUser && !isAnonymousUser;
+  const up = c.my_vote === 1, down = c.my_vote === -1;
+
+  let body;
+  if(commentEditing === c.id){
+    body = `
+      <textarea class="comment-input" id="comment-edit-${esc(c.id)}" maxlength="4000" rows="3">${esc(c.body)}</textarea>
+      <div class="comment-form-row">
+        <span></span>
+        <span><button class="ghost small" onclick="cancelCommentEdit()">Cancel</button>
+        <button class="primary small" onclick="saveCommentEdit('${jsArg(c.id)}')">Save</button></span>
+      </div>`;
+  } else if(collapsed){
+    body = `<button class="comment-link" onclick="showCollapsedComment('${jsArg(c.id)}')">Hidden due to low score &mdash; click to show</button>`;
+  } else {
+    body = `<div class="comment-body">${mention}${esc(c.body)}</div>`;
+  }
+
+  return `
+    <div class="comment${c.is_hidden ? ' comment-flagged' : ''}" id="c-${esc(c.id)}">
+      <div class="comment-meta">
+        <span class="comment-handle">${esc(c.handle || 'member')}</span>
+        ${c.is_op ? `<span class="comment-op" title="Original poster">OP</span>` : ''}
+        <span>&middot; ${timeAgo(c.created_at)}</span>
+        ${c.edited_at ? `<span>&middot; (edited)</span>` : ''}
+        ${c.is_hidden ? `<span class="comment-op" style="background:var(--rejected-bg);color:var(--rejected);">Hidden</span>` : ''}
+        ${c.report_count ? `<span>&middot; ${c.report_count} report${c.report_count === 1 ? '' : 's'}</span>` : ''}
+      </div>
+      ${body}
+      ${commentEditing === c.id || collapsed ? '' : `
+      <div class="comment-actions">
+        <span class="comment-votes">
+          <button class="vote-btn${up ? ' on' : ''}" ${c.is_mine ? 'disabled' : ''} aria-label="Upvote" aria-pressed="${up}" onclick="voteComment('${jsArg(c.id)}', 1)">&#9650;</button>
+          <span class="vote-score">${c.score}</span>
+          <button class="vote-btn${down ? ' on' : ''}" ${c.is_mine ? 'disabled' : ''} aria-label="Downvote" aria-pressed="${down}" onclick="voteComment('${jsArg(c.id)}', -1)">&#9660;</button>
+        </span>
+        <button class="comment-link" onclick="toggleReplyBox('${jsArg(c.id)}')">Reply</button>
+        ${canEdit ? `<button class="comment-link" onclick="startCommentEdit('${jsArg(c.id)}')">Edit</button>` : ''}
+        ${c.is_mine || isAdmin ? `<button class="comment-link" onclick="deleteComment('${jsArg(c.id)}')">Delete</button>` : ''}
+        ${!c.is_mine ? `<button class="comment-link" onclick="reportComment('${jsArg(c.id)}')">Report</button>` : ''}
+        ${isAdmin && c.is_hidden ? `<button class="comment-link" onclick="moderateComment('${jsArg(c.id)}','restore')">Restore</button>` : ''}
+        ${isAdmin && !c.is_hidden ? `<button class="comment-link" onclick="moderateComment('${jsArg(c.id)}','remove')">Hide</button>` : ''}
+      </div>`}
+      ${commentReplyOpen === c.id ? `<div class="comment-reply-box">${commentComposerHtml(c.id, loggedIn)}</div>` : ''}
+    </div>`;
+}
+
+function commentComposerHtml(replyTo, loggedIn){
+  const key = replyTo || 'top';
+  const postingAs = loggedIn
+    ? (myHandle ? `Posting as <b>${esc(myHandle)}</b>` : 'You’ll get a random username (change it in My Account)')
+    : 'Free account needed to post. Your draft is kept.';
+  return `
+    ${replyTo ? '' : `<p class="comment-kind">Be kind &mdash; people are sharing real results and real nerves. <button class="comment-link" onclick="openRulesModal()">Community rules</button></p>`}
+    <textarea class="comment-input" id="comment-input-${esc(key)}" maxlength="4000" rows="${replyTo ? 2 : 3}"
+      placeholder="${replyTo ? 'Write a reply' : 'Add a comment'}" oninput="saveCommentDraft(${replyTo ? `'${jsArg(replyTo)}'` : 'null'}, this.value)"></textarea>
+    <div class="comment-form-row">
+      <span class="comment-posting-as">${postingAs}</span>
+      <span>
+        ${replyTo ? `<button class="ghost small" onclick="toggleReplyBox('${jsArg(replyTo)}')">Cancel</button>` : ''}
+        <button class="primary small" id="comment-post-${esc(key)}" onclick="submitComment(${replyTo ? `'${jsArg(replyTo)}'` : 'null'})">${replyTo ? 'Reply' : 'Post'}</button>
+      </span>
+    </div>`;
+}
+
+function renderCommentComposer(){
+  const el = document.getElementById('comment-composer-top');
+  if(!el) return;
+  el.innerHTML = commentComposerHtml(null, !!(currentUser && !isAnonymousUser));
+  restoreCommentDrafts();
+}
+
+/* Drafts: saved to localStorage as the person types, so a closed tab or a
+   magic link that opens in a new tab doesn't lose them. */
+function commentDraftKey(replyTo){
+  return `wgi_comment_draft:${currentCommentParent.type}:${currentCommentParent.id}:${replyTo || 'top'}`;
+}
+function readCommentDraft(key){
+  try { return JSON.parse(lsGet(key) || 'null'); } catch(e){ return null; }
+}
+function saveCommentDraft(replyTo, body){
+  if(!currentCommentParent) return;
+  const key = commentDraftKey(replyTo);
+  if(!body.trim()){ lsDel(key); return; }
+  const prev = readCommentDraft(key);
+  lsSet(key, JSON.stringify({
+    parentType: currentCommentParent.type,
+    parentId: currentCommentParent.id,
+    replyTo: replyTo || null,
+    body,
+    clientId: (prev && prev.clientId) || crypto.randomUUID()
+  }));
+}
+function restoreCommentDrafts(){
+  if(!currentCommentParent) return;
+  document.querySelectorAll('textarea[id^="comment-input-"]').forEach(t => {
+    if(t.value) return;
+    const key = t.id.replace('comment-input-', '');
+    const d = readCommentDraft(commentDraftKey(key === 'top' ? null : key));
+    if(d && d.body) t.value = d.body;
+  });
+}
+
+function toggleReplyBox(id){
+  commentReplyOpen = commentReplyOpen === id ? null : id;
+  renderComments();
+  if(commentReplyOpen){
+    const t = document.getElementById('comment-input-' + id);
+    if(t) t.focus();
+  }
+}
+
+async function submitComment(replyTo){
+  const t = document.getElementById('comment-input-' + (replyTo || 'top'));
+  if(!t || !t.value.trim()) return;
+  if(containsBlockedWord(t.value)){ alert('Please keep it kind — that comment was flagged as inappropriate.'); return; }
+  saveCommentDraft(replyTo, t.value);
+  const key = commentDraftKey(replyTo);
+  if(!currentUser || isAnonymousUser){
+    modalIntent = 'comment';
+    modalIntentPayload = key;
+    openLoginModal('post');
+    return;
+  }
+  const btn = document.getElementById('comment-post-' + (replyTo || 'top'));
+  if(btn){ btn.disabled = true; btn.textContent = 'Posting…'; }
+  const ok = await postPendingComment(key);
+  if(!ok && btn){ btn.disabled = false; btn.textContent = replyTo ? 'Reply' : 'Post'; }
+}
+
+// Posts a saved draft. Safe to call twice for the same draft (two tabs
+// resuming after one magic-link sign-in): the draft's clientId makes the
+// second call return the same comment instead of posting it again.
+async function postPendingComment(key){
+  const d = readCommentDraft(key);
+  if(!d || !d.body || !d.body.trim()) return false;
+  const { data: newId, error } = await supabaseClient.rpc('post_comment', {
+    p_parent_type: d.parentType, p_parent_id: d.parentId, p_body: d.body,
+    p_reply_to: d.replyTo, p_client_id: d.clientId
+  });
+  if(error){ alert('Could not post your comment: ' + error.message); return false; }
+  lsDel(key);
+  if(myHandle === undefined || myHandle === null){
+    const { data } = await supabaseClient.rpc('get_my_handle');
+    myHandle = data || null;
+  }
+  if(currentCommentParent && currentCommentParent.type === d.parentType && currentCommentParent.id === d.parentId){
+    commentReplyOpen = null;
+    const top = document.getElementById('comment-input-top');
+    if(top && !d.replyTo) top.value = '';
+    renderCommentComposer();
+    await loadComments();
+    const el = document.getElementById('c-' + newId);
+    if(el){ el.classList.add('comment-new'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+  return true;
+}
+
+function startCommentEdit(id){ commentEditing = id; renderComments(); }
+function cancelCommentEdit(){ commentEditing = null; renderComments(); }
+async function saveCommentEdit(id){
+  const t = document.getElementById('comment-edit-' + id);
+  if(!t || !t.value.trim()) return;
+  const { error } = await supabaseClient.rpc('edit_comment', { p_id: id, p_body: t.value });
+  if(error){ alert(error.message); return; }
+  commentEditing = null;
+  await loadComments();
+}
+
+async function deleteComment(id){
+  if(!confirm('Delete this comment?')) return;
+  const { error } = await supabaseClient.rpc('delete_comment', { p_id: id });
+  if(error){ alert('Could not delete: ' + error.message); return; }
+  await loadComments();
+}
+
+function showCollapsedComment(id){ commentsShownAnyway.add(id); renderComments(); }
+
+// Clicking the arrow you already picked removes your vote.
+function voteComment(id, value){
+  if(!currentUser || isAnonymousUser){
+    modalIntent = 'commentVote';
+    modalIntentPayload = `${id}::${value}`;
+    openLoginModal();
+    return;
+  }
+  const c = COMMENTS.find(x => x.id === id);
+  if(!c) return;
+  return setCommentVote(id, c.my_vote === value ? 0 : value);
+}
+async function setCommentVote(id, value){
+  const c = COMMENTS.find(x => x.id === id);
+  const before = c ? { score: c.score, my_vote: c.my_vote } : null;
+  if(c){ c.score = c.score - (c.my_vote || 0) + value; c.my_vote = value || null; renderComments(); }
+  const { data, error } = await supabaseClient.rpc('vote_comment', { p_id: id, p_value: value });
+  if(error){
+    if(c && before){ Object.assign(c, before); renderComments(); }
+    alert(error.message);
+    return;
+  }
+  if(c){ c.score = data; renderComments(); }
+}
+
+async function reportComment(id){
+  if(!currentUser || isAnonymousUser){
+    modalIntent = 'commentReport';
+    modalIntentPayload = id;
+    openLoginModal();
+    return;
+  }
+  const reason = window.prompt('What\'s wrong with this comment? (optional)');
+  if(reason === null) return;
+  const { error } = await supabaseClient.rpc('report_comment', { p_id: id, p_reason: reason });
+  if(error){ alert('Could not report: ' + error.message); return; }
+  alert('Thanks — a moderator will take a look.');
+  loadComments();
+}
+
+async function moderateComment(id, action){
+  const { error } = await supabaseClient.rpc('admin_moderate_comment', { p_id: id, p_action: action });
+  if(error){ alert(error.message); return; }
+  if(document.getElementById('admin-comments-content')) renderAdminComments();
+  if(currentCommentParent) loadComments();
+}
+
+function openRulesModal(){ document.getElementById('rules-modal').classList.add('open'); }
+function closeRulesModal(){ const m = document.getElementById('rules-modal'); if(m) m.classList.remove('open'); }
+
+/* Admin: hidden or reported comments. */
+async function renderAdminComments(){
+  const el = document.getElementById('admin-comments-content');
+  if(!el || !isAdmin) return;
+  el.innerHTML = `<p class="section-sub">Loading&hellip;</p>`;
+  const { data, error } = await supabaseClient.rpc('admin_comment_queue');
+  if(error){ el.innerHTML = `<p class="section-sub">Could not load comments: ${esc(error.message)}</p>`; return; }
+  if(!data.length){ el.innerHTML = `<p class="section-sub">No reported or hidden comments.</p>`; return; }
+  el.innerHTML = data.map(c => `
+    <div class="idx-card" style="cursor:default;margin-bottom:14px;">
+      <div class="comment-meta">
+        <span class="comment-handle">${esc(c.handle || 'member')}</span>
+        <span>&middot; ${timeAgo(c.created_at)}</span>
+        ${c.hidden ? `<span class="comment-op" style="background:var(--rejected-bg);color:var(--rejected);">Hidden</span>` : ''}
+        <span>&middot; ${c.report_count} open report${c.report_count === 1 ? '' : 's'}</span>
+      </div>
+      <div class="comment-body">${esc(c.body)}</div>
+      ${c.reasons && c.reasons.length ? `<p class="section-sub" style="margin:8px 0 0;"><strong>Reasons:</strong> ${c.reasons.map(esc).join(' &middot; ')}</p>` : ''}
+      <div class="cta-row" style="justify-content:flex-start;margin-top:10px;">
+        ${c.parent_type === 'submission' ? `<a class="ghost small btn-link" href="/submission/${esc(c.short_id)}#comments">View thread</a>` : ''}
+        <button class="small" onclick="moderateComment('${jsArg(c.id)}','restore')">Restore / dismiss</button>
+        <button class="small" style="border-color:#b3312c;color:#b3312c;" onclick="moderateComment('${jsArg(c.id)}','remove')">Keep hidden</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- Email: prompt after submitting ---------------- */
+
+// "USC and UCLA" / "USC, UCLA, and 2 more"
+function schoolNameList(names, moreClick){
+  if(names.length <= 1) return esc(names[0] || '');
+  if(names.length === 2) return `${esc(names[0])} and ${esc(names[1])}`;
+  const more = `${names.length - 2} more`;
+  return `${esc(names[0])}, ${esc(names[1])}, and ${moreClick ? `<button class="comment-link" onclick="toggleWaitlistChecklist()">${more}</button>` : more}`;
+}
+
+async function loadMyContact(){
+  const { data, error } = await supabaseClient.from('user_contacts').select('email, verified_at, prefs').maybeSingle();
+  if(error){ console.error('load contact', error); return null; }
+  return data;
+}
+
+let emailPromptSchools = [];
+async function openEmailPrompt(opts){
+  const waitlisted = opts.waitlisted || [];
+  const contact = await loadMyContact();
+  const prefs = (contact && contact.prefs) || {};
+  const muted = new Set(prefs.waitlist_off || []);
+  const hasVerified = !!(contact && contact.email && contact.verified_at);
+  // Already set up the way this would set it: don't ask again.
+  if(hasVerified && prefs.replies !== false && (!waitlisted.length || (prefs.waitlist !== false && waitlisted.every(n => !muted.has(n))))) return;
+
+  emailPromptSchools = waitlisted;
+  const el = document.getElementById('email-prompt-body');
+  el.innerHTML = `
+    <label class="check-row"><input type="checkbox" id="ep-replies" checked> Get an email when someone comments on your result.</label>
+    ${waitlisted.length ? `
+      <label class="check-row"><input type="checkbox" id="ep-waitlist" checked onchange="document.querySelectorAll('.ep-school').forEach(b=>b.disabled=!this.checked)">
+        <span>Get notified when the waitlist moves at ${schoolNameList(waitlisted, waitlisted.length > 2)}.</span></label>
+      ${waitlisted.length > 2 ? `<div id="ep-school-list" class="ep-school-list" style="display:none;">
+        ${waitlisted.map((n, i) => `<label class="check-row"><input type="checkbox" class="ep-school" data-i="${i}" checked> ${esc(n)}</label>`).join('')}
+      </div>` : ''}` : ''}
+    ${hasVerified
+      ? `<p class="section-sub" style="margin:10px 0 0;">We'll email <b>${esc(contact.email)}</b>.</p>`
+      : `<div class="field" style="margin:14px 0 0;">
+           <label for="ep-email">Email</label>
+           <input type="email" id="ep-email" autocomplete="email" placeholder="you@example.com" style="width:100%;" value="${esc((contact && contact.email) || '')}">
+           <div class="hint">We'll send one email to confirm it. Change or turn these off anytime.</div>
+         </div>`}
+    <p id="ep-msg" style="font-size:12.5px;margin:10px 0 0;display:none;"></p>`;
+  document.getElementById('email-prompt-title').textContent = opts.isEdit ? 'Your result has been updated' : 'Your result is live';
+  const saveBtn = document.getElementById('ep-save');
+  saveBtn.disabled = false; saveBtn.textContent = 'Save';
+  saveBtn.style.display = '';
+  document.getElementById('ep-skip').textContent = 'No thanks';
+  document.getElementById('email-prompt').classList.add('open');
+}
+function toggleWaitlistChecklist(){
+  const l = document.getElementById('ep-school-list');
+  if(l) l.style.display = l.style.display === 'none' ? 'block' : 'none';
+}
+function closeEmailPrompt(){ const m = document.getElementById('email-prompt'); if(m) m.classList.remove('open'); }
+
+async function saveEmailPrompt(){
+  const msg = document.getElementById('ep-msg');
+  const showMsg = (text, ok) => { msg.textContent = text; msg.style.color = ok ? 'var(--accepted)' : '#b3312c'; msg.style.display = 'block'; };
+  const replies = document.getElementById('ep-replies').checked;
+  const wl = document.getElementById('ep-waitlist');
+  const prefs = { replies };
+  if(wl){
+    prefs.waitlist = wl.checked;
+    const boxes = document.querySelectorAll('.ep-school');
+    prefs.waitlist_off = boxes.length ? emailPromptSchools.filter((n, i) => !boxes[i].checked) : [];
+  }
+  const emailInput = document.getElementById('ep-email');
+  const email = emailInput ? emailInput.value.trim() : '';
+  const wantsAny = replies || (wl && wl.checked);
+  if(emailInput && wantsAny && !email){ showMsg('Enter your email, or tap "No thanks".'); return; }
+
+  const btn = document.getElementById('ep-save');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  const { error: prefErr } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: prefs });
+  let result = null, emailErr = null;
+  if(!prefErr && emailInput && email && wantsAny){
+    ({ data: result, error: emailErr } = await supabaseClient.rpc('set_my_email', { p_email: email }));
+  }
+  btn.disabled = false; btn.textContent = 'Save';
+  const err = prefErr || emailErr;
+  if(err){ showMsg(err.message); return; }
+  if(result === 'sent'){
+    showMsg(`Almost done: we sent a confirmation link to ${email}.`, true);
+    btn.style.display = 'none';
+    document.getElementById('ep-skip').textContent = 'Close';
+    return;
+  }
+  closeEmailPrompt();
+}
+
+/* ---------------- Email: verify link + preferences page ---------------- */
+let emailPageToken = null;
+
+async function renderEmailVerifyPage(token){
+  const el = document.getElementById('email-content');
+  goPage('email');
+  history.replaceState({ page: 'email' }, '', '/email/verify'); // the token is single-use; keep it out of history
+  el.innerHTML = `<p class="section-sub">Confirming&hellip;</p>`;
+  const { data, error } = await supabaseClient.rpc('verify_email', { p_token: token || '' });
+  if(error || !data){
+    el.innerHTML = `<h2 class="section-title">This link didn't work</h2>
+      <p class="section-sub">It may have expired or already been used. You can send a new one from My Account.</p>
+      <a class="btn-link primary" href="/">Go to Who Got In</a>`;
+    return;
+  }
+  el.innerHTML = `<h2 class="section-title">Your email is confirmed</h2>
+    <p class="section-sub">You'll get the emails you turned on. Every email has a link to change them.</p>
+    <a class="btn-link primary" href="/">Go to Who Got In</a>`;
+}
+
+const EMAIL_PREF_ROWS = [
+  ['replies',  'Replies and comments', 'When someone comments on your result or replies to you.'],
+  ['waitlist', 'Waitlist updates', 'When the waitlist moves at a school you\'re waitlisted at.'],
+  ['digest',   'New results at saved schools', 'A digest, at most every two weeks. Only sent when there\'s something new.'],
+  ['updates',  'Site updates', 'Occasional news about Who Got In.']
+];
+function emailPrefsRowsHtml(prefs, idPrefix){
+  return `
+    <label class="check-row"><input type="checkbox" checked disabled> <span><b>Account emails</b><br><span class="hint-inline">Sign-in links and email confirmation. Always on.</span></span></label>
+    ${EMAIL_PREF_ROWS.map(([k, label, hint]) => `
+      <label class="check-row"><input type="checkbox" id="${idPrefix}${k}" ${prefs[k] === false ? '' : 'checked'}>
+        <span><b>${label}</b><br><span class="hint-inline">${hint}</span></span></label>`).join('')}`;
+}
+function readEmailPrefs(idPrefix){
+  const out = {};
+  EMAIL_PREF_ROWS.forEach(([k]) => { const b = document.getElementById(idPrefix + k); if(b) out[k] = b.checked; });
+  return out;
+}
+
+async function renderEmailPrefsPage(token){
+  emailPageToken = token || '';
+  const el = document.getElementById('email-content');
+  goPage('email');
+  el.innerHTML = `<p class="section-sub">Loading&hellip;</p>`;
+  const { data, error } = await supabaseClient.rpc('email_prefs_by_token', { p_token: emailPageToken });
+  if(error || !data){
+    el.innerHTML = `<h2 class="section-title">Email preferences</h2>
+      <p class="section-sub">This link isn't valid anymore. Signed in? Manage emails from My Account.</p>`;
+    return;
+  }
+  if(!data.email){
+    el.innerHTML = `<h2 class="section-title">Email preferences</h2>
+      <p class="section-sub">Your email address has been deleted. We won't email you.</p>`;
+    return;
+  }
+  el.innerHTML = `
+    <h2 class="section-title">Email preferences</h2>
+    <p class="section-sub">For <b>${esc(data.email)}</b></p>
+    <div class="email-prefs">${emailPrefsRowsHtml(data.prefs || {}, 'tp-')}</div>
+    <div class="cta-row" style="justify-content:flex-start;">
+      <button class="primary" onclick="saveTokenEmailPrefs(false)">Save</button>
+      <button class="ghost" onclick="saveTokenEmailPrefs(true)">Unsubscribe from all</button>
+    </div>
+    <p id="tp-msg" class="section-sub" style="margin-top:10px;"></p>
+    <hr class="divider">
+    <button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteEmailByToken()">Delete my email</button>
+    <p class="section-sub" style="margin-top:6px;">Removes your address from Who Got In. Your results and account stay.</p>`;
+}
+async function saveTokenEmailPrefs(all){
+  if(all) EMAIL_PREF_ROWS.forEach(([k]) => { const b = document.getElementById('tp-' + k); if(b) b.checked = false; });
+  const { error } = await supabaseClient.rpc('set_email_prefs_by_token', { p_token: emailPageToken, p_prefs: readEmailPrefs('tp-') });
+  document.getElementById('tp-msg').textContent = error ? ('Could not save: ' + error.message) : 'Saved.';
+}
+async function deleteEmailByToken(){
+  if(!confirm('Delete your email address from Who Got In? You won\'t get any more emails.')) return;
+  const { error } = await supabaseClient.rpc('delete_email_by_token', { p_token: emailPageToken });
+  if(error){ alert(error.message); return; }
+  renderEmailPrefsPage(emailPageToken);
+}
+
+/* ---------------- Email: My Account section ---------------- */
+async function renderAccountEmailSettings(){
+  const el = document.getElementById('account-email-settings');
+  if(!el) return;
+  const [contact, handleRes] = await Promise.all([loadMyContact(), supabaseClient.rpc('get_my_handle')]);
+  myHandle = handleRes.data || null;
+  const prefs = (contact && contact.prefs) || {};
+  const email = contact && contact.email;
+  el.innerHTML = `
+    <div class="field">
+      <label for="acct-handle">Username (shown on your comments)</label>
+      <div style="display:flex;gap:8px;max-width:420px;">
+        <input type="text" id="acct-handle" maxlength="20" placeholder="${myHandle ? '' : 'Picked for you when you first comment'}" value="${esc(myHandle || '')}" style="flex:1;">
+        <button class="small" onclick="saveAccountHandle()">Save</button>
+      </div>
+      <div class="hint" id="acct-handle-msg">3&ndash;20 letters, numbers or _. Don't use your real name.</div>
+    </div>
+    <div class="field">
+      <label for="acct-email">Email</label>
+      <div style="display:flex;gap:8px;max-width:420px;">
+        <input type="email" id="acct-email" value="${esc(email || '')}" placeholder="you@example.com" style="flex:1;">
+        <button class="small" onclick="saveAccountEmail()">${email ? 'Change' : 'Add'}</button>
+      </div>
+      <div class="hint" id="acct-email-msg">${!email ? 'No email saved, so we won\'t email you.'
+        : contact.verified_at ? '&#10003; Confirmed' : 'Waiting for you to click the confirmation link. Press Change to send it again.'}</div>
+    </div>
+    <div class="email-prefs">${emailPrefsRowsHtml(prefs, 'ap-')}</div>
+    <div class="cta-row" style="justify-content:flex-start;margin-top:8px;">
+      <button class="small" onclick="saveAccountEmailPrefs()">Save email settings</button>
+      ${email ? `<button class="ghost small" style="border-color:#b3312c;color:#b3312c;" onclick="deleteAccountEmail()">Delete my email</button>` : ''}
+    </div>
+    <p class="section-sub" id="acct-prefs-msg" style="margin-top:8px;"></p>`;
+}
+async function saveAccountHandle(){
+  const v = document.getElementById('acct-handle').value;
+  const msg = document.getElementById('acct-handle-msg');
+  const { data, error } = await supabaseClient.rpc('set_my_handle', { p_handle: v });
+  if(error){ msg.textContent = error.message; msg.style.color = '#b3312c'; return; }
+  myHandle = data;
+  document.getElementById('acct-handle').value = data;
+  msg.textContent = 'Saved.'; msg.style.color = 'var(--accepted)';
+}
+async function saveAccountEmail(){
+  const v = document.getElementById('acct-email').value;
+  const msg = document.getElementById('acct-email-msg');
+  const { data, error } = await supabaseClient.rpc('set_my_email', { p_email: v });
+  if(error){ msg.textContent = error.message; msg.style.color = '#b3312c'; return; }
+  msg.style.color = 'var(--accepted)';
+  msg.textContent = data === 'sent' ? `We sent a confirmation link to ${v.trim()}.` : '✓ Confirmed';
+}
+async function saveAccountEmailPrefs(){
+  const { error } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: readEmailPrefs('ap-') });
+  document.getElementById('acct-prefs-msg').textContent = error ? ('Could not save: ' + error.message) : 'Saved.';
+}
+async function deleteAccountEmail(){
+  if(!confirm('Delete your email address from Who Got In? You won\'t get any more emails, but your account stays.')) return;
+  const { error } = await supabaseClient.rpc('delete_my_email');
+  if(error){ alert(error.message); return; }
+  renderAccountEmailSettings();
+}
+
+// Bell on a saved school: on = included in the new-results digest.
+async function toggleSchoolNotify(name, ev){
+  if(ev) ev.stopPropagation();
+  if(!userRecord) return;
+  const notify = !(userRecord.savedSchoolNotify[name] !== false);
+  userRecord.savedSchoolNotify[name] = notify;
+  renderMyResult();
+  const { error } = await supabaseClient.rpc('set_school_notify', { p_university: name, p_notify: notify });
+  if(error){
+    userRecord.savedSchoolNotify[name] = !notify;
+    renderMyResult();
+    alert('Could not update: ' + error.message);
+  }
+}
+
 /* ---------------- init ---------------- */
 (async function init(){
   wireSchoolBoxes();
@@ -4523,7 +5322,7 @@ function renderPredictBattery(){
   }
   await Promise.all([loadUniversities(), loadUniversityProfileCounts(), loadLogoManifest()]);
   renderSchoolMatches();
-  const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname) || /^\/privacy\/?$/i.test(window.location.pathname);
+  const isTargetedRoute = /^\/(submission|school|email)\//.test(window.location.pathname) || /^\/privacy\/?$/i.test(window.location.pathname);
   if(!isTargetedRoute && window.location.pathname === '/') await loadRecentProfiles();
   await onAuthReady();
   if(!isTargetedRoute) renderHome();
@@ -4559,16 +5358,34 @@ function renderPredictBattery(){
   // by the onAuthReady() call already made before this listener is attached,
   // so it won't double-fire for that case (Supabase reports it as
   // INITIAL_SESSION, not SIGNED_IN).
-  supabaseClient.auth.onAuthStateChange(async (event) => {
+  supabaseClient.auth.onAuthStateChange((event) => {
+    // Supabase warns against awaiting other Supabase calls inside this
+    // callback (it can deadlock the auth lock), so run the work after it.
     if(event === 'SIGNED_IN'){
-      await resumeAfterLogin();
+      setTimeout(resumeAfterLogin, 0);
     } else if(event === 'SIGNED_OUT'){
       currentUser = null;
       userRecord = null;
+      myHandle = undefined;
       updateProfileBtn();
       if(document.querySelector('.page.active')?.id === 'page-myresult') renderMyResult();
+      if(currentCommentParent && document.querySelector('.page.active')?.id === 'page-submission'){ renderCommentComposer(); loadComments(); }
     }
   });
+
+  // A Google or magic-link return can finish signing in before the listener
+  // above exists. If something is waiting (a draft to post, a guest result
+  // to claim), resume now; resumeAfterLogin() is safe to run twice.
+  if(currentUser && !isAnonymousUser && (lsGet('wgi_modalIntent') || lsGet('wgi_claim_token'))){
+    resumeAfterLogin();
+  }
+
+  // An expired or already-used sign-in link comes back as #error_description=...
+  const authError = new URLSearchParams(window.location.hash.slice(1)).get('error_description');
+  if(authError){
+    history.replaceState(history.state, '', window.location.pathname + window.location.search);
+    alert('Sign-in didn\'t work: ' + authError + '. Try again and we\'ll send a fresh link.');
+  }
 })();
 </script>
 </body>
