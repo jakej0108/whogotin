@@ -1,0 +1,9 @@
+# Only the Edge Function settings are kept here; the database is managed by
+# pasting the files in sql/ into the Supabase SQL Editor.
+project_id = "whogotin"
+
+[functions.email-sender]
+verify_jwt = false
+
+[functions.unsubscribe]
+verify_jwt = false
