@@ -1294,6 +1294,14 @@ function goPage(name){
   // link only means something on its own page — navigating anywhere else
   // (including the logo, which always goes home) should leave a clean
   // URL instead of carrying a stale link along.
+  if(name==='privacy'){
+    // The privacy policy has its own real URL (whogotin.com/privacy) so it
+    // can be linked from Google's OAuth consent screen and opened directly.
+    if(window.location.pathname!=='/privacy') history.pushState({ page: 'privacy' }, '', '/privacy');
+    document.title = 'Privacy | Who Got In';
+    return;
+  }
+  if(document.title === 'Privacy | Who Got In') document.title = 'Who Got In';
   if(name!=='profile' && name!=='submission' && name!=='university' && (window.location.pathname!=='/' || window.location.hash)){
     history.replaceState(null, '', '/');
   }
@@ -2222,6 +2230,7 @@ async function routeFromLocation(){
     const id = resolveSchoolPath(schoolMatch[1], schoolMatch[2]);
     return id ? renderProfilePage(id) : false;
   }
+  if(/^\/privacy\/?$/i.test(path)){ goPage('privacy'); return true; }
   const profileHash = window.location.hash.match(/^#profile\/(.+)$/);
   if(profileHash) return renderProfilePage(profileHash[1]);
   const submissionHash = window.location.hash.match(/^#submission\/(.+)$/);
@@ -4514,7 +4523,7 @@ function renderPredictBattery(){
   }
   await Promise.all([loadUniversities(), loadUniversityProfileCounts(), loadLogoManifest()]);
   renderSchoolMatches();
-  const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname);
+  const isTargetedRoute = /^\/(submission|school)\//.test(window.location.pathname) || /^\/privacy\/?$/i.test(window.location.pathname);
   if(!isTargetedRoute && window.location.pathname === '/') await loadRecentProfiles();
   await onAuthReady();
   if(!isTargetedRoute) renderHome();
