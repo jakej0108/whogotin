@@ -558,6 +558,7 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   a.idx-card:focus-visible, a.hc-school-row:focus-visible, a.tab:focus-visible, .acct-dropdown a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   a.hc-school-row{color:inherit;text-decoration:none;}
   a.tab{text-decoration:none;display:inline-block;}
+  .tab-short{display:none;}
   a.brand{color:inherit;text-decoration:none;}
   a.back-link{text-decoration:none;}
   /* A card plus a control that can't live inside its <a> (no buttons
@@ -606,11 +607,13 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .danger-zone{border:1.5px solid #b3312c;border-radius:10px;padding:16px 18px;max-width:520px;}
   @media (max-width:600px){
     nav.tabs{gap:4px;padding-left:0;}
-    .tab{flex:0 1 auto;white-space:nowrap;padding:8px 8px 7px;font-size:10.5px;letter-spacing:0;}
+    .tab{flex:1 1 auto;text-align:center;white-space:nowrap;padding:8px 10px 7px;font-size:11px;letter-spacing:0.2px;}
+    .tab-long{display:none;}
+    .tab-short{display:inline;}
     .tab.active{padding-bottom:9px;}
   }
   @media (max-width:360px){
-    .tab{padding:8px 5px 7px;font-size:9.5px;}
+    .tab{padding:8px 7px 7px;font-size:10px;}
   }
   a.btn-link{display:inline-block;text-decoration:none;border:2px solid var(--ink);color:var(--ink);padding:9px 16px;border-radius:6px;font-size:14px;}
   a.btn-link.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -647,9 +650,10 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
       <div class="auth-area" id="auth-area"></div>
     </div>
     <nav class="tabs" aria-label="Main">
-      <a class="tab" data-page="upload" href="/share">Share your result</a>
-      <a class="tab" data-page="search" href="/search">Search schools</a>
+      <a class="tab active" data-page="home" href="/">Home</a>
+      <a class="tab" data-page="search" href="/search"><span class="tab-long">Search schools</span><span class="tab-short">Search</span></a>
       <a class="tab" data-page="discussions" href="/discussions">Discussions</a>
+      <a class="tab" data-page="upload" href="/share"><span class="tab-long">Share your result</span><span class="tab-short">Share</span></a>
     </nav>
   </header>
 
