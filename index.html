@@ -1036,20 +1036,24 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
     <button class="modal-close" onclick="cancelLoginModal()" aria-label="Close">&times;</button>
     <h2 class="section-title" style="margin-bottom:6px;" id="login-modal-title">Log In</h2>
     <p class="section-sub" style="margin-bottom:18px;" id="login-modal-sub">Log in to save your progress and shared results.</p>
-    <button class="ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;" onclick="loginWithGoogle()">
-      <svg width="16" height="16" viewBox="0 0 48 48" style="flex-shrink:0;"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 34.7 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.6C41.5 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
-      Continue with Google
-    </button>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--ink-faint);font-size:12px;">
-      <div style="flex:1;height:1px;background:var(--rule);"></div>or<div style="flex:1;height:1px;background:var(--rule);"></div>
+    <div id="login-google-block">
+      <button class="ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;" onclick="loginWithGoogle()">
+        <svg width="16" height="16" viewBox="0 0 48 48" style="flex-shrink:0;"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 34.7 26.9 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.6C41.5 36 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--ink-faint);font-size:12px;">
+        <div style="flex:1;height:1px;background:var(--rule);"></div>or<div style="flex:1;height:1px;background:var(--rule);"></div>
+      </div>
     </div>
-    <div class="field" style="margin-bottom:8px;">
+    <div class="field" id="login-email-field" style="margin-bottom:8px;">
       <label for="modal-email-input">Email</label>
-      <input type="email" id="modal-email-input" placeholder="you@example.com" autocomplete="email" style="width:100%;" onkeydown="if(event.key==='Enter') submitModalLogin()">
+      <input type="email" id="modal-email-input" placeholder="you@example.com" autocomplete="email" style="width:100%;" onkeydown="if(event.key==='Enter') loginSubmit()">
     </div>
+    <p class="section-sub" id="login-email-shown" style="display:none;margin:0 0 10px;"></p>
+    <div id="login-step-body"></div>
     <p id="login-modal-error" style="color:#b3312c;font-size:12.5px;display:none;margin-bottom:6px;"></p>
-    <button class="primary" id="login-submit-btn" style="width:100%;margin-top:6px;" onclick="submitModalLogin()">Email me a sign-in link</button>
-    <p class="login-fineprint">No password needed. We'll email you about replies, new results at your schools, and occasional updates. Change this anytime.</p>
+    <button class="primary" id="login-submit-btn" style="width:100%;margin-top:6px;" onclick="loginSubmit()">Continue</button>
+    <p class="login-fineprint" id="login-fineprint">We'll email you about replies, new results at your schools, and occasional updates. Change this anytime.</p>
   </div>
 </div>
 
@@ -1099,6 +1103,11 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
 // 3. Project Settings -> API -> paste your Project URL and anon public key below
 const SUPABASE_URL = 'https://nczvyfkfppndhovlevxm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_uNV8G11iBIAHZ6KTFXRe4w_zLEqmQ8Q';
+// Read before the client takes the tokens out of the address bar: did this
+// page load come from a confirmation / Google / password-reset link?
+const AUTH_RETURN = /access_token=/.test(window.location.hash);
+const RESET_RETURN = new URLSearchParams(window.location.search).get('reset') === '1'
+  || /type=recovery/.test(window.location.hash);
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // The accounts that see the moderation/admin panel. Just gates whether the
@@ -1600,32 +1609,238 @@ function goToPrediction(){
   }, 100);
 }
 
-// Sign-in is Google or an emailed magic link: no passwords. One modal for
-// everything; openLoginModal('post') is the "write first, sign up at Post"
-// version shown when someone who isn't signed in presses Post.
+// Sign-in is Google, or email + password. One modal for everything, and it
+// asks for the email first: auth_email_status() (sql/password_auth.sql)
+// says whether that email logs in with a password, uses Google, or is new,
+// so nobody has to pick between "log in" and "sign up".
+// openLoginModal('post') is the "write first, sign up at Post" version shown
+// when someone who isn't signed in presses Post.
 const LOGIN_COPY = {
   default: { title: 'Log in or sign up', sub: 'Free. Save results, comment, and follow your schools.' },
   post:    { title: 'Almost there — create a free account to post.', sub: 'Your draft is saved.' }
 };
+const MIN_PASSWORD = 8;
 
-function openLoginModal(mode){
+// 'email' | 'password' | 'signup' | 'google' | 'no_password' | 'sent' | 'reset'
+let loginStep = 'email';
+let loginEmail = '';
+let loginSentResend = null; // what "Resend" does on the 'sent' step
+
+function openLoginModal(mode, email){
   const overlay = document.getElementById('login-modal');
   if(!overlay) return;
   const copy = LOGIN_COPY[mode] || LOGIN_COPY.default;
   document.getElementById('login-modal-title').textContent = copy.title;
   document.getElementById('login-modal-sub').textContent = copy.sub;
+  document.getElementById('login-modal-sub').style.display = '';
   const emailInput = document.getElementById('modal-email-input');
-  if(emailInput) emailInput.value = '';
-  const errEl = document.getElementById('login-modal-error');
-  if(errEl) errEl.style.display = 'none';
-  const submitBtn = document.getElementById('login-submit-btn');
-  if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Email me a sign-in link'; }
+  if(emailInput) emailInput.value = email || '';
+  setLoginStep('email');
   overlay.classList.add('open');
   if(emailInput) setTimeout(()=>emailInput.focus(), 50);
   // A guest (anonymous session from submitting a result) is about to become
   // a different user. Get a claim token now, while still the guest, so their
   // submission can move to the new account after sign-in.
   ensureClaimToken();
+  if(email) loginContinue();
+}
+
+function loginMsg(text, ok, html){
+  const el = document.getElementById('login-modal-error');
+  if(!el) return;
+  if(!text){ el.style.display = 'none'; return; }
+  el.style.color = ok ? 'var(--accepted)' : '#b3312c';
+  if(html) el.innerHTML = text; else el.textContent = text;
+  el.style.display = 'block';
+}
+
+function setLoginStep(step, opts){
+  opts = opts || {};
+  loginStep = step;
+  const body = document.getElementById('login-step-body');
+  const btn = document.getElementById('login-submit-btn');
+  const shown = document.getElementById('login-email-shown');
+  const pw = (id, label, autocomplete, hint) => `
+    <div class="field" style="margin-bottom:8px;">
+      <label for="${id}">${label}</label>
+      <input type="password" id="${id}" autocomplete="${autocomplete}" minlength="${MIN_PASSWORD}" style="width:100%;" onkeydown="if(event.key==='Enter') loginSubmit()">
+      ${hint ? `<div class="hint">${hint}</div>` : ''}
+    </div>`;
+  let html = '', label = 'Continue';
+  if(step === 'password'){
+    html = pw('modal-password-input', 'Password', 'current-password')
+      + `<p style="margin:0 0 6px;font-size:12.5px;"><button class="comment-link" onclick="sendPasswordReset()">Forgot password?</button></p>`;
+    label = 'Log in';
+  } else if(step === 'signup'){
+    html = (opts.unconfirmed ? `<p class="section-sub" style="margin:0 0 10px;">You started signing up before but didn't confirm your email. Choose a password and we'll send a new link.</p>`
+                             : `<p class="section-sub" style="margin:0 0 10px;">New here? Create a password to sign up.</p>`)
+      + pw('modal-password-input', 'Create a password', 'new-password', `At least ${MIN_PASSWORD} characters.`);
+    label = 'Sign up';
+  } else if(step === 'google'){
+    html = `<p class="section-sub" style="margin:0 0 10px;">This email uses Google. Continue with Google to log in.</p>`;
+    label = 'Continue with Google';
+  } else if(step === 'no_password'){
+    html = `<p class="section-sub" style="margin:0 0 10px;">We've switched to passwords. Your account doesn't have one yet, so we'll email you a link to set it.</p>`;
+    label = 'Email me a link';
+  } else if(step === 'sent'){
+    html = `<p class="section-sub" style="margin:0 0 10px;">${opts.text}</p>`;
+    label = 'Resend email';
+  } else if(step === 'reset'){
+    html = pw('modal-password-input', 'New password', 'new-password', `At least ${MIN_PASSWORD} characters.`);
+    label = 'Save password';
+  }
+  body.innerHTML = html;
+  btn.disabled = false;
+  btn.textContent = label;
+  // Email box only on the first step; afterwards show it with a Change link.
+  document.getElementById('login-email-field').style.display = step === 'email' ? '' : 'none';
+  document.getElementById('login-google-block').style.display = step === 'email' ? '' : 'none';
+  document.getElementById('login-fineprint').style.display = (step === 'email' || step === 'signup') ? '' : 'none';
+  if(step === 'email' || step === 'reset'){
+    shown.style.display = 'none';
+  } else {
+    shown.innerHTML = `<b>${esc(loginEmail)}</b> · <button class="comment-link" onclick="setLoginStep('email')">Use a different email</button>`;
+    shown.style.display = '';
+  }
+  if(step === 'reset'){
+    document.getElementById('login-modal-title').textContent = 'Choose a new password';
+    document.getElementById('login-modal-sub').style.display = 'none';
+  }
+  loginMsg('');
+  const pwInput = document.getElementById('modal-password-input');
+  if(pwInput) setTimeout(()=>pwInput.focus(), 50);
+}
+
+function loginPassword(){
+  return (document.getElementById('modal-password-input')?.value) || '';
+}
+
+async function loginSubmit(){
+  const btn = document.getElementById('login-submit-btn');
+  if(btn.disabled) return;
+  const step = loginStep;
+  if(step === 'google') return loginWithGoogle();
+  btn.disabled = true;
+  try {
+    if(step === 'email') await loginContinue();
+    else if(step === 'password') await loginWithPassword();
+    else if(step === 'signup') await signupWithPassword();
+    else if(step === 'no_password') await sendPasswordReset();
+    else if(step === 'sent' && loginSentResend) await loginSentResend();
+    else if(step === 'reset') await saveNewPassword();
+  } finally {
+    if(loginStep === step) btn.disabled = false;
+  }
+}
+
+async function loginContinue(){
+  const email = document.getElementById('modal-email-input').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ loginMsg('Enter your email address.'); return; }
+  loginEmail = email;
+  const { data, error } = await supabaseClient.rpc('auth_email_status', { p_email: email });
+  if(error){ loginMsg(error.message); return; }
+  if(data === 'password') setLoginStep('password');
+  else if(data === 'google') setLoginStep('google');
+  else if(data === 'no_password') setLoginStep('no_password');
+  else if(data === 'unconfirmed') setLoginStep('signup', { unconfirmed: true });
+  else if(data === 'new') setLoginStep('signup');
+  else loginMsg('Enter your email address.');
+}
+
+// A guest hands their result to whoever signs in with this email, on any
+// device (claim_my_guest_data after sign-in). No-op for non-guests.
+async function offerGuestDataTo(email){
+  if(!isAnonymousUser) return;
+  const { error } = await supabaseClient.rpc('offer_my_guest_data', { p_email: email });
+  if(error) console.error('offer guest data', error);
+}
+
+async function loginWithPassword(){
+  const password = loginPassword();
+  if(!password){ loginMsg('Enter your password.'); return; }
+  persistModalIntent();
+  await ensureClaimToken();
+  await offerGuestDataTo(loginEmail);
+  const { error } = await supabaseClient.auth.signInWithPassword({ email: loginEmail, password });
+  if(!error) return; // SIGNED_IN runs resumeAfterLogin()
+  if(error.code === 'email_not_confirmed' || /not confirmed/i.test(error.message || '')){
+    setLoginStep('sent', { text: `Confirm your email first: tap the link we sent to <b>${esc(loginEmail)}</b>.` });
+    loginSentResend = resendSignupEmail;
+    return;
+  }
+  if(error.code === 'invalid_credentials' || /invalid login credentials/i.test(error.message || '')){
+    loginMsg('Wrong password. Try again, or use Forgot password above.');
+    return;
+  }
+  loginMsg(error.message);
+}
+
+async function signupWithPassword(){
+  const password = loginPassword();
+  if(password.length < MIN_PASSWORD){ loginMsg(`Use at least ${MIN_PASSWORD} characters.`); return; }
+  persistModalIntent();
+  await ensureClaimToken();
+  await offerGuestDataTo(loginEmail);
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: loginEmail, password,
+    options: { emailRedirectTo: loginRedirectUrl() }
+  });
+  if(error){
+    if(error.code === 'user_already_exists' || /already registered/i.test(error.message || '')){
+      setLoginStep('password');
+      loginMsg('You already have an account. Log in instead.');
+      return;
+    }
+    loginMsg(error.message);
+    return;
+  }
+  if(data && data.session) return; // "Confirm email" is off: already signed in
+  showSignupSent(loginEmail);
+}
+
+function showSignupSent(email){
+  loginEmail = email;
+  setLoginStep('sent', { text: `Almost done: tap the link we sent to <b>${esc(email)}</b> to confirm your email${lsGet('wgi_modalIntent') === 'comment' ? '. Your draft stays saved' : ''}.` });
+  loginSentResend = resendSignupEmail;
+}
+
+async function resendSignupEmail(){
+  const { error } = await supabaseClient.auth.resend({
+    type: 'signup', email: loginEmail, options: { emailRedirectTo: loginRedirectUrl() }
+  });
+  loginMsg(error ? error.message : 'Sent again. Check your inbox (and spam).', !error);
+}
+
+async function sendPasswordReset(){
+  if(!loginEmail) return;
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(loginEmail, {
+    redirectTo: loginRedirectUrl() + '?reset=1'
+  });
+  if(error){ loginMsg(error.message); return; }
+  setLoginStep('sent', { text: `We sent a link to <b>${esc(loginEmail)}</b>. Tap it to choose a password.` });
+  loginSentResend = async () => {
+    const { error: e2 } = await supabaseClient.auth.resetPasswordForEmail(loginEmail, { redirectTo: loginRedirectUrl() + '?reset=1' });
+    loginMsg(e2 ? e2.message : 'Sent again. Check your inbox (and spam).', !e2);
+  };
+}
+
+// Opened from a password-reset email: the link has already signed them in.
+function openPasswordReset(){
+  const overlay = document.getElementById('login-modal');
+  if(!overlay) return;
+  setLoginStep('reset');
+  overlay.classList.add('open');
+}
+
+async function saveNewPassword(){
+  const password = loginPassword();
+  if(password.length < MIN_PASSWORD){ loginMsg(`Use at least ${MIN_PASSWORD} characters.`); return; }
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if(error){ loginMsg(error.message); return; }
+  loginStep = 'email';
+  closeLoginModal();
+  resumeAfterLogin();
+  alert('Password saved. You\'re logged in.');
 }
 function closeLoginModal(){
   const overlay = document.getElementById('login-modal');
@@ -1666,8 +1881,8 @@ async function claimGuestSubmissions(){
   return data || 0;
 }
 
-// Both sign-in methods can leave this page (Google redirects; a magic link
-// may open in a new tab), so whatever the person was doing is kept in
+// Both sign-in methods can leave this page (Google redirects; a confirmation
+// link may open in a new tab), so whatever the person was doing is kept in
 // localStorage and picked up by resumeAfterLogin().
 function persistModalIntent(){
   if(!modalIntent) return;
@@ -1690,9 +1905,9 @@ async function onAuthReady(){
   userRecord = await loadUserRecord();
 }
 
-// Runs after any successful sign-in (Google, magic link, or another tab
-// signing in). Can run twice for one sign-in (this tab and the magic-link
-// tab), so everything in here is safe to repeat.
+// Runs after any successful sign-in (Google, password, a confirmation link,
+// or another tab signing in). Can run twice for one sign-in (this tab and
+// the confirmation-link tab), so everything in here is safe to repeat.
 let resumeRunning = null;
 function resumeAfterLogin(){
   if(!resumeRunning) resumeRunning = doResumeAfterLogin().finally(()=>{ resumeRunning = null; });
@@ -1711,12 +1926,15 @@ async function doResumeAfterLogin(){
     }
     lsDel('wgi_upgrade');
     await claimGuestSubmissions();
+    // Results a guest offered to this email (sign-up prompt), on any device.
+    const { error: offerErr } = await supabaseClient.rpc('claim_my_guest_data');
+    if(offerErr) console.error('claim guest data', offerErr);
     const { error } = await supabaseClient.rpc('sync_my_auth_email');
     if(error) console.error('sync email', error);
   }
   await onAuthReady();
   if(!user || user.is_anonymous){ updateProfileBtn(); return; }
-  closeLoginModal();
+  if(loginStep !== 'reset') closeLoginModal();
   updateProfileBtn();
 
   if(!modalIntent){
@@ -1781,42 +1999,6 @@ async function loginWithGoogle(){
     errEl.style.display = 'block';
   }
   // On success, the browser navigates to Google now — nothing more to do here.
-}
-
-async function submitModalLogin(){
-  const email = document.getElementById('modal-email-input').value.trim();
-  const errEl = document.getElementById('login-modal-error');
-  errEl.style.color = '#b3312c';
-  errEl.style.display = 'none';
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent = 'Enter your email address.'; errEl.style.display = 'block'; return; }
-
-  const submitBtn = document.getElementById('login-submit-btn');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Sending…';
-  persistModalIntent();
-  await ensureClaimToken();
-
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: loginRedirectUrl(),
-      shouldCreateUser: true,
-      data: { username: email.split('@')[0] }
-    }
-  });
-
-  submitBtn.disabled = false;
-  submitBtn.textContent = 'Resend link';
-  if(error){
-    errEl.textContent = error.message;
-    errEl.style.display = 'block';
-    return;
-  }
-  errEl.style.color = 'var(--accepted)';
-  errEl.textContent = `Check your inbox: we sent a sign-in link to ${email}. Open it on this device${lsGet('wgi_modalIntent') === 'comment' ? ' — your draft stays saved' : ''}.`;
-  errEl.style.display = 'block';
-  // The SIGNED_IN event (this tab, or the tab the link opens) runs
-  // resumeAfterLogin().
 }
 
 const LOGO_OVERRIDES = {
@@ -4618,6 +4800,7 @@ function accountSettingsHtml(){
   return `
     <h2 class="section-title" style="font-size:18px;">Account</h2>
     <div id="account-login-info"><p class="section-sub">Signed in as <b>${esc(currentUser)}</b> on this device.</p></div>
+    <div id="account-password"></div>
     <button class="ghost" onclick="logout()">Log out</button>
     <hr class="divider">
     <h2 class="section-title" style="font-size:18px;">Email notifications</h2>
@@ -5515,10 +5698,9 @@ async function signupWithGoogleFromPrompt(){
 // submission over after sign-in.
 async function signInExistingFromPrompt(email){
   await ensureClaimToken();
+  await offerGuestDataTo(email);
   closeEmailPrompt();
-  openLoginModal('default');
-  const input = document.getElementById('modal-email-input');
-  if(input && email) input.value = email;
+  openLoginModal('default', email);
 }
 
 async function openEmailPrompt(opts){
@@ -5559,7 +5741,11 @@ async function openEmailPrompt(opts){
       <div class="field" style="margin:0;">
         <label for="ep-email">Email</label>
         <input type="email" id="ep-email" autocomplete="email" placeholder="you@example.com" style="width:100%;" onkeydown="if(event.key==='Enter') saveEmailPrompt()">
-        <div class="hint">No password needed. Turn notifications off anytime.</div>
+      </div>
+      <div class="field" style="margin:10px 0 0;">
+        <label for="ep-password">Create a password</label>
+        <input type="password" id="ep-password" autocomplete="new-password" minlength="${MIN_PASSWORD}" style="width:100%;" onkeydown="if(event.key==='Enter') saveEmailPrompt()">
+        <div class="hint">At least ${MIN_PASSWORD} characters. Turn notifications off anytime.</div>
       </div>
       <p id="ep-msg" style="font-size:12.5px;margin:10px 0 0;display:none;"></p>`;
     saveBtn.textContent = 'Sign up';
@@ -5593,40 +5779,45 @@ function toggleWaitlistChecklist(){
 }
 function closeEmailPrompt(){ const m = document.getElementById('email-prompt'); if(m) m.classList.remove('open'); }
 
-// Guest -> real account with email. updateUser on the anonymous session sends
-// a confirmation link; clicking it (on any device) turns this same user into
-// a real account, so the submission stays linked with nothing to move.
+// Guest -> real account with email + password. The guest first offers its
+// result to this email (offer_my_guest_data), then signUp() creates the
+// account and sends a confirmation link. Whoever confirms and signs in with
+// that email, on any device, gets the result (claim_my_guest_data).
 async function signupWithEmailFromPrompt(msg, showMsg){
   const email = (document.getElementById('ep-email')?.value || '').trim().toLowerCase();
+  const password = document.getElementById('ep-password')?.value || '';
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ showMsg('Enter your email address.'); return; }
+  if(password.length < MIN_PASSWORD){ showMsg(`Use at least ${MIN_PASSWORD} characters for your password.`); return; }
 
   const btn = document.getElementById('ep-save');
-  btn.disabled = true; btn.textContent = 'Sending…';
+  btn.disabled = true; btn.textContent = 'Signing up…';
+  const done = () => { btn.disabled = false; btn.textContent = 'Sign up'; };
 
-  const { error: prefErr } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: signupPromptPrefs() });
-  if(prefErr) console.error('signup prefs', prefErr);
-  await ensureClaimToken(); // only used if this email turns out to have an account already
-
-  const { error } = await supabaseClient.auth.updateUser(
-    { email, data: { username: email.split('@')[0] } },
-    { emailRedirectTo: loginRedirectUrl() }
-  );
-  btn.disabled = false; btn.textContent = 'Sign up';
-
-  if(error){
+  const { data: status, error: statusErr } = await supabaseClient.rpc('auth_email_status', { p_email: email });
+  if(statusErr){ done(); showMsg(statusErr.message); return; }
+  if(status === 'password' || status === 'google' || status === 'no_password'){
+    done();
     pendingSignupEmail = email;
-    if(error.code === 'email_exists' || /already (been )?registered|already exists/i.test(error.message || '')){
-      msg.innerHTML = `You already have an account with ${esc(email)}. <button class="comment-link" onclick="signInExistingFromPrompt(pendingSignupEmail)">Sign in</button> and we'll add this result to it.`;
-      msg.style.color = '#b3312c';
-      msg.style.display = 'block';
-      return;
-    }
-    showMsg(error.message);
+    msg.innerHTML = `You already have an account with ${esc(email)}. <button class="comment-link" onclick="signInExistingFromPrompt(pendingSignupEmail)">Log in</button> and we'll add this result to it.`;
+    msg.style.color = '#b3312c';
+    msg.style.display = 'block';
     return;
   }
 
+  const { error: prefErr } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: signupPromptPrefs() });
+  if(prefErr) console.error('signup prefs', prefErr);
+  await ensureClaimToken(); // same-device fallback
+  await offerGuestDataTo(email);
   lsSet('wgi_upgrade', 'email');
-  showMsg(`Almost done: tap the link we sent to ${email} to finish signing up.`, true);
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email, password, options: { emailRedirectTo: loginRedirectUrl() }
+  });
+  done();
+  if(error){ lsDel('wgi_upgrade'); showMsg(error.message); return; }
+  if(data && data.session){ closeEmailPrompt(); return; } // "Confirm email" off: signed in already
+
+  showMsg(`Almost done: tap the link we sent to ${email} to confirm your email.`, true);
   btn.style.display = 'none';
   document.getElementById('ep-skip').textContent = 'Close';
 }
@@ -5766,6 +5957,18 @@ async function renderAccountEmailSettings(){
   if(info && loginEmail){
     info.innerHTML = `<p class="section-sub">${viaGoogle ? 'Logged in with Google as' : 'Logged in as'} <b>${esc(loginEmail)}</b>.</p>`;
   }
+  // Password accounts can change it. Google-only accounts don't have one.
+  const pwBox = document.getElementById('account-password');
+  const hasEmailLogin = !!(user && (user.identities || []).some(i => i.provider === 'email'));
+  if(pwBox) pwBox.innerHTML = hasEmailLogin ? `
+    <div class="field" style="margin:4px 0 12px;">
+      <label for="acct-new-password">Change password</label>
+      <div style="display:flex;gap:8px;max-width:420px;">
+        <input type="password" id="acct-new-password" autocomplete="new-password" placeholder="New password" style="flex:1;" onkeydown="if(event.key==='Enter') changeMyPassword()">
+        <button class="small" onclick="changeMyPassword()">Save</button>
+      </div>
+      <div class="hint" id="acct-password-msg">At least ${MIN_PASSWORD} characters.</div>
+    </div>` : '';
 
   let contact = await loadMyContact();
   // Older accounts may have a different notification email saved, or none
@@ -5785,6 +5988,21 @@ async function renderAccountEmailSettings(){
       <button class="small" onclick="saveAccountEmailPrefs()">Save email settings</button>
     </div>
     <p class="section-sub" id="acct-prefs-msg" style="margin-top:8px;"></p>`;
+}
+async function changeMyPassword(){
+  const input = document.getElementById('acct-new-password');
+  const msg = document.getElementById('acct-password-msg');
+  const password = input.value;
+  const show = (t, ok) => { msg.textContent = t; msg.style.color = ok ? 'var(--accepted)' : '#b3312c'; };
+  if(password.length < MIN_PASSWORD){ show(`Use at least ${MIN_PASSWORD} characters.`); return; }
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if(error){
+    show(error.code === 'reauthentication_needed' || /reauthenticat/i.test(error.message || '')
+      ? 'For security, log out and log back in, then change your password.' : error.message);
+    return;
+  }
+  input.value = '';
+  show('Password changed.', true);
 }
 async function saveAccountEmailPrefs(){
   const { error } = await supabaseClient.rpc('set_my_email_prefs', { p_prefs: readEmailPrefs('ap-') });
@@ -5856,7 +6074,9 @@ async function toggleSchoolNotify(name, ev){
     // callback (it can deadlock the auth lock), so run the work after it.
     // USER_UPDATED: a guest confirmed their sign-up email or linked Google
     // (same user, now a real account).
-    if(event === 'SIGNED_IN' || event === 'USER_UPDATED'){
+    if(event === 'PASSWORD_RECOVERY'){
+      setTimeout(openPasswordReset, 0);
+    } else if(event === 'SIGNED_IN' || event === 'USER_UPDATED'){
       setTimeout(resumeAfterLogin, 0);
     } else if(event === 'SIGNED_OUT'){
       currentUser = null;
@@ -5868,17 +6088,27 @@ async function toggleSchoolNotify(name, ev){
     }
   });
 
-  // A Google or magic-link return can finish signing in before the listener
-  // above exists. If something is waiting (a draft to post, a guest result
-  // to claim), resume now; resumeAfterLogin() is safe to run twice.
-  if(currentUser && !isAnonymousUser && (lsGet('wgi_modalIntent') || lsGet('wgi_claim_token') || lsGet('wgi_upgrade'))){
+  // A Google or confirmation-link return can finish signing in before the
+  // listener above exists. If something is waiting (a draft to post, a guest
+  // result to claim, possibly from another device), resume now;
+  // resumeAfterLogin() is safe to run twice.
+  if(currentUser && !isAnonymousUser && (AUTH_RETURN || lsGet('wgi_modalIntent') || lsGet('wgi_claim_token') || lsGet('wgi_upgrade'))){
     resumeAfterLogin();
+  }
+
+  // Back from a "set / reset your password" email: ask for the new password.
+  if(RESET_RETURN){
+    const params = new URLSearchParams(window.location.search);
+    params.delete('reset');
+    const qs = params.toString();
+    history.replaceState(history.state, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+    if(currentUser && !isAnonymousUser) openPasswordReset();
   }
 
   // Guest signed up from the prompt and confirmed in another tab or device:
   // when they come back to this tab, pick up the upgraded account.
   document.addEventListener('visibilitychange', async () => {
-    if(document.visibilityState !== 'visible' || !lsGet('wgi_upgrade') || !isAnonymousUser) return;
+    if(document.visibilityState !== 'visible' || !lsGet('wgi_upgrade') || (currentUser && !isAnonymousUser)) return;
     const { data: { user } } = await supabaseClient.auth.getUser();
     if(user && !user.is_anonymous) resumeAfterLogin();
   });
@@ -5894,7 +6124,7 @@ async function toggleSchoolNotify(name, ev){
       // The claim token moves this guest's submission over afterwards.
       if(confirm('That Google account already has a Who Got In account. Sign in to it and add this result?')) loginWithGoogle();
     } else {
-      alert('Sign-in didn\'t work: ' + authError + '. Try again and we\'ll send a fresh link.');
+      alert('Sign-in didn\'t work: ' + authError + '. Try again, or use Forgot password to get a fresh link.');
     }
   }
 })();
