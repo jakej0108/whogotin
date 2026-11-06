@@ -5,6 +5,11 @@ export async function onRequest(context) {
   const requestUrl = new URL(context.request.url);
   const submission = requestUrl.pathname.match(/^\/submission\/([a-z0-9]+)\/?$/i);
 
+  // whogotin.com/home is just the homepage.
+  if (/^\/home\/?$/i.test(requestUrl.pathname)) {
+    return Response.redirect(new URL('/' + requestUrl.search, requestUrl.origin).toString(), 301);
+  }
+
   // Static files use the normal asset pipeline. Extensionless URLs retain
   // the existing single-page-app fallback to index.html.
   if (!submission && /\.[a-z0-9]+$/i.test(requestUrl.pathname)) {
