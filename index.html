@@ -566,43 +566,35 @@ if (location.pathname !== '/' && !/\.[a-z0-9]+$/i.test(location.pathname)) {
   .card-wrap > a.idx-card{height:100%;box-sizing:border-box;}
   .card-wrap > .bell-btn{z-index:1;}
 
-  /* Account dropdown: an index card, same family as .idx-card and the
-     folder tabs (mono uppercase labels, ink border, folder-pink band). */
+  /* Account dropdown: plain white card, no accent colors. */
   .acct-menu{position:relative;}
-  .profile-btn[aria-expanded="true"]{background:var(--folder);border-color:var(--accent);color:var(--accent);}
   .acct-dropdown{
-    position:absolute;right:0;top:calc(100% + 14px);width:230px;z-index:150;
-    background:var(--paper-2);border:2px solid var(--ink);border-radius:10px;
-    box-shadow:0 6px 16px rgba(41,19,19,0.18);
-  }
-  .acct-dropdown::before{
-    content:'';position:absolute;top:-8px;right:16px;width:34px;height:12px;
-    background:var(--folder-dark);border-radius:3px;border:1.5px solid var(--ink);
+    position:absolute;right:0;top:calc(100% + 10px);width:230px;z-index:150;
+    background:#fff;border:1.5px solid var(--ink);border-radius:10px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.10);
   }
   .acct-dropdown[hidden]{display:none;}
-  .acct-head{background:var(--folder);border-bottom:1.5px solid var(--ink);border-radius:8px 8px 0 0;padding:14px 16px 12px;}
-  .acct-head-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.5px;text-transform:uppercase;color:var(--ink-soft);}
+  .acct-head{padding:14px 16px 12px;border-bottom:1px solid #E6E6E6;}
+  .acct-head-label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.5px;text-transform:uppercase;color:#8A8A8A;}
   .acct-head-name{display:block;font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--ink);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .acct-items{padding:4px 0;}
   .acct-dropdown a{
     display:flex;align-items:center;justify-content:space-between;
-    padding:11px 16px;border-bottom:1px dashed var(--rule);
+    padding:11px 16px;
     font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.5px;text-transform:uppercase;
-    color:var(--ink-soft);text-decoration:none;
+    color:#6B6B6B;text-decoration:none;
   }
-  .acct-dropdown a:last-child{border-bottom:none;}
   .acct-dropdown a::after{content:'\2192';opacity:0;transition:opacity .12s, transform .12s;transform:translateX(-4px);}
-  .acct-dropdown a:hover, .acct-dropdown a:focus-visible{color:var(--ink);background:var(--folder);outline:none;}
+  .acct-dropdown a:hover, .acct-dropdown a:focus-visible{color:var(--ink);background:#F5F5F5;outline:none;}
   .acct-dropdown a:hover::after, .acct-dropdown a:focus-visible::after{opacity:1;transform:none;}
   .acct-dropdown a.active{color:var(--ink);font-weight:600;}
-  .acct-dropdown a.active::after{content:'\25CF';opacity:1;transform:none;color:var(--accent);font-size:9px;}
-  .acct-foot{border-top:1.5px solid var(--ink);padding:8px;}
+  .acct-foot{border-top:1px solid #E6E6E6;padding:8px;}
   .acct-foot button{
     width:100%;min-height:0;padding:9px 10px;border-radius:6px;
-    background:none;border:1.5px solid var(--rule);color:var(--accent);
+    background:#fff;border:1px solid #E0E0E0;color:var(--ink);
     font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;
   }
-  .acct-foot button:hover{border-color:var(--accent);background:var(--accent-bg);}
+  .acct-foot button:hover{background:#F5F5F5;border-color:#CFCFCF;}
 
   /* Account page tabs (each one is its own /account/... URL) */
   .acct-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 22px;border-bottom:1.5px solid var(--rule);padding-bottom:10px;}
